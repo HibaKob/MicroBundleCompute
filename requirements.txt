@@ -1,0 +1,18 @@
+attrs==22.1.0
+coverage==6.5.0
+flake8 @ file:///home/conda/feedstock_root/build_artifacts/flake8_1659645013175/work
+importlib-metadata @ file:///home/conda/feedstock_root/build_artifacts/importlib-metadata_1666781969417/work
+iniconfig==1.1.1
+mccabe @ file:///home/conda/feedstock_root/build_artifacts/mccabe_1643049622439/work
+# Editable install with no version control (microbundlecompute==0.0.0)
+-e /Users/emma/Desktop/MicroBundleCompute
+packaging==21.3
+pluggy==1.0.0
+py==1.11.0
+pycodestyle @ file:///home/conda/feedstock_root/build_artifacts/pycodestyle_1659638152915/work
+pyflakes @ file:///home/conda/feedstock_root/build_artifacts/pyflakes_1659210156976/work
+pyparsing==3.0.9
+pytest==7.1.2
+pytest-cov==3.0.0
+tomli==2.0.1
+zipp @ file:///home/conda/feedstock_root/build_artifacts/zipp_1666647772197/work

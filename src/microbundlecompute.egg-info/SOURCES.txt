@@ -1,0 +1,9 @@
+LICENSE
+README.md
+pyproject.toml
+src/microbundlecompute/image_analysis.py
+src/microbundlecompute.egg-info/PKG-INFO
+src/microbundlecompute.egg-info/SOURCES.txt
+src/microbundlecompute.egg-info/dependency_links.txt
+src/microbundlecompute.egg-info/requires.txt
+src/microbundlecompute.egg-info/top_level.txt

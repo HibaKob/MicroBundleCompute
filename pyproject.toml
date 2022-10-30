@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "microbundlecompute"
+version = "0.0.0"
+authors = [
+  { name="Emma Lejeune", email="elejeune@bu.edu" },
+]
+description = "microbundlecompute workflow"
+readme = "README.md"
+license = { file="LICENSE" }
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "attrs==22.1.0",
+    "coverage==6.5.0",
+    "flake8",
+    "importlib-metadata",
+    "iniconfig==1.1.1",
+    "mccabe",
+    "packaging==21.3",
+    "pluggy==1.0.0",
+    "py==1.11.0",
+    "pycodestyle",
+    "pyflakes",
+    "pyparsing==3.0.9",
+    "pytest==7.1.2",
+    "pytest-cov==3.0.0",
+    "tomli==2.0.1",
+    "zipp"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/elejeune11/microbundlecompute"
+"Bug Tracker" = "https://github.com/elejeune11/microbundlecompute/issues"
