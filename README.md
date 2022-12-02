@@ -88,8 +88,15 @@ Type "help", "copyright", "credits" or "license" for more information.
 
 
 ## To-Do List <a name="todo"></a>
-
-
+- [ ] Adjust code so that the dictionaries for timeseries segmentation are computed automatically
+- [ ] Adjust code so that the dictionaries for feature and tracking parameters can be conveniently adjusted
+- [ ] Orient output (strain, displacement) direction with major axes of microbundle 
+- [ ] Add functionality to compute beating frequency (might be useful to other groups)
+- [ ] Ensure that division into subdomains does not result in singular matrices
+- [ ] Validate displacement and strain output (synthetic data + manual tracking)
+- [ ] Clean code
+- [ ] Explore options for additional analysis/visualization
+- [ ] Automate mask creation
 
 ## References to Related Work <a name="references"></a>
 
