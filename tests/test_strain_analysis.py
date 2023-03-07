@@ -1,5 +1,5 @@
-from microbundlecomputelite import image_analysis as ia
-from microbundlecomputelite import strain_analysis as sa
+from microbundlecompute import image_analysis as ia
+from microbundlecompute import strain_analysis as sa
 import numpy as np
 from pathlib import Path
 import pytest

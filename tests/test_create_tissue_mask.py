@@ -1,5 +1,5 @@
 import glob
-from microbundlecomputelite import create_tissue_mask as ctm
+from microbundlecompute import create_tissue_mask as ctm
 import numpy as np
 from pathlib import Path
 from scipy import ndimage
