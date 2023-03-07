@@ -4,7 +4,7 @@ from matplotlib import path as mpl_path
 import matplotlib.patheffects as pe
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
-from microbundlecomputelite import image_analysis as ia
+from microbundlecompute import image_analysis as ia
 import numpy as np
 from pathlib import Path
 from typing import List, Union
