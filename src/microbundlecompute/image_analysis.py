@@ -1301,7 +1301,7 @@ def rotate_imgs_all(
 ###################################################################################
 
 ###################################################################################
-def pad_img_to_square(image:np.ndarray) -> (np.ndarray,Union[float, int]):
+def pad_img_to_square(image:np.ndarray) -> (np.ndarray, Union[float, int]):
     """Given a non-square image. Will pad the image to have square size"""
     img_r, img_c = image.shape
     max_size = np.max([img_r,img_c])
@@ -1314,7 +1314,7 @@ def pad_img_to_square(image:np.ndarray) -> (np.ndarray,Union[float, int]):
     translate_center_col = left
     return padded_image, translate_center_row, translate_center_col
 
-def pad_all_imgs_to_square(tiff_list: List) -> (np.ndarray,Union[float, int]):
+def pad_all_imgs_to_square(tiff_list: List) -> (np.ndarray, Union[float, int]):
     """Given a list of non-square images. Will pad images to have square size"""
     _, translate_center_row, translate_center_col = pad_img_to_square(tiff_list[0])
     padded_tiff_list = []

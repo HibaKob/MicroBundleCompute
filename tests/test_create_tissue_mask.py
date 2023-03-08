@@ -176,10 +176,10 @@ def test_segment_mask_2():
     assert mask.shape == img.shape
 
 def test_segment_mask_3():
-    file_path = glob_movie("real_example_masks")[1]
-    img = io.imread(file_path)
-    mask = ctm.segment_mask_3(img)
-    assert mask.shape == img.shape
+    file_path = glob_movie("real_example_masks/movie/0003")
+    img_list = io.imread_collection(file_path)
+    mask = ctm.segment_mask_3(img_list)
+    assert mask.shape == img_list[0].shape
 
 def test_save_mask():
     folder_path = example_path("real_example_masks")
@@ -213,7 +213,7 @@ def test_run_create_tissue_mask():
     file_path, img_path = ctm.run_create_tissue_mask(folder_path, seg_fcn_num, fname, frame_num)
     assert file_path.is_file()
     assert img_path.is_file()
-    folder_path = example_path("real_example_masks")
+    folder_path = example_path("real_example_masks/movie/0003")
     seg_fcn_num = 3
     fname = "example_3"
     frame_num = 0
