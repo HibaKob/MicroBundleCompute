@@ -109,9 +109,8 @@ def segment_mask_2(array: np.ndarray):
     mask_region_closed = close_region(mask_region, 10)
     return mask_region_closed
 
-# create def segment_mask_3 (inputs: the image array + specify min/max/mean/median?)
-# =============================================================================
-def segment_mask_3(tiff_list: List, method:str='minimum'): # Have method as input or keep min always???
+
+def segment_mask_3(tiff_list: List, method:str='minimum'): 
     if method == 'minimum':
         array = np.min(tiff_list,axis=0)
     elif method == 'maximum':
@@ -126,18 +125,6 @@ def segment_mask_3(tiff_list: List, method:str='minimum'): # Have method as inpu
     return mask_region_closed
 
 
-def segment_mask_4(array: np.ndarray, tiff_list: List, method:str='min'):
-    mask_1 = segment_mask_1(array)
-    mask_2 = segment_mask_2(array)
-    mask_3 = segment_mask_3(tiff_list,method)
-    mask_sum = np.sum([mask_1,mask_2,mask_3],axis=0)
-    # print('max_sum',np.max(mask_sum))
-    mask_sum[mask_sum < 1] = 0
-    mask_sum[mask_sum > 0] = 1
-    mask_region_closed = mask_sum
-    # print('max_mask',np.max(mask_region_closed))
-    return mask_region_closed
-# ============================================================================
 def save_mask(folder_path: Path, mask: np.ndarray, fname: str = "tissue_mask"):
     """Given a folder path and tissue mask. Will save file."""
     new_path = ia.create_folder(folder_path, "masks")
@@ -162,8 +149,6 @@ def run_create_tissue_mask(folder_path: Path, seg_fcn_num: int = 1, fname: str =
         mask = segment_mask_2(img)
     elif seg_fcn_num == 3:
         mask = segment_mask_3(tiff_list,method)
-    elif seg_fcn_num == 4:
-        mask = segment_mask_4(img, tiff_list)
     # save the tissue mask
     file_path, img_path = save_mask(folder_path, mask, fname)
     return file_path, img_path
