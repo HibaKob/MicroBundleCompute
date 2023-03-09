@@ -885,6 +885,30 @@ def test_rot_vec_to_rot_mat_and_angle():
     assert np.isclose(ang, np.pi / 4.0)
 
 
+def test_get_tissue_width():
+    mask = np.zeros((512,512))
+    mask[226:286,206:300] = 1
+    gt_tissue_width = 286 - 226 - 1
+    tissue_width = ia.get_tissue_width(mask)
+    assert np.isclose(tissue_width,gt_tissue_width,atol=0.01)
+
+
+def test_save_tissue_width_info():
+    folder_path = example_path("real_example_super_short")
+    tissue_width = float(52)
+    file_path = ia.save_tissue_width_info(folder_path, tissue_width)
+    assert file_path.is_file()
+
+def test_check_square_image_true():
+    img = np.zeros((512,512))
+    square = ia.check_square_image(img)
+    assert square == True
+
+def test_check_square_image_false():
+    img = np.zeros((320,512))
+    square = ia.check_square_image(img)
+    assert square == False
+
 def test_rot_image():
     mask = np.zeros((100, 100))
     for kk in range(10, 50):

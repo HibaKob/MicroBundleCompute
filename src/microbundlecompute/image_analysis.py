@@ -764,16 +764,11 @@ def box_to_center_points(box: np.ndarray) -> float:
     return center_row, center_col
 
 
-# =============================================================================
-# 
-# =============================================================================
 def mask_to_box(mask: np.ndarray) -> np.ndarray:
     """Given a mask. Will return the minimum area bounding rectangle."""
     # insert borders to the mask
     border = 10
-    # border = 15
     mask_mod = insert_borders(mask, border)
-    
     # find contour
     mask_mod_one = (mask_mod > 0).astype(np.float64)
     mask_thresh_blur = ndimage.gaussian_filter(mask_mod_one, 1)
@@ -782,36 +777,10 @@ def mask_to_box(mask: np.ndarray) -> np.ndarray:
     rect = cv2.minAreaRect(cnts)
     box = np.int0(cv2.boxPoints(rect))
     return box
-# =============================================================================
-# 
-# =============================================================================
 
-
-# =============================================================================
-# 
-def get_tissue_width(mask: np.ndarray) -> float:
-    """Given a mask of the tissue. Will compute the width of the tissue at the center."""
-    center_row, center_col,_, ang,_ = get_rotation_info(center_row_input=None, center_col_input=None, vec_input=None, mask=mask)
-    rot_mask = rot_image(mask, center_row, center_col,ang)
-    mask_box = mask_to_box(rot_mask)
-    center_row, center_col = box_to_center_points(mask_box)
-    center_width = np.nonzero(rot_mask[:,int(center_col)]>0)
-    min_row = np.min(center_width)
-    max_row = np.max(center_width)
-    tissue_width = max_row - min_row
-    return tissue_width
-
-def save_tissue_width_info(folder_path: Path,tissue_width: float) -> Path:
-    """Given tissue width. Will save the results into a text file."""
-    res_folder_path = folder_path.joinpath("results").resolve()
-    file_path = res_folder_path.joinpath("tissue_info.txt").resolve()
-    tissue_info = np.asarray([tissue_width])
-    np.savetxt(str(file_path), tissue_info)
-    return file_path
-# =============================================================================
 
 def axis_from_mask(mask: np.ndarray) -> np.ndarray:
-    """Given a folder path. Will import the mask and determine it's long axis."""
+    """Given a folder path. Will import the mask and determine its long axis."""
     box = mask_to_box(mask)
     vec = box_to_unit_vec(box)
     center_row, center_col = box_to_center_points(box)
@@ -824,14 +793,36 @@ def rot_vec_to_rot_mat_and_angle(vec: np.ndarray) -> Tuple[np.ndarray, float]:
     rot_mat = np.asarray([[np.cos(ang), -1.0 * np.sin(ang)], [np.sin(ang), np.cos(ang)]])
     return (rot_mat, ang)
 
-# =============================================================================
+
+def get_tissue_width(mask: np.ndarray) -> float:
+    """Given a mask of the tissue. Will compute the width of the tissue at the center."""
+    center_row, center_col,_, ang,_ = get_rotation_info(center_row_input=None, center_col_input=None, vec_input=None, mask=mask)
+    rot_mask = rot_image(mask, center_row, center_col,ang)
+    mask_box = mask_to_box(rot_mask)
+    center_row, center_col = box_to_center_points(mask_box)
+    center_width = np.nonzero(rot_mask[:,int(center_col)]>0)
+    min_row = np.min(center_width)
+    max_row = np.max(center_width)
+    tissue_width = max_row - min_row
+    return tissue_width
+
+
+def save_tissue_width_info(folder_path: Path,tissue_width: float) -> Path:
+    """Given tissue width. Will save the results into a text file."""
+    res_folder_path = create_folder(folder_path,"results")
+    file_path = res_folder_path.joinpath("tissue_info.txt").resolve()
+    tissue_info = np.asarray([tissue_width])
+    np.savetxt(str(file_path), tissue_info)
+    return file_path
+
+
 def check_square_image(img: np.ndarray) -> bool:
     """Given an image. Will check if the image width and height dimensions are equal."""
     img_r, img_c = img.shape
-    square = np.isclose(img_r,img_c,5)
+    square = np.isclose(img_r,img_c,atol=5)
     return square
 
-# =============================================================================
+
 def rot_image(
     img: np.ndarray,
     center_row: Union[float, int],
@@ -899,12 +890,14 @@ def rotate_pts_all(
         rot_col_pts_array_list.append(rot_col_pts_array)
     return rot_row_pts_array_list, rot_col_pts_array_list
 
+
 def translate_points(pts_row: np.ndarray, pts_col: np.ndarray, trans_r: float, trans_c: float) -> float:
     """Given an array of row points and column points. Will translate the whole array."""
     trans_pt_row = pts_row + trans_r
     trans_pt_col = pts_col + trans_c
     return trans_pt_row,trans_pt_col
     
+
 def translate_pts_all(row_pts_array_list: List, col_pts_array_list: List, trans_r: float, trans_c: float) -> np.ndarray:
     """Given a list of row and column point arrays. Will rotate all of them."""
     trans_row_pts_array_list = []
@@ -912,10 +905,10 @@ def translate_pts_all(row_pts_array_list: List, col_pts_array_list: List, trans_
     for kk in range(0,len(row_pts_array_list)):
         trans_row_pts_array, trans_col_pts_array = translate_points(row_pts_array_list[kk],col_pts_array_list[kk],trans_r,trans_c)
         trans_row_pts_array_list.append(trans_row_pts_array)
-        trans_col_pts_array_list.append(trans_col_pts_array)
-        
+        trans_col_pts_array_list.append(trans_col_pts_array)        
     return trans_row_pts_array_list, trans_col_pts_array_list
-###################################################################################
+
+
 def rotate_imgs_all(
     tiff_list: List,
     ang: float,
