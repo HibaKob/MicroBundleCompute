@@ -572,7 +572,6 @@ def test_save_tracking():
     assert len(saved_paths) == info.shape[0] * 2 + 1
 
 
-
 def test_run_tracking():
     folder_path = example_path("real_example_short")
     fps = 1
@@ -585,7 +584,9 @@ def test_run_tracking():
 
 def test_load_tracking_results():
     folder_path = example_path("real_example_short")
-    _ = ia.run_tracking(folder_path)
+    fps = 1
+    length_scale = 1
+    _ = ia.run_tracking(folder_path, fps, length_scale)
     tracker_row_all, tracker_col_all, info, rot_info = ia.load_tracking_results(folder_path=folder_path)
     assert len(tracker_row_all) == 1
     assert len(tracker_row_all) == 1
@@ -636,54 +637,127 @@ def test_load_tracking_results():
     assert rot_info.shape == (2, 2)
 
 
+def test_get_title_fname():
+    kk = 1
+    beat = 1
+    ti, fn, fn_gif, fn_row_gif, fn_col_gif = ia.get_title_fname(kk, beat, True, True)
+    assert ti == "rotated frame %i, beat %i, with interpolation" % (kk, beat)
+    assert fn == "rotated_%04d_disp_with_interp.png" % (kk)
+    assert fn_gif == "rotated_abs_disp_with_interp.gif"
+    assert fn_row_gif == "rotated_row_disp_with_interp.gif"
+    assert fn_col_gif == "rotated_column_disp_with_interp.gif"
+    ti, fn, fn_gif, fn_row_gif, fn_col_gif = ia.get_title_fname(kk, beat, True, False)
+    assert ti == "rotated frame %i, beat %i" % (kk, beat)
+    assert fn == "rotated_%04d_disp.png" % (kk)
+    assert fn_gif == "rotated_abs_disp.gif"
+    assert fn_row_gif == "rotated_row_disp.gif"
+    assert fn_col_gif == "rotated_column_disp.gif"
+    ti, fn, fn_gif, fn_row_gif, fn_col_gif = ia.get_title_fname(kk, beat, False, True)
+    assert ti == "frame %i, beat %i, with interpolation" % (kk, beat)
+    assert fn == "%04d_disp_with_interp.png" % (kk)
+    assert fn_gif == "abs_disp_with_interp.gif"
+    assert fn_row_gif == "row_disp_with_interp.gif"
+    assert fn_col_gif == "column_disp_with_interp.gif"
+    ti, fn, fn_gif, fn_row_gif, fn_col_gif = ia.get_title_fname(kk, beat, False, False)
+    assert ti == "frame %i, beat %i" % (kk, beat)
+    assert fn == "%04d_disp.png" % (kk)
+    assert fn_gif == "abs_disp.gif"
+    assert fn_row_gif == "row_disp.gif"
+    assert fn_col_gif == "column_disp.gif"
+
+
+def test_compute_min_max_disp ():
+    info = [[0, 5, 35], [1, 35, 65], [2, 65, 95]]
+    info = np.asarray(info)
+    num_beats = len(info)
+    num_pts = 10
+    num_frames = 100
+    num_beat_frames = 30
+    tracker_0_beat = 100 * np.ones((num_pts, num_beat_frames)) + np.random.random((num_pts, num_beat_frames))
+    tracker_1_beat = 50 * np.ones((num_pts, num_beat_frames)) + np.random.random((num_pts, num_beat_frames))
+    tracker_0 = np.zeros((num_beats,num_pts,num_frames))
+    tracker_1 = np.zeros((num_beats,num_pts,num_frames))
+    tracker_0 [0,:,5:35] = tracker_0_beat
+    tracker_0 [1,:,35:65] = tracker_0_beat
+    tracker_0 [2,:,65:95] = tracker_0_beat
+    tracker_1 [0,:,5:35] = tracker_1_beat
+    tracker_1 [1,:,35:65] = tracker_1_beat
+    tracker_1 [2,:,65:95] = tracker_1_beat
+    _, disp_abs_all, disp_0_all, disp_1_all = ia.compute_abs_position_timeseries(tracker_0[0,:,:], tracker_1[0,:,:])
+    min_abs = np.min(disp_abs_all)
+    max_abs = np.max(disp_abs_all)
+    min_row = np.min(disp_0_all)
+    max_row = np.max(disp_0_all)
+    min_col = np.min(disp_1_all)
+    max_col = np.max(disp_1_all)
+    min_abs_disp_clim, max_abs_disp_clim, min_row_disp_clim, max_row_disp_clim, min_col_disp_clim, max_col_disp_clim = ia.compute_min_max_disp(tracker_0, tracker_1, info) 
+    assert np.isclose(min_abs,min_abs_disp_clim, atol=0.01)
+    assert np.isclose(max_abs,max_abs_disp_clim, atol=0.01)
+    assert np.isclose(min_row,min_row_disp_clim, atol=0.01)
+    assert np.isclose(max_row,max_row_disp_clim, atol=0.01)
+    assert np.isclose(min_col,min_col_disp_clim, atol=0.01)
+    assert np.isclose(max_col,max_col_disp_clim, atol=0.01)
+
 def test_create_pngs_gif():
     folder_path = example_path("real_example_short")
-    _ = ia.run_tracking(folder_path)
+    fps = 1
+    length_scale = 1
+    _ = ia.run_tracking(folder_path, fps, length_scale)
     tracker_row_all, tracker_col_all, info, _ = ia.load_tracking_results(folder_path=folder_path)
     mov_path = movie_path("real_example_short")
     name_list_path = ia.image_folder_to_path_list(mov_path)
     tiff_list = ia.read_all_tiff(name_list_path)
     col_max = 3
+    col_min = 0
     col_map = plt.cm.viridis
-    path_list = ia.create_pngs(folder_path, tiff_list, tracker_row_all, tracker_col_all, info, col_max, col_map)
+    path_list = ia.create_pngs(folder_path, tiff_list, tracker_row_all, tracker_col_all, info, "abs", col_min, col_max, col_map)
     for pa in path_list:
         assert pa.is_file()
-    gif_path = ia.create_gif(folder_path, path_list)
+    gif_path = ia.create_gif(folder_path, path_list, "abs")
+    assert gif_path.is_file()
+    col_max = 3
+    col_min = -3
+    path_list = ia.create_pngs(folder_path, tiff_list, tracker_row_all, tracker_col_all, info, "row", col_min, col_max, col_map)
+    for pa in path_list:
+        assert pa.is_file()
+    gif_path = ia.create_gif(folder_path, path_list, "row")
+    assert gif_path.is_file()
+    path_list = ia.create_pngs(folder_path, tiff_list, tracker_row_all, tracker_col_all, info, "col", col_min, col_max, col_map)
+    for pa in path_list:
+        assert pa.is_file()
+    gif_path = ia.create_gif(folder_path, path_list, "col")
     assert gif_path.is_file()
     # mp4_path = ia.create_mp4(folder_path, gif_path)
     # assert mp4_path.is_file()
 
-
-def test_get_title_fname():
-    kk = 1
-    beat = 1
-    ti, fn, fn_gif = ia.get_title_fname(kk, beat, True, True)
-    assert ti == "rotated frame %i, beat %i, with interpolation" % (kk, beat)
-    assert fn == "rotated_%04d_disp_with_interp.png" % (kk)
-    assert fn_gif == "rotated_abs_disp_with_interp.gif"
-    ti, fn, fn_gif = ia.get_title_fname(kk, beat, True, False)
-    assert ti == "rotated frame %i, beat %i" % (kk, beat)
-    assert fn == "rotated_%04d_disp.png" % (kk)
-    assert fn_gif == "rotated_abs_disp.gif"
-    ti, fn, fn_gif = ia.get_title_fname(kk, beat, False, True)
-    assert ti == "frame %i, beat %i, with interpolation" % (kk, beat)
-    assert fn == "%04d_disp_with_interp.png" % (kk)
-    assert fn_gif == "abs_disp_with_interp.gif"
-    ti, fn, fn_gif = ia.get_title_fname(kk, beat, False, False)
-    assert ti == "frame %i, beat %i" % (kk, beat)
-    assert fn == "%04d_disp.png" % (kk)
-    assert fn_gif == "abs_disp.gif"
-
-
 def test_run_visualization():
     folder_path = example_path("real_example_short")
-    _ = ia.run_tracking(folder_path)
+    fps = 1
+    length_scale = 1
+    _ = ia.run_tracking(folder_path, fps, length_scale)
+    col_min = 0 
     col_max = 3
     col_map = plt.cm.viridis
-    png_path_list, gif_path = ia.run_visualization(folder_path, col_max, col_map)
-    for pa in png_path_list:
+    abs_png_path_list, row_png_path_list, col_png_path_list,  abs_gif_path, row_gif_path, col_gif_path = ia.run_visualization(folder_path, True, col_min, col_max, col_map)
+    for pa in abs_png_path_list:
         assert pa.is_file()
-    assert gif_path.is_file()
+    for pa in row_png_path_list:
+        assert pa.is_file()
+    for pa in col_png_path_list:
+        assert pa.is_file()
+    assert abs_gif_path.is_file()
+    assert row_gif_path.is_file()
+    assert col_gif_path.is_file()
+    abs_png_path_list, row_png_path_list, col_png_path_list,  abs_gif_path, row_gif_path, col_gif_path = ia.run_visualization(folder_path, False, col_min, col_max, col_map)
+    for pa in abs_png_path_list:
+        assert pa.is_file()
+    for pa in row_png_path_list:
+        assert pa.is_file()
+    for pa in col_png_path_list:
+        assert pa.is_file()
+    assert abs_gif_path.is_file()
+    assert row_gif_path.is_file()
+    assert col_gif_path.is_file()
 
 
 def interp_fcn_example(xy_vec):
