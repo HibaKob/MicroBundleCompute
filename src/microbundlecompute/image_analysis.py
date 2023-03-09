@@ -90,22 +90,9 @@ def read_txt_as_mask(file_path: Path) -> np.ndarray:
 def get_tracking_param_dicts() -> dict:
     """Will return dictionaries specifying the feature parameters and tracking parameters.
     In future, these may vary based on version."""
-    # feature_params = dict(maxCorners=10000, qualityLevel=0.1, minDistance=5, blockSize=5)
-    feature_params = dict(maxCorners=10000, qualityLevel=0.1, minDistance=5, blockSize=3)
-    # feature_params = dict(maxCorners=10000, qualityLevel=0.1, minDistance=5, blockSize=3)
-    ########################################################
-    # feature_params = dict(maxCorners=10000, qualityLevel=0.05, minDistance=3, blockSize=3)
-    # feature_params = dict(maxCorners=10000, qualityLevel=0.01, minDistance=3, blockSize=3)
-    # feature_params = dict(maxCorners=10000, qualityLevel=0.001, minDistance=2, blockSize=2)
+    feature_params = dict(maxCorners=10000, qualityLevel=0.1, minDistance=4, blockSize=3)
     window = 5
-    # window = 20
-    # window = 15
-    # window = 25 #(works well with Xining+Javi+Cagatay d8_C_800um --> d8_c1_1_2, d8_R_500um_6x, d8_R_1000um_6x, d8_R_2000um_4x,d9_1mm_stiff,d9_500um_stiff,d9_1500um_stiff,d9_c1400um_asymm,Device_rectangular_thick)
-    # window = 50
-    # window = 10
-    # window = 100
-    ########################################################
-    # window = 10
+    
     lk_params = dict(winSize=(window, window), maxLevel=5, criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
     return feature_params, lk_params
 
@@ -118,7 +105,6 @@ def mask_to_track_points(img_uint8: np.ndarray, mask: np.ndarray, feature_params
     return track_points_0
 
 
-# def adjust_feature_param_dicts(feature_params: dict, img_uint8: np.ndarray, mask: np.ndarray, min_coverage: Union[float, int] = 100) -> dict:
 def adjust_feature_param_dicts(feature_params: dict, img_uint8: np.ndarray, mask: np.ndarray, min_coverage: Union[float, int] = 40) -> dict:
     """Given feature parameters, an image, and a mask. Will automatically update the feature quality to ensure sufficient coverage.
     (min_coverage refers to the number of pixels that should be attributed to 1 tracking point)"""
@@ -126,7 +112,6 @@ def adjust_feature_param_dicts(feature_params: dict, img_uint8: np.ndarray, mask
     coverage = np.sum(mask) / track_points_0.shape[0]
     iter = 0
     qualityLevel = feature_params["qualityLevel"]
-    # while coverage > min_coverage and iter < 10:
     while coverage > min_coverage and iter < 15:
         qualityLevel = qualityLevel * 10 ** (np.log10(0.1) / 10)  # this value raised to 10 is 0.1, so it will lower quality by an order of magnitude in 10 iterations
         feature_params["qualityLevel"] = qualityLevel
@@ -141,31 +126,6 @@ def track_one_step(img_uint8_0: np.ndarray, img_uint8_1: np.ndarray, track_point
     track_points_1, _, _ = cv2.calcOpticalFlowPyrLK(img_uint8_0, img_uint8_1, track_points_0, None, **lk_params)
     return track_points_1
 
-
-# =============================================================================
-# def track_all_steps(img_list_uint8: List, mask: np.ndarray) -> np.ndarray:
-#     """Given the image list, mask, and order. Will run tracking through the whole img list in order.
-#     Note that the returned order of tracked points will match order_list."""
-#     feature_params, lk_params = get_tracking_param_dicts()
-#     img_0 = img_list_uint8[0]
-#     feature_params = adjust_feature_param_dicts(feature_params, img_0, mask)
-#     track_points = mask_to_track_points(img_0, mask, feature_params)
-#     num_track_pts = track_points.shape[0]
-#     num_imgs = len(img_list_uint8)
-#     tracker_0 = np.zeros((num_track_pts, num_imgs))
-#     tracker_1 = np.zeros((num_track_pts, num_imgs))
-#     for kk in range(0, num_imgs - 1):
-#         tracker_0[:, kk] = track_points[:, 0, 0]
-#         tracker_1[:, kk] = track_points[:, 0, 1]
-#         img_0 = img_list_uint8[kk]
-#         img_1 = img_list_uint8[kk + 1]
-#         track_points = track_one_step(img_0, img_1, track_points, lk_params)
-#     tracker_0[:, kk + 1] = track_points[:, 0, 0]
-#     tracker_1[:, kk + 1] = track_points[:, 0, 1]
-#     return tracker_0, tracker_1
-# =============================================================================
-
-# =============================================================================
 def track_all_steps(img_list_uint8: List, mask: np.ndarray,feature_params: dict, lk_params: dict) -> np.ndarray:
     """Given the image list in order, mask, feature parameters and tracking parameters. Will run tracking through the whole img list in order.
     Note that the returned order of tracked points will match order_list."""
@@ -184,9 +144,8 @@ def track_all_steps(img_list_uint8: List, mask: np.ndarray,feature_params: dict,
     tracker_0[:, kk + 1] = track_points[:, 0, 0]
     tracker_1[:, kk + 1] = track_points[:, 0, 1]
     return tracker_0, tracker_1
-# =============================================================================
 
-# =============================================================================
+
 def track_all_steps_with_adjust_param_dicts(img_list_uint8: List, mask: np.ndarray) -> dict:
     """Given image list and mask. Will automatically update the feature parameters and tracking parameters to ensure accurate and robust tracking.
     Will return tracked points through the whole img list in order. """
@@ -209,7 +168,6 @@ def track_all_steps_with_adjust_param_dicts(img_list_uint8: List, mask: np.ndarr
         warnings.warn("All tracked displacements are subpixel displacements. Results have limited accuracy!")
     return tracker_0, tracker_1
 
-# =============================================================================
 
 def compute_abs_position_timeseries(tracker_0: np.ndarray, tracker_1: np.ndarray) -> np.ndarray:
     """Given tracker arrays. Will return single timeseries of absolute displacement."""
@@ -222,32 +180,17 @@ def compute_abs_position_timeseries(tracker_0: np.ndarray, tracker_1: np.ndarray
     disp_abs_mean = np.mean(disp_abs_all, axis=0)
     return disp_abs_mean, disp_abs_all, -1*disp_0_all, disp_1_all
 
-# def get_time_segment_param_dicts() -> dict:
-#     """Will return dictionaries specifying the parameters for timeseries segmentation.
-#     In future, these may vary based on version and/or be computed automatically (e.g., look at spectral info)."""
-#     time_seg_params = dict(peakDist=20)
-#     return time_seg_params
 
-# =============================================================================
 def get_time_segment_param_dicts() -> dict:
     """Will return dictionaries specifying the parameters for timeseries segmentation.
     In future, these may vary based on version and/or be computed automatically (e.g., look at spectral info)."""
-    time_seg_params = dict(peakDist=20,prom = 0.1)
+    time_seg_params = dict(peakDist=20, prom = 0.1)
     return time_seg_params
-# =============================================================================
 
-# def adjust_time_seg_params(time_seg_params: dict, timeseries: np.ndarray) -> dict:
-#     timeseries_offset = timeseries - np.mean(timeseries)
-#     signs = np.sign(timeseries_offset)
-#     diff = np.diff(signs)
-#     indices_of_zero_crossing = np.where(diff)[0]
-#     total_points = np.diff(indices_of_zero_crossing)
-#     period = np.mean(total_points) * 2.0
-#     time_seg_params["peakDist"] = period * 0.75
-#     return time_seg_params
 
-# =============================================================================
 def adjust_time_seg_params(time_seg_params: dict, timeseries: np.ndarray) -> dict:
+    """Given time segmentation parameters and a timeseries mean absolute displacement. 
+    Will automatically update the minimum distance between peaks to ensure more robust time segmentation."""
     timeseries_offset = timeseries - np.mean(timeseries)
     signs = np.sign(timeseries_offset)
     diff = np.diff(signs)
@@ -257,13 +200,12 @@ def adjust_time_seg_params(time_seg_params: dict, timeseries: np.ndarray) -> dic
     time_seg_params["peakDist"] = period * 0.75
     time_seg_params["prom"] = 0.1
     return time_seg_params
-# =============================================================================
+
 
 def compute_valleys(timeseries: np.ndarray) -> np.ndarray:
     """Given a timeseries. Will compute peaks and valleys."""
     time_seg_params = get_time_segment_param_dicts()
     time_seg_params = adjust_time_seg_params(time_seg_params, timeseries)
-    # peaks, _ = find_peaks(timeseries, distance=time_seg_params["peakDist"])
     peaks, _ = find_peaks(timeseries, distance=time_seg_params["peakDist"], prominence=time_seg_params["prom"])
     valleys = []
     for kk in range(0, len(peaks) - 1):
@@ -273,26 +215,15 @@ def compute_valleys(timeseries: np.ndarray) -> np.ndarray:
         # beat number, start index wrt movie, end index wrt movie
         info.append([kk, valleys[kk], valleys[kk + 1]])
     return np.asarray(info)
-######################################
+
+
 def compute_peaks(timeseries: np.ndarray) -> np.ndarray:
     """Given a timeseries. Will compute peaks."""
     time_seg_params = get_time_segment_param_dicts()
     time_seg_params = adjust_time_seg_params(time_seg_params, timeseries)
     peaks, _ = find_peaks(timeseries, distance=time_seg_params["peakDist"], prominence=time_seg_params["prom"])
-    # peaks, _ = find_peaks(timeseries, distance=time_seg_params["peakDist"])
     return peaks
 
-def compute_peaks_valleys(timeseries: np.ndarray) -> np.ndarray:
-    """Given a timeseries. Will compute peaks and valleys."""
-    time_seg_params = get_time_segment_param_dicts()
-    time_seg_params = adjust_time_seg_params(time_seg_params, timeseries)
-    peaks, _ = find_peaks(timeseries, distance=time_seg_params["peakDist"], prominence=time_seg_params["prom"])
-    # peaks, _ = find_peaks(timeseries, distance=time_seg_params["peakDist"])
-    valleys = []
-
-    for kk in range(0, len(peaks) - 1):
-        valleys.append(int(0.5 * peaks[kk] + 0.5 * peaks[kk + 1]))
-    return peaks, valleys
 
 def compute_beat_frequency(info: np.ndarray, fps: int) -> float:
     """Given valleys and frames/sec (fps). Will compute the frequency of the beats."""
@@ -306,35 +237,94 @@ def compute_beat_frequency(info: np.ndarray, fps: int) -> float:
     freq = (1/period)*fps
     return freq
 
-def compute_beat_amplitude(timeseries: np.ndarray, tracker_row_all: List, tracker_col_all: List, info: np.ndarray, length_scale: float) -> float:
-    """Given a timeseries and split tracking results. Will compute the amplitude of the beats."""
-    all_beat_ampl = []
+
+def compute_beat_amplitude(timeseries: np.ndarray, info: np.ndarray, length_scale: float) -> float:
+    """#Given a timeseries and split tracking results. Will compute the amplitude of the beats."""#
     num_beats = info.shape[0]
     peaks = compute_peaks(timeseries)
+    valley_pairs = info.T[1:]
+    actual_valleys = np.unique(valley_pairs)[1:-1]
     actual_peaks = peaks[1:-1]
-    for beat in range(0, num_beats):
-        tracker_row = tracker_row_all[beat]
-        tracker_col = tracker_col_all[beat]
-        mean_disp_all, _, _, _ = compute_abs_position_timeseries(tracker_row, tracker_col)
-        ix_start = info[beat, 1]
-        beat_peak = int(actual_peaks[beat]) - ix_start
-        beat_ampl = mean_disp_all[beat_peak]
-        all_beat_ampl.append(beat_ampl)   
+    beat_peak_ampl = timeseries[actual_peaks]
+    beat_valley_ampl = timeseries[actual_valleys]
+    all_beat_ampl = beat_peak_ampl - beat_valley_ampl
     if num_beats > 2:
         ampl_px = np.mean(all_beat_ampl[1:-1])
     else:
         ampl_px = np.mean(all_beat_ampl)
-    
     ampl = ampl_px*length_scale
     return ampl
 
+
 def save_beat_info(folder_path: Path,frequency: float, amplitude: float) -> Path:
     """Given frequency and amplitude. Will save the results into a text file."""
-    res_folder_path = folder_path.joinpath("results").resolve()
+    res_folder_path = create_folder(folder_path,"results")
     file_path = res_folder_path.joinpath("beat_info.txt").resolve()
     beat_info = np.asarray([frequency,amplitude])
     np.savetxt(str(file_path), beat_info)
     return file_path
+
+
+def generate_n_randints(number_pts: int, start: int, end: int, seed: int) -> np.ndarray:
+    """Given desired number of random points, start, end and seed for random number generator.
+    Will output the specified number of radom integers."""
+    rng = np.random.default_rng(seed)
+    random_pts = rng.integers(low=start, high=end, size=number_pts)  
+    return random_pts
+
+
+def find_distance_arrays (query_array: np.ndarray, reference_array: np.ndarray) -> np.ndarray:
+    """Given two 2D arrays. Will output a 2D array of all pair-wise distances."""
+    distance = distance_matrix(query_array,reference_array, p=2)
+    return distance
+
+
+def find_nearest_pts (tracker_row_all: np.ndarray, tracker_col_all: np.ndarray, 
+                      query_pts_idx: np.ndarray, number_nearest_neigh: int) -> np.ndarray:
+    """Given tracking results, indices of query points and number of nearest neighbors (n). Will 
+    return the indices of the n nearest neighbors of all given query points."""
+    step_0_row_col = np.asarray([tracker_row_all[:,0],tracker_col_all[:,0]]).T
+    step_0_query_pts = step_0_row_col[query_pts_idx,:]
+    step_0_distance = find_distance_arrays(step_0_query_pts,step_0_row_col)
+    nearest_neigh_idx = np.argsort(step_0_distance)[:,1:number_nearest_neigh+1]
+    return nearest_neigh_idx
+
+
+def find_dist_all_steps (tracker_row_all: np.ndarray, tracker_col_all: np.ndarray, 
+               query_pts_idx: np.ndarray, nearest_neigh_idx: np.ndarray) -> np.ndarray:
+    
+    number_steps = np.shape(tracker_row_all)[1]
+    number_query_pts = len(query_pts_idx)
+    
+    all_steps_mean_dist = []
+    for kk in range(number_steps):
+        step_tracker_row_col = np.asarray([tracker_row_all[:,kk],tracker_col_all[:,kk]]).T
+        query_pts_row_col = step_tracker_row_col[query_pts_idx,:]
+        all_mean_dist_query_pts = []
+        for jj in range(number_query_pts):
+            distance = find_distance_arrays([query_pts_row_col[jj,:]],step_tracker_row_col[nearest_neigh_idx[jj,:]])
+            mean_dist = np.mean(distance)
+            all_mean_dist_query_pts.append(mean_dist)
+        all_steps_mean_dist.append(all_mean_dist_query_pts) 
+    all_steps_mean_dist_array = np.asarray(all_steps_mean_dist)
+    return all_steps_mean_dist_array
+
+
+def test_frame_0_valley (tracker_row_all: np.ndarray, tracker_col_all: np.ndarray, number_pts: int, 
+                         number_nearest_neigh: int):  
+    start = 0
+    end = np.shape(tracker_row_all)[0]
+    seed = 20
+    query_pts_idx = generate_n_randints(number_pts,start,end,seed)
+    nearest_neigh_idx = find_nearest_pts(tracker_row_all,tracker_col_all,query_pts_idx,number_nearest_neigh)
+    timeseries_all_steps = find_dist_all_steps (tracker_row_all, tracker_col_all, query_pts_idx, nearest_neigh_idx)
+    mean_timeseries_all_steps = np.mean(timeseries_all_steps,axis=0)
+    timeseries_offset = timeseries_all_steps - mean_timeseries_all_steps
+    signs = np.sign(timeseries_offset)
+    nmbr_negative_step_0 = len(np.where(signs[0,:]<0)[0])
+    if nmbr_negative_step_0/number_pts > 0.7:
+        warnings.warn('Input video does not start from a valley position. Consider adjusting the video using the preprocessing function "adjust_first_valley".')
+
 
 
 def split_tracking(tracker_0: np.ndarray, tracker_1: np.ndarray, info: np.ndarray) -> Path:
@@ -400,90 +390,6 @@ def save_tracking(*, folder_path: Path, tracker_row_all: List, tracker_col_all: 
     return saved_paths
 
 
-# =============================================================================
-# def run_tracking(folder_path: Path) -> List:
-#     """Given a folder path. Will perform tracking and save results as text files."""
-#     # read images and mask file
-#     movie_folder_path = folder_path.joinpath("movie").resolve()
-#     name_list_path = image_folder_to_path_list(movie_folder_path)
-#     tiff_list = read_all_tiff(name_list_path)
-#     img_list_uint8 = uint16_to_uint8_all(tiff_list)
-#     mask_file_path = folder_path.joinpath("masks").resolve().joinpath("tissue_mask.txt").resolve()
-#     mask = read_txt_as_mask(mask_file_path)
-#     # perform tracking
-#     tracker_0, tracker_1 = track_all_steps(img_list_uint8, mask)
-#     # perform timeseries segmentation
-#     timeseries, _ = compute_abs_position_timeseries(tracker_0, tracker_1)
-#     info = compute_valleys(timeseries)
-#     # split tracking results
-#     tracker_0_all, tracker_1_all = split_tracking(tracker_0, tracker_1, info)
-#     # save tracking results
-#     saved_paths = save_tracking(folder_path=folder_path, tracker_col_all=tracker_0_all, tracker_row_all=tracker_1_all, info=info)
-#     #return saved_paths
-#     return saved_paths
-# 
-# =============================================================================
-
-# =============================================================================
-# 
-def generate_n_randints(number_pts: int, start: int, end: int, seed: int) -> np.ndarray:
-    """Given desired number of random points, start, end and seed for random number generator.
-    Will output the specified number of radom integers."""
-    np.random.seed(seed)
-    random_pts = np.random.randint(low=start, high=end, size=number_pts)  
-    return random_pts
-
-def find_distance_arrays (query_array: np.ndarray, reference_array: np.ndarray) -> np.ndarray:
-    """Given two 2D arrays. Will output a 2D array of all pair-wise distances."""
-    distance = distance_matrix(query_array,reference_array, p=2)
-    return distance
-
-def find_nearest_pts (tracker_row_all: np.ndarray, tracker_col_all: np.ndarray, 
-                      query_pts_idx: np.ndarray, number_nearest_neigh: int) -> np.ndarray:
-    """Given tracking results, indices of query points and number of nearest neighbors (n). Will 
-    return the indices of the n nearest neighbors of all given query points."""
-    step_0_row_col = np.asarray([tracker_row_all[:,0],tracker_col_all[:,0]]).T
-    step_0_query_pts = step_0_row_col[query_pts_idx,:]
-    step_0_distance = find_distance_arrays(step_0_query_pts,step_0_row_col)
-    nearest_neigh_idx = np.argsort(step_0_distance)[:,1:number_nearest_neigh+1]
-    return nearest_neigh_idx
-
-def find_dist_all_steps (tracker_row_all: np.ndarray, tracker_col_all: np.ndarray, 
-               query_pts_idx: np.ndarray, nearest_neigh_idx: np.ndarray) -> np.ndarray:
-    
-    number_steps = np.shape(tracker_row_all)[1]
-    number_query_pts = len(query_pts_idx)
-    
-    all_steps_mean_dist = []
-    for kk in range(number_steps):
-        step_tracker_row_col = np.asarray([tracker_row_all[:,kk],tracker_col_all[:,kk]]).T
-        query_pts_row_col = step_tracker_row_col[query_pts_idx,:]
-        all_mean_dist_query_pts = []
-        for jj in range(number_query_pts):
-            distance = find_distance_arrays([query_pts_row_col[jj,:]],step_tracker_row_col[nearest_neigh_idx[jj,:]])
-            mean_dist = np.mean(distance)
-            all_mean_dist_query_pts.append(mean_dist)
-        all_steps_mean_dist.append(all_mean_dist_query_pts) 
-    all_steps_mean_dist_array = np.asarray(all_steps_mean_dist)
-    return all_steps_mean_dist_array
-
-def test_frame_0_valley (tracker_row_all: np.ndarray, tracker_col_all: np.ndarray, number_pts: int, 
-                         number_nearest_neigh: int):  
-    start = 0
-    end = np.shape(tracker_row_all)[0]
-    seed = 20
-    query_pts_idx = generate_n_randints(number_pts,start,end,seed)
-    nearest_neigh_idx = find_nearest_pts(tracker_row_all,tracker_col_all,query_pts_idx,number_nearest_neigh)
-    timeseries_all_steps = find_dist_all_steps (tracker_row_all, tracker_col_all, query_pts_idx, nearest_neigh_idx)
-    mean_timeseries_all_steps = np.mean(timeseries_all_steps,axis=0)
-    timeseries_offset = timeseries_all_steps - mean_timeseries_all_steps
-    signs = np.sign(timeseries_offset)
-    nmbr_negative_step_0 = len(np.where(signs[0,:]<0)[0])
-    if nmbr_negative_step_0/number_pts > 0.7:
-        warnings.warn('Input video does not start from a valley position. Consider adjusting the video using the preprocessing function "adjust_first_valley".')
-# =============================================================================
-
-
 def run_tracking(folder_path: Path, fps: int, length_scale: float) -> List:
     """Given a folder path. Will perform tracking and save results as text files."""
     # read images and mask file
@@ -506,7 +412,7 @@ def run_tracking(folder_path: Path, fps: int, length_scale: float) -> List:
     tracker_0_all, tracker_1_all = split_tracking(tracker_0, tracker_1, info)
     # compute beat frequency and amplitude
     frequency = compute_beat_frequency(info, fps)
-    amplitude = compute_beat_amplitude(timeseries, tracker_0_all, tracker_1_all, info, length_scale)
+    amplitude = compute_beat_amplitude(timeseries, info, length_scale)
     # save tracking results
     saved_paths = save_tracking(folder_path=folder_path, tracker_col_all=tracker_0_all, tracker_row_all=tracker_1_all, info=info)
     # save beat info
@@ -516,22 +422,7 @@ def run_tracking(folder_path: Path, fps: int, length_scale: float) -> List:
     #return saved_paths
     return saved_paths
 
-# =============================================================================
-def run_tracking_abs(folder_path: Path) -> List:
-    """Given a folder path. Will perform tracking and save results as text files."""
-    # read images and mask file
-    movie_folder_path = folder_path.joinpath("movie").resolve()
-    name_list_path = image_folder_to_path_list(movie_folder_path)
-    tiff_list = read_all_tiff(name_list_path)
-    img_list_uint8 = uint16_to_uint8_all(tiff_list)
-    mask_file_path = folder_path.joinpath("masks").resolve().joinpath("tissue_mask.txt").resolve()
-    mask = read_txt_as_mask(mask_file_path)
-    # perform tracking
-    tracker_0, tracker_1 = track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
-    # perform timeseries segmentation
-    timeseries, _, _, _ = compute_abs_position_timeseries(tracker_0, tracker_1)
-    return timeseries
-# =============================================================================
+
 def load_tracking_results(*, folder_path: Path, is_rotated: bool = False, is_translated: bool = False, fname: str = None) -> List:
     """Given the folder path. Will load tracking results. If there are none, will return an error."""
     res_folder_path = folder_path.joinpath("results").resolve()

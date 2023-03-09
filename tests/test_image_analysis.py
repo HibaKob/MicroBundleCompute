@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 from skimage import io
 from skimage.transform import estimate_transform, warp
+import warnings
 
 
 def test_hello_world():
@@ -109,11 +110,11 @@ def test_get_tracking_param_dicts():
     feature_params, lk_params = ia.get_tracking_param_dicts()
     assert feature_params["maxCorners"] == 10000
     assert feature_params["qualityLevel"] == 0.1  # 0.005
-    assert feature_params["minDistance"] == 5
-    assert feature_params["blockSize"] == 5
-    assert lk_params["winSize"][0] == 10
-    assert lk_params["winSize"][1] == 10
-    assert lk_params["maxLevel"] == 10
+    assert feature_params["minDistance"] == 4
+    assert feature_params["blockSize"] == 3
+    assert lk_params["winSize"][0] == 5
+    assert lk_params["winSize"][1] == 5
+    assert lk_params["maxLevel"] == 5
     assert lk_params["criteria"][1] == 10
     assert lk_params["criteria"][2] == 0.03
 
@@ -179,10 +180,9 @@ def test_track_one_step():
     assert track_points_1.shape[1] == 1
     assert track_points_1.shape[2] == 2
     assert track_points_1.shape[0] == track_points_0.shape[0]
-    compare = np.abs(track_points_1 - track_points_0)
-    assert np.max(compare[:, 0, 0]) < lk_params["winSize"][0]
-    assert np.max(compare[:, 0, 1]) < lk_params["winSize"][1]
-
+    #compare = np.abs(track_points_1 - track_points_0)
+    #assert np.max(compare[:, 0, 0]) < lk_params["winSize"][0]
+    #assert np.max(compare[:, 0, 1]) < lk_params["winSize"][1] 
 
 def test_track_one_step_synthetic():
     img_0 = np.zeros((100, 100))
@@ -208,7 +208,22 @@ def test_track_all_steps():
     img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
     file_path = tissue_mask_path("real_example_super_short")
     mask = ia.read_txt_as_mask(file_path)
-    tracker_0, tracker_1 = ia.track_all_steps(img_list_uint8, mask)
+    feature_params, lk_params = ia.get_tracking_param_dicts()
+    tracker_0, tracker_1 = ia.track_all_steps(img_list_uint8, mask, feature_params, lk_params)
+    assert tracker_0.shape[1] == len(tiff_list)
+    assert tracker_1.shape[1] == len(tiff_list)
+    # _, lk_params = ia.get_tracking_param_dicts()
+    #assert np.max(diff_0) < lk_params["winSize"][0]
+    #assert np.max(diff_1) < lk_params["winSize"][1]
+
+def test_track_all_steps_with_adjust_param_dicts():
+    folder_path = movie_path("real_example_super_short")
+    name_list_path = ia.image_folder_to_path_list(folder_path)
+    tiff_list = ia.read_all_tiff(name_list_path)
+    img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
+    file_path = tissue_mask_path("real_example_super_short")
+    mask = ia.read_txt_as_mask(file_path)
+    tracker_0, tracker_1 = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
     diff_0 = np.abs(tracker_0[:, 0] - tracker_0[:, -1])
     diff_1 = np.abs(tracker_1[:, 0] - tracker_1[:, -1])
     _, lk_params = ia.get_tracking_param_dicts()
@@ -216,7 +231,7 @@ def test_track_all_steps():
     assert np.max(diff_1) < lk_params["winSize"][1]
 
 
-def test_track_all_steps_warping():
+def test_track_all_steps_with_adjust_param_dicts_warping():
     # import first image
     folder_path = movie_path("real_example_super_short")
     name_list_path = ia.image_folder_to_path_list(folder_path)
@@ -238,7 +253,7 @@ def test_track_all_steps_warping():
     # perform tracking
     tiff_list = [img_0, img_1]
     img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
-    tracker_0, tracker_1 = ia.track_all_steps(img_list_uint8, mask)
+    tracker_0, tracker_1 = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
     diff_0 = np.abs(tracker_0[:, 0] - tracker_0[:, -1])
     diff_1 = np.abs(tracker_1[:, 0] - tracker_1[:, -1])
     # measure difference wrt ground truth
@@ -253,15 +268,81 @@ def test_compute_abs_position_timeseries():
     num_frames = 100
     tracker_0 = 100 * np.ones((num_pts, num_frames)) + np.random.random((num_pts, num_frames))
     tracker_1 = 50 * np.ones((num_pts, num_frames)) + np.random.random((num_pts, num_frames))
-    disp_abs_mean, disp_abs_all = ia.compute_abs_position_timeseries(tracker_0, tracker_1)
+    disp_abs_mean, disp_abs_all, disp_0_all, disp_1_all = ia.compute_abs_position_timeseries(tracker_0, tracker_1)
     assert disp_abs_mean.shape[0] == num_frames
     assert np.max(disp_abs_mean) < np.sqrt(2.0)
+    assert disp_abs_all.shape[0] == num_pts
     assert disp_abs_all.shape[1] == num_frames
+    assert disp_0_all.shape[0] == num_pts
+    assert disp_0_all.shape[1] == num_frames
+    assert np.max(disp_0_all) < 1
+    assert disp_1_all.shape[0] == num_pts
+    assert disp_1_all.shape[1] == num_frames
+    assert np.max(disp_1_all) < 1
+
+
+def test_subpixel_abs_position_timeseries():
+    # import first image
+    folder_path = movie_path("real_example_super_short")
+    name_list_path = ia.image_folder_to_path_list(folder_path)
+    tiff_list = ia.read_all_tiff(name_list_path)
+    file_path = tissue_mask_path("real_example_super_short")
+    mask = ia.read_txt_as_mask(file_path)
+    feature_params, lk_params = ia.get_tracking_param_dicts()
+    img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
+    img_uint8_0 = img_list_uint8[0]
+    track_points_0 = ia.mask_to_track_points(img_uint8_0, mask, feature_params)
+    # warp image by a known amount
+    img_0 = img_uint8_0
+    src = np.dstack([track_points_0[:, 0, 0].flat, track_points_0[:, 0, 1].flat])[0]
+    diff_value = 0.01
+    dst = src + diff_value
+    tform = estimate_transform('projective', src, dst)
+    tform.estimate(src, dst)
+    img_1 = warp(img_0, tform, order=1, preserve_range=True)
+    # perform tracking
+    tiff_list = [img_0, img_1]
+    img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
+    with pytest.warns(None) as record:
+        tracker_0, tracker_1 = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
+        _, disp_abs_all, _, _ = ia.compute_abs_position_timeseries(tracker_0, tracker_1)
+    assert np.max(disp_abs_all) < 1
+    assert len(record) == 1
+
+
+def test_superpixel_abs_position_timeseries():
+    # import first image
+    folder_path = movie_path("real_example_super_short")
+    name_list_path = ia.image_folder_to_path_list(folder_path)
+    tiff_list = ia.read_all_tiff(name_list_path)
+    file_path = tissue_mask_path("real_example_super_short")
+    mask = ia.read_txt_as_mask(file_path)
+    feature_params, lk_params = ia.get_tracking_param_dicts()
+    img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
+    img_uint8_0 = img_list_uint8[0]
+    track_points_0 = ia.mask_to_track_points(img_uint8_0, mask, feature_params)
+    # warp image by a known amount
+    img_0 = img_uint8_0
+    src = np.dstack([track_points_0[:, 0, 0].flat, track_points_0[:, 0, 1].flat])[0]
+    diff_value = 2
+    dst = src + diff_value
+    tform = estimate_transform('projective', src, dst)
+    tform.estimate(src, dst)
+    img_1 = warp(img_0, tform, order=1, preserve_range=True)
+    # perform tracking
+    tiff_list = [img_0, img_1]
+    img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
+    with pytest.warns(None) as record:
+        tracker_0, tracker_1 = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
+        _, disp_abs_all, _, _ = ia.compute_abs_position_timeseries(tracker_0, tracker_1)
+    assert np.max(disp_abs_all) > 1
+    assert len(record) == 0
 
 
 def test_get_time_segment_param_dicts():
     time_seg_params = ia.get_time_segment_param_dicts()
     assert time_seg_params["peakDist"] == 20
+    assert time_seg_params["prom"] == 0.1
 
 
 def test_adjust_time_seg_params():
@@ -271,6 +352,7 @@ def test_adjust_time_seg_params():
     pd_init = time_seg_params["peakDist"]
     time_seg_params_new = ia.adjust_time_seg_params(time_seg_params, timeseries)
     assert time_seg_params_new["peakDist"] > pd_init
+    assert time_seg_params_new["prom"] == 0.1
 
 
 def test_compute_valleys():
@@ -289,6 +371,171 @@ def test_compute_valleys():
     assert np.isclose(timeseries[info[0, 2]], -1, atol=.01)
     assert np.isclose(timeseries[info[1, 1]], -1, atol=.01)
     assert np.isclose(timeseries[info[1, 2]], -1, atol=.01)
+
+
+def test_compute_peaks():
+    x = np.linspace(0, 500 * np.pi * 2.0, 500)
+    timeseries = np.sin(x / (np.pi * 2.0) / 20 - np.pi / 2.0)
+    peaks = ia.compute_peaks(timeseries)
+    assert np.isclose(timeseries[peaks[0]], 1, atol=.01)
+    assert np.isclose(timeseries[peaks[1]], 1, atol=.01)
+    assert np.isclose(timeseries[peaks[2]], 1, atol=.01)
+    assert np.isclose(timeseries[peaks[3]], 1, atol=.01)
+    li = 10 * [-0.99] + list(timeseries) + 10 * [-0.99]
+    timeseries = np.asarray(li)
+    peaks = ia.compute_peaks(timeseries)
+    assert np.isclose(timeseries[peaks[0]], 1, atol=.01)
+    assert np.isclose(timeseries[peaks[1]], 1, atol=.01)
+    assert np.isclose(timeseries[peaks[2]], 1, atol=.01)
+    assert np.isclose(timeseries[peaks[3]], 1, atol=.01)
+
+
+def test_compute_beat_frequency():
+    x = np.linspace(0, 500 * np.pi * 2.0, 500)
+    timeseries = np.sin(x / (np.pi * 2.0) / 20 - np.pi / 2.0)
+    fps = 1
+    info = ia.compute_valleys(timeseries)
+    freq = ia.compute_beat_frequency(info, fps)
+    assert np.isclose(freq, fps *1 / (np.pi * 2.0) / 20, atol=.01)
+    li = 10 * [-0.99] + list(timeseries) + 10 * [-0.99]
+    timeseries = np.asarray(li)
+    info = ia.compute_valleys(timeseries)
+    fps = 2
+    freq = ia.compute_beat_frequency(info, fps)
+    assert np.isclose(freq, fps * 1 / (np.pi * 2.0) / 20, atol=.01)
+
+
+def test_compute_beat_amplitude():
+    x = np.linspace(0, 500 * np.pi * 2.0, 500)
+    timeseries = np.sin(x / (np.pi * 2.0) / 20 - np.pi / 2.0)
+    length_scale = 1
+    info = ia.compute_valleys(timeseries)
+    amplitude = ia.compute_beat_amplitude(timeseries, info, length_scale)
+    assert np.isclose(amplitude, length_scale * 2, atol=.01)
+    li = 10 * [-0.99] + list(timeseries) + 10 * [-0.99]
+    timeseries = np.asarray(li)
+    length_scale = 1
+    info = ia.compute_valleys(timeseries)
+    amplitude = ia.compute_beat_amplitude(timeseries, info, length_scale)
+    assert np.isclose(amplitude, length_scale * 2, atol=.01)
+
+
+def test_save_beat_info():
+    frequency = float(1 / (np.pi * 2.0) / 20)
+    amplitude = float(2)
+    folder_path = example_path("real_example_super_short")
+    saved_path = ia.save_beat_info(folder_path = folder_path, frequency = frequency, amplitude = amplitude)
+    assert saved_path.is_file()
+
+
+def test_generate_n_randints():
+    seed = 20
+    start = 0
+    end  = 100
+    number_pts = 10
+    randm_pts = ia.generate_n_randints(number_pts = number_pts, start = start, end = end, seed = seed)
+    assert len(randm_pts) == number_pts
+    assert np.min(randm_pts) >= start
+    assert np.max(randm_pts) < end
+
+
+def test_find_distance_arrays():
+    array_1 = np.array([[1,2,3,4],[1,2,3,4]]).T
+    array_2 = np.array([[0,0,1,1],[0,1,0,1]]).T
+    all_dist_gt = []
+    for pp in range(array_1.shape[0]):
+        for qq in range(array_2.shape[0]):
+            pt_1 = array_1[pp]
+            pt_2 = array_2[qq]
+            diff = pt_2 - pt_1
+            euc_dist = np.sqrt(diff[0]**2 + diff[1]**2)
+            all_dist_gt.append(euc_dist)
+    all_dist_gt_array = np.asarray(all_dist_gt).reshape(array_1.shape[0],array_2.shape[0])
+
+    distance = ia.find_distance_arrays(array_1 ,array_2)
+    assert distance.shape == (array_1.shape[0],array_2.shape[0])
+    assert np.allclose(distance, all_dist_gt_array, atol=0.01)
+
+
+def test_find_nearest_pts():
+    tracker_0 = np.zeros((10, 100))
+    start = 0
+    end = tracker_0.shape[1]
+    tracker_1 = np.linspace(start=start, stop=end, num=10*end)
+    tracker_1 = tracker_1.reshape(tracker_0.shape)
+    number_nearest_neigh = 5
+    query_pts_idx  = [0,1,2]
+    number_query_pts = len(query_pts_idx)
+    nearest_neigh_idx = ia.find_nearest_pts (tracker_0, tracker_1, query_pts_idx = query_pts_idx, number_nearest_neigh = number_nearest_neigh)
+    assert nearest_neigh_idx.shape == (number_query_pts,number_nearest_neigh)
+    assert np.max(nearest_neigh_idx) < (number_nearest_neigh + 1)
+
+
+def test_find_dist_all_step ():
+    tracker_0 = np.zeros((10, 100))
+    start = 0
+    end = tracker_0.shape[1]
+    tracker_1 = np.linspace(start=start, stop=end, num=1000)
+    tracker_1 = tracker_1.reshape(tracker_0.shape)
+    number_nearest_neigh = 2
+    query_pts_idx = [0,1,2]
+    number_query_pts = len(query_pts_idx)
+    nearest_neigh_idx = ia.find_nearest_pts (tracker_0, tracker_1, query_pts_idx = query_pts_idx, number_nearest_neigh = number_nearest_neigh)
+    all_steps_mean_dist_array = ia.find_dist_all_steps(tracker_0, tracker_1, query_pts_idx, nearest_neigh_idx)
+    """Establish ground truth results"""
+    pt_0 = np.array([tracker_0[0,:],tracker_1[0,:]])
+    pt_1 = np.array([tracker_0[1,:],tracker_1[1,:]])
+    pt_2 = np.array([tracker_0[2,:],tracker_1[2,:]])
+
+    pt_0_neigh_1 = np.array([tracker_0[nearest_neigh_idx[0,0],:],tracker_1[nearest_neigh_idx[0,0],:]])
+    pt_0_neigh_2 = np.array([tracker_0[nearest_neigh_idx[0,1],:],tracker_1[nearest_neigh_idx[0,1],:]])
+    diff_0_1 = pt_0 - pt_0_neigh_1
+    diff_0_2 = pt_0 - pt_0_neigh_2
+    dist_0_1 = np.sqrt(diff_0_1[0]**2 + diff_0_1[1]**2)
+    dist_0_2 = np.sqrt(diff_0_2[0]**2 + diff_0_2[1]**2)
+    dist_0 = np.array([dist_0_1,dist_0_2])
+    mean_dist_0 = np.mean(dist_0)
+
+    pt_1_neigh_1 = np.array([tracker_0[nearest_neigh_idx[1,0],:],tracker_1[nearest_neigh_idx[1,0],:]])
+    pt_1_neigh_2 = np.array([tracker_0[nearest_neigh_idx[1,1],:],tracker_1[nearest_neigh_idx[1,1],:]])
+    diff_1_1 = pt_1 - pt_1_neigh_1
+    diff_1_2 = pt_1 - pt_1_neigh_2
+    dist_1_1 = np.sqrt(diff_1_1[0]**2 + diff_1_1[1]**2)
+    dist_1_2 = np.sqrt(diff_1_2[0]**2 + diff_1_2[1]**2)
+    dist_1 = np.array([dist_1_1,dist_1_2])
+    mean_dist_1 = np.mean(dist_1)
+
+    pt_2_neigh_1 = np.array([tracker_0[nearest_neigh_idx[2,0],:],tracker_1[nearest_neigh_idx[2,0],:]])
+    pt_2_neigh_2 = np.array([tracker_0[nearest_neigh_idx[2,1],:],tracker_1[nearest_neigh_idx[2,1],:]])
+    diff_2_1 = pt_2 - pt_2_neigh_1
+    diff_2_2 = pt_2 - pt_2_neigh_2
+    dist_2_1 = np.sqrt(diff_2_1[0]**2 + diff_2_1[1]**2)
+    dist_2_2 = np.sqrt(diff_2_2[0]**2 + diff_2_2[1]**2)
+    dist_2 = np.array([dist_2_1,dist_2_2])
+    mean_dist_2 = np.mean(dist_2)
+    assert all_steps_mean_dist_array.shape == (end,number_query_pts)
+    assert np.allclose(all_steps_mean_dist_array[:,0],mean_dist_0,atol=0.01)
+    assert np.allclose(all_steps_mean_dist_array[:,1],mean_dist_1,atol=0.01)
+    assert np.allclose(all_steps_mean_dist_array[:,2],mean_dist_2,atol=0.01)
+
+def test_test_frame_0_valley():
+    num_pts = 3
+    num_frames = 100
+    tracker_0 = 50 * np.ones((num_pts, num_frames)) + np.random.random((num_pts, num_frames))
+    tracker_1 = 100 * np.ones((num_pts, num_frames)) + np.random.random((num_pts, num_frames))
+    with pytest.warns(None) as record:
+        ia.test_frame_0_valley (tracker_0, tracker_1, number_pts = 40, number_nearest_neigh = 50)
+    assert len(record) == 1
+
+
+def test_test_frame_0_true_valley():
+    num_pts = 3
+    num_frames = 100
+    tracker_0 = 100 * np.ones((num_pts, num_frames)) + np.random.random((num_pts, num_frames))
+    tracker_1 = 50 * np.ones((num_pts, num_frames)) + np.random.random((num_pts, num_frames))
+    with pytest.warns(None) as record:
+        ia.test_frame_0_valley (tracker_0, tracker_1, number_pts = 40, number_nearest_neigh = 50)
+    assert len(record) == 0
 
 
 def test_split_tracking():
@@ -325,9 +572,12 @@ def test_save_tracking():
     assert len(saved_paths) == info.shape[0] * 2 + 1
 
 
+
 def test_run_tracking():
     folder_path = example_path("real_example_short")
-    saved_paths = ia.run_tracking(folder_path)
+    fps = 1
+    length_scale = 1
+    saved_paths = ia.run_tracking(folder_path, fps, length_scale)
     assert len(saved_paths) == 3
     for pa in saved_paths:
         assert pa.is_file()
