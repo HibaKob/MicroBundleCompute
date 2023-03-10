@@ -833,6 +833,7 @@ def rot_image(
     new_img = rotate(img, ang / (np.pi) * 180, center=(center_col, center_row))
     return new_img
 
+
 def rotate_points(
     row_pts: np.ndarray,
     col_pts: np.ndarray,
@@ -899,7 +900,7 @@ def translate_points(pts_row: np.ndarray, pts_col: np.ndarray, trans_r: float, t
     
 
 def translate_pts_all(row_pts_array_list: List, col_pts_array_list: List, trans_r: float, trans_c: float) -> np.ndarray:
-    """Given a list of row and column point arrays. Will rotate all of them."""
+    """Given a list of row and column point arrays. Will translate all of them."""
     trans_row_pts_array_list = []
     trans_col_pts_array_list = []
     for kk in range(0,len(row_pts_array_list)):
@@ -921,10 +922,9 @@ def rotate_imgs_all(
         rot_img = rot_image(tiff_list[kk], center_row, center_col, ang)
         rot_tiff_list.append(rot_img)
     return rot_tiff_list
-###################################################################################
 
-###################################################################################
-def pad_img_to_square(image:np.ndarray) -> (np.ndarray, Union[float, int]):
+
+def pad_img_to_square(image:np.ndarray) -> Union[np.ndarray, float]:
     """Given a non-square image. Will pad the image to have square size"""
     img_r, img_c = image.shape
     max_size = np.max([img_r,img_c])
@@ -937,7 +937,8 @@ def pad_img_to_square(image:np.ndarray) -> (np.ndarray, Union[float, int]):
     translate_center_col = left
     return padded_image, translate_center_row, translate_center_col
 
-def pad_all_imgs_to_square(tiff_list: List) -> (np.ndarray, Union[float, int]):
+
+def pad_all_imgs_to_square(tiff_list: List) -> Union[np.ndarray, float]:
     """Given a list of non-square images. Will pad images to have square size"""
     _, translate_center_row, translate_center_col = pad_img_to_square(tiff_list[0])
     padded_tiff_list = []
@@ -945,6 +946,7 @@ def pad_all_imgs_to_square(tiff_list: List) -> (np.ndarray, Union[float, int]):
         padded_img,_,_ = pad_img_to_square(tiff_list[kk])
         padded_tiff_list.append(padded_img)
     return padded_tiff_list, translate_center_row, translate_center_col
+
 
 def rotate_test_img(
     folder_path: Path,

@@ -899,15 +899,18 @@ def test_save_tissue_width_info():
     file_path = ia.save_tissue_width_info(folder_path, tissue_width)
     assert file_path.is_file()
 
+
 def test_check_square_image_true():
     img = np.zeros((512,512))
     square = ia.check_square_image(img)
     assert square == True
 
+
 def test_check_square_image_false():
     img = np.zeros((320,512))
     square = ia.check_square_image(img)
     assert square == False
+
 
 def test_rot_image():
     mask = np.zeros((100, 100))
@@ -1006,6 +1009,37 @@ def test_rotate_pts_all():
     assert np.allclose(rot_col_pts_array_list[1], rot_col_pts_array_list[2])
 
 
+def test_translate_points():
+    num_pts = 10
+    num_beat_frames = 100
+    pts_row = 24 * np.ones((num_pts, num_beat_frames)) + np.random.random((num_pts, num_beat_frames))
+    pts_col = 15 * np.ones((num_pts, num_beat_frames)) + np.random.random((num_pts, num_beat_frames))
+    trans_r = 4.5
+    trans_c = 3.87
+    trans_pts_row,trans_pts_col = ia.translate_points(pts_row, pts_col, trans_r, trans_c)
+    diff_trans_pt_row = trans_pts_row - pts_row
+    diff_trans_pt_col = trans_pts_col - pts_col
+    assert np.allclose(diff_trans_pt_row, trans_r, atol=0.01)
+    assert np.allclose(diff_trans_pt_col, trans_c, atol=0.01)
+
+def test_translate_pts_all():
+    num_pts = 10
+    num_beat_frames = 100
+    pts_row = 24 * np.ones((num_pts, num_beat_frames)) + np.random.random((num_pts, num_beat_frames))
+    pts_col = 15 * np.ones((num_pts, num_beat_frames)) + np.random.random((num_pts, num_beat_frames))
+    row_pts_array_list = [pts_row, pts_row, pts_row]
+    col_pts_array_list = [pts_col, pts_col, pts_col]
+    trans_r = 4.5
+    trans_c = 3.87
+    trans_row_pts_array_list, trans_col_pts_array_list = ia.translate_pts_all(row_pts_array_list, col_pts_array_list, trans_r, trans_c)
+    diff_trans_pt_row_sample = trans_row_pts_array_list[0] - pts_row
+    diff_trans_pt_col_sample = trans_col_pts_array_list[0] - pts_col
+    assert len(trans_row_pts_array_list) == len(row_pts_array_list)
+    assert len(trans_col_pts_array_list) == len(col_pts_array_list)
+    assert np.allclose(diff_trans_pt_row_sample, trans_r, atol=0.01)
+    assert np.allclose(diff_trans_pt_col_sample, trans_c, atol=0.01)
+
+
 def test_rotate_imgs_all():
     mask = np.zeros((100, 100))
     for kk in range(10, 50):
@@ -1020,6 +1054,22 @@ def test_rotate_imgs_all():
         assert np.isclose(center_row, new_center_row, atol=2)
         assert np.isclose(center_col, new_center_col, atol=2)
         assert np.allclose(new_vec, np.asarray([0, 1]))
+
+
+def test_pad_img_to_square():
+    img = np.zeros((320,512))
+    square_image, _, _ = ia.pad_img_to_square(img)
+    img_r, img_c = square_image.shape
+    assert img_r == img_c
+
+
+def test_pad_all_imgs_to_square():
+    img = np.zeros((220,400))
+    img_list = [img,img,img]
+    padded_list, _, _ = ia.pad_all_imgs_to_square (img_list)
+    img_r, img_c = padded_list[0].shape
+    assert img_r == img_c
+    assert len(padded_list) == len(img_list)
 
 
 def test_get_rotation_info():
