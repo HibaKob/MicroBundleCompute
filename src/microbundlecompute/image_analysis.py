@@ -924,7 +924,7 @@ def rotate_imgs_all(
     return rot_tiff_list
 
 
-def pad_img_to_square(image:np.ndarray) -> Union[np.ndarray, float]:
+def pad_img_to_square(image:np.ndarray) -> Tuple[np.ndarray, Union[float, int]]:
     """Given a non-square image. Will pad the image to have square size"""
     img_r, img_c = image.shape
     max_size = np.max([img_r,img_c])
@@ -938,7 +938,7 @@ def pad_img_to_square(image:np.ndarray) -> Union[np.ndarray, float]:
     return padded_image, translate_center_row, translate_center_col
 
 
-def pad_all_imgs_to_square(tiff_list: List) -> Union[np.ndarray, float]:
+def pad_all_imgs_to_square(tiff_list: List) -> Tuple[np.ndarray, Union[float, int]]:
     """Given a list of non-square images. Will pad images to have square size"""
     _, translate_center_row, translate_center_col = pad_img_to_square(tiff_list[0])
     padded_tiff_list = []
@@ -959,15 +959,14 @@ def rotate_test_img(
     """Given tiff_list and rotation info. Will return the first image rotated for directionality reference."""
     img = tiff_list[0]
     img_r, img_c = img.shape
-    img_center = [img_r/2, img_c/2]
+    img_center = np.array([img_r/2, img_c/2])
     
     # row and column positions of horizontal and vertical vectors 
-    cr = [img_center[1],img_center[1]]
-    rr = [img_center[0],img_center[0]-img_r/5]
-    rc = [img_center[0],img_center[0]]
-    cc = [img_center[1],img_center[1]+img_r/5]
-    
-    ###########################################################################    
+    cr = np.array([img_center[1],img_center[1]])
+    rr = np.array([img_center[0],img_center[0]-img_r/5])
+    rc = np.array([img_center[0],img_center[0]])
+    cc = np.array([img_center[1],img_center[1]+img_r/5])
+      
     if abs(ang) < 0.96*np.pi:
         #check if image is square shape and perform appropriate rotation
         square = check_square_image(tiff_list[0])
@@ -989,8 +988,7 @@ def rotate_test_img(
     else:
         rot_img = img
         rot_rr, rot_cr = rr, cr
-        rot_rc, rot_cc = rc, cc
-    ###########################################################################  
+        rot_rc, rot_cc = rc, cc 
 
     fig, (ax1, ax2) = plt.subplots(1, 2)
     plt.tight_layout(pad=0.08, h_pad=None, w_pad=None, rect=None)
@@ -1021,8 +1019,8 @@ def rotate_test_img(
     img_path = folder_path.joinpath(filename).resolve()
     fig.savefig(str(img_path), bbox_inches='tight', format='pdf')
     plt.close()
-    return
-###################################################################################
+    return img_path
+
 
 def get_rotation_info(
     *,
@@ -1045,6 +1043,7 @@ def get_rotation_info(
     (rot_mat, ang) = rot_vec_to_rot_mat_and_angle(vec)
     return (center_row, center_col, rot_mat, ang, vec)
 
+
 def run_rotation(
     folder_path: Path,
     input_mask: bool = True,
@@ -1061,15 +1060,13 @@ def run_rotation(
     else:
         (center_row, center_col, rot_mat, ang, vec) = get_rotation_info(center_row_input=center_row_input, center_col_input=center_col_input, vec_input=vec_input)
     # read tracking results
-    tracker_row_all, tracker_col_all, _, _ = load_tracking_results(folder_path=folder_path)
-    ###########################################################################    
+    tracker_row_all, tracker_col_all, _, _ = load_tracking_results(folder_path=folder_path)  
     if abs(ang) < 0.96*np.pi:
         # perform rotation
         rot_tracker_row_all, rot_tracker_col_all = rotate_pts_all(tracker_row_all, tracker_col_all, rot_mat, center_row, center_col)
     else:
         # do not rotate
         rot_tracker_row_all, rot_tracker_col_all = tracker_row_all, tracker_col_all
-    ###########################################################################  
     # save rotation info
     rot_info = np.asarray([[center_row, center_col], [vec[0], vec[1]]])
     # save rotation
@@ -1081,9 +1078,7 @@ def run_rotation_visualization(folder_path: Path, automatic_color_constraint: bo
     """Given a folder path where rotated tracking has already been run. Will save visualizations."""
     # read image files
     movie_folder_path = folder_path.joinpath("movie").resolve()
-    ###########################################################################
-    vis_folder_path = folder_path.joinpath("visualizations").resolve()
-    ###########################################################################
+    vis_folder_path = create_folder(folder_path, "visualizations")
     name_list_path = image_folder_to_path_list(movie_folder_path)
     tiff_list = read_all_tiff(name_list_path)
     # read rotated tracking results
@@ -1093,7 +1088,6 @@ def run_rotation_visualization(folder_path: Path, automatic_color_constraint: bo
     center_col = rot_info[0, 1]
     vec = np.asarray([rot_info[1, 0], rot_info[1, 1]])
     (rot_mat, ang) = rot_vec_to_rot_mat_and_angle(vec)
-    ########################################################################### 
     if abs(ang) < 0.96*np.pi:
         # check if images in list are square shape and perform appropriate rotation
         square = check_square_image(tiff_list[0])
@@ -1106,21 +1100,17 @@ def run_rotation_visualization(folder_path: Path, automatic_color_constraint: bo
             rot_tiff_list = rotate_imgs_all(padded_tiff_list, ang, trans_center_row, trans_center_col)
             # translate rotated tracker points to account for padding 
             tracker_row_all_pad, tracker_col_all_pad = translate_pts_all(rot_tracker_row_all, rot_tracker_col_all, translate_r, translate_c)
-
         else:
             rot_tiff_list = rotate_imgs_all(tiff_list, ang, center_row, center_col) 
             tracker_row_all_pad, tracker_col_all_pad = rot_tracker_row_all, rot_tracker_col_all
-    ###########################################################################
     else:
         rot_tiff_list = tiff_list
-        tracker_row_all_pad, tracker_col_all_pad = rot_tracker_row_all, rot_tracker_col_all
-    ###########################################################################    
+        tracker_row_all_pad, tracker_col_all_pad = rot_tracker_row_all, rot_tracker_col_all   
     if automatic_color_constraint:
         # find limits of colormap
         clim_abs_min, clim_abs_max, clim_row_min, clim_row_max, clim_col_min, clim_col_max = compute_min_max_disp(rot_tracker_row_all,rot_tracker_col_all,info)
     # create rotated test image
     rotate_test_img(vis_folder_path, tiff_list, ang, center_row, center_col, rot_mat)
-    
     # create pngs
     abs_png_path_list = create_pngs(folder_path, rot_tiff_list, tracker_row_all_pad, tracker_col_all_pad, info, "abs", clim_abs_min, clim_abs_max, col_map, is_rotated=True, save_eps = False)
     row_png_path_list = create_pngs(folder_path, rot_tiff_list, tracker_row_all_pad, tracker_col_all_pad, info, "row", clim_row_min, clim_row_max, col_map, is_rotated=True, save_eps = False)
@@ -1129,7 +1119,6 @@ def run_rotation_visualization(folder_path: Path, automatic_color_constraint: bo
     abs_gif_path = create_gif(folder_path, abs_png_path_list, "abs", is_rotated=True)
     row_gif_path = create_gif(folder_path, row_png_path_list, "row", is_rotated=True)
     col_gif_path = create_gif(folder_path, col_png_path_list, "col", is_rotated=True)
-
     return abs_png_path_list, row_png_path_list, col_png_path_list, abs_gif_path, row_gif_path, col_gif_path
 
 
@@ -1203,7 +1192,6 @@ def visualize_interpolate(
         center_col = rot_info[0, 1]
         vec = np.asarray([rot_info[1, 0], rot_info[1, 1]])
         (_, ang) = rot_vec_to_rot_mat_and_angle(vec)
-        ########################################################################### 
         if abs(ang) < 0.96*np.pi:
             # check if images in list are square shape and perform appropriate rotation
             square = check_square_image(tiff_list[0])
@@ -1217,16 +1205,11 @@ def visualize_interpolate(
                 # translate tracker points and interpolated points to account for padding 
                 tracker_row_all, tracker_col_all = translate_pts_all(tracker_row_all, tracker_col_all, translate_r, translate_c)
                 interp_tracker_row_all, interp_tracker_col_all = translate_pts_all(interp_tracker_row_all, interp_tracker_col_all, translate_r, translate_c)
-
             else:
                 tiff_list = rotate_imgs_all(tiff_list, ang, center_row, center_col) 
-        ###########################################################################
-
-
     if automatic_color_constraint:
         # find limits of colormap
         clim_abs_min, clim_abs_max, clim_row_min, clim_row_max, clim_col_min, clim_col_max = compute_min_max_disp(tracker_row_all,tracker_col_all,info)
-   
     # create pngs
     abs_png_path_list = create_pngs(folder_path, tiff_list, tracker_row_all, tracker_col_all, info, "abs", clim_abs_min, clim_abs_max, col_map, is_rotated=is_rotated, include_interp=True, interp_tracker_row_all=interp_tracker_row_all, interp_tracker_col_all=interp_tracker_col_all, save_eps = False)
     row_png_path_list = create_pngs(folder_path, tiff_list, tracker_row_all, tracker_col_all, info, "row", clim_row_min, clim_row_max, col_map, is_rotated=is_rotated, include_interp=True, interp_tracker_row_all=interp_tracker_row_all, interp_tracker_col_all=interp_tracker_col_all, save_eps = False)
@@ -1234,19 +1217,18 @@ def visualize_interpolate(
     # create gif
     abs_gif_path = create_gif(folder_path, abs_png_path_list, "abs", is_rotated=is_rotated, include_interp=True)
     row_gif_path = create_gif(folder_path, row_png_path_list, "row", is_rotated=is_rotated, include_interp=True)
-    col_gif_path = create_gif(folder_path, col_png_path_list, "col" ,is_rotated=is_rotated, include_interp=True)
-   
+    col_gif_path = create_gif(folder_path, col_png_path_list, "col" ,is_rotated=is_rotated, include_interp=True)   
     return abs_png_path_list, row_png_path_list, col_png_path_list, abs_gif_path, row_gif_path, col_gif_path
 
-# =============================================================================
-"""Pillar Tracking"""
 
+#================================================ Pillar Tracking ================================================#
 def compute_pillar_secnd_moment(pillar_width: float, pillar_thickness: float)-> float: 
     """Given pillar width and thickness in micrometers (um).
     Will compute the pillar (taken as a rectangular beam) second moment of area in (um)^4."""
     secnd_moment_area = (pillar_width*pillar_thickness**3)/12
     return secnd_moment_area
     
+
 def compute_pillar_stiffnes(pillar_modulus: float, pillar_width: float, 
                             pillar_thickness: float, pillar_length: float, 
                             force_location: float) -> float:
@@ -1256,11 +1238,13 @@ def compute_pillar_stiffnes(pillar_modulus: float, pillar_width: float,
     pillar_stiffness = (6*pillar_modulus*I)/((force_location**2)*(3*pillar_length-force_location))
     return pillar_stiffness
 
+
 def compute_pillar_force(pillar_stiffness: float, pillar_avg_deflection: float, length_scale: float) -> np.ndarray:
     """Given pillar stiffness in (uN/um), pillar average deflection in pixels and a length scale 
     conversion from pixels to micrometers (um). Will compute pillar force in microNewtons (uN)."""
     pillar_force = pillar_stiffness*pillar_avg_deflection*length_scale
     return pillar_force
+
 
 def compute_pillar_position_timeseries(tracker_0: np.ndarray, tracker_1: np.ndarray) -> np.ndarray:
     """Given tracker arrays. Will return single timeseries of mean absolute displacement, 
@@ -1277,6 +1261,7 @@ def compute_pillar_position_timeseries(tracker_0: np.ndarray, tracker_1: np.ndar
     disp_abs_mean = (mean_disp_0_all ** 2.0 + mean_disp_1_all ** 2.0) ** 0.5
     return disp_abs_mean, mean_disp_0_all, mean_disp_1_all
 
+
 def pillar_force_all_steps(pillar_modulus: float, pillar_width: float, pillar_thickness: float, 
                            pillar_length: float, force_location: float, pillar_mean_abs_disp: np.ndarray, 
                            pillar_mean_disp_row: np.ndarray, pillar_mean_disp_col: np.ndarray, 
@@ -1292,6 +1277,7 @@ def pillar_force_all_steps(pillar_modulus: float, pillar_width: float, pillar_th
 
     return pillar_F_abs, pillar_F_row, pillar_F_col
     
+
 def save_pillar_tracking(*, folder_path: Path, tracker_row_all: List, tracker_col_all: List, 
                          pillar_force_abs: np.ndarray, pillar_force_row: np.ndarray, 
                          pillar_force_col: np.ndarray, info: np.ndarray = None, fname: str = None) -> List:
@@ -1337,6 +1323,7 @@ def save_pillar_tracking(*, folder_path: Path, tracker_row_all: List, tracker_co
         np.savetxt(str(file_path), info)
     saved_paths.append(file_path)
     return saved_paths
+
 
 def run_pillar_tracking(folder_path: Path, pillar_modulus: float, pillar_width: float, 
                         pillar_thickness: float, pillar_length: float, 
@@ -1387,6 +1374,7 @@ def run_pillar_tracking(folder_path: Path, pillar_modulus: float, pillar_width: 
         saved_paths = save_pillar_tracking(folder_path=folder_path, tracker_col_all=tracker_0, tracker_row_all=tracker_1, info=info, pillar_force_abs=pillar_force_all, pillar_force_row=pillar_row_force_all, pillar_force_col=pillar_col_force_all)
     return saved_paths
 
+
 def load_pillar_tracking_results(folder_path: Path, fname="") -> np.ndarray:
     """Given folder path. Will load pillar force results. If there are none, will return an error."""
     res_folder_path = folder_path.joinpath("pillar_results").resolve()
@@ -1403,6 +1391,7 @@ def load_pillar_tracking_results(folder_path: Path, fname="") -> np.ndarray:
     pillar_row_force_all = np.loadtxt(str(res_folder_path) + "/" + fname + "pillar_force_row.txt")
     pillar_col_force_all = np.loadtxt(str(res_folder_path) + "/" + fname + "pillar_force_col.txt")
     return pillar_row, pillar_col, pillar_abs_force_all, pillar_row_force_all, pillar_col_force_all
+
 
 def visualize_pillar_tracking(folder_path: Path) -> Path:
     """Given a folder path where tracking has already been run. Will save visualizations."""
@@ -1482,4 +1471,3 @@ def visualize_pillar_tracking(folder_path: Path) -> Path:
         plt.close()
     
     return vis_folder_path
-# =============================================================================

@@ -1106,7 +1106,9 @@ def test_get_rotation_info():
 
 def test_run_rotation():
     folder_path = example_path("real_example_short_rotated")
-    _ = ia.run_tracking(folder_path)
+    fps = 1
+    length_scale = 1
+    _ = ia.run_tracking(folder_path, fps, length_scale)
     input_mask = True
     saved_paths = ia.run_rotation(folder_path, input_mask)
     for pa in saved_paths:
@@ -1120,15 +1122,36 @@ def test_run_rotation():
         assert pa.is_file()
 
 
+def test_rotate_test_img():
+    folder_path = example_path("real_example_short_rotated")
+    movie_folder_path = folder_path.joinpath("movie").resolve()
+    name_list_path = ia.image_folder_to_path_list(movie_folder_path)
+    tiff_list = ia.read_all_tiff(name_list_path)
+    vec = [1,1]
+    rot_mat, ang = ia.rot_vec_to_rot_mat_and_angle(vec)
+    center_row = (tiff_list[0].shape[0])/2
+    center_col = (tiff_list[0].shape[1])/2
+    file_path = ia.rotate_test_img(folder_path, tiff_list, ang, center_row, center_col, rot_mat)
+    assert file_path.is_file()
+
+
 def test_run_rotation_visualization():
     folder_path = example_path("real_example_short_rotated")
-    _ = ia.run_tracking(folder_path)
+    fps = 1
+    length_scale = 1
+    _ = ia.run_tracking(folder_path, fps, length_scale)
     input_mask = True
     _ = ia.run_rotation(folder_path, input_mask)
-    png_path_list, gif_path = ia.run_rotation_visualization(folder_path)
-    for pa in png_path_list:
+    abs_png_path_list, row_png_path_list, col_png_path_list, abs_gif_path, row_gif_path, col_gif_path = ia.run_rotation_visualization(folder_path)
+    for pa in abs_png_path_list:
         assert pa.is_file()
-    assert gif_path.is_file()
+    assert abs_gif_path.is_file()
+    for pa in row_png_path_list:
+        assert pa.is_file()
+    assert row_gif_path.is_file()
+    for pa in col_png_path_list:
+        assert pa.is_file()
+    assert col_gif_path.is_file()
 
 
 def test_scale_scale_array_in_list():
@@ -1146,7 +1169,9 @@ def test_scale_scale_array_in_list():
 
 def test_run_scale_and_center_coordinates():
     folder_path = example_path("real_example_short")
-    _ = ia.run_tracking(folder_path)
+    fps = 1
+    length_scale = 1
+    _ = ia.run_tracking(folder_path, fps, length_scale)
     pixel_origin_row = 100
     pixel_origin_col = 150
     microns_per_pixel_row = 0.25
@@ -1189,7 +1214,9 @@ def test_interpolate_pos_from_tracking_arrays_and_interpolate_pos_from_tracking_
 
 def test_run_interpolate():
     folder_path = example_path("real_example_short")
-    _ = ia.run_tracking(folder_path)
+    fps = 1
+    length_scale = 1
+    _ = ia.run_tracking(folder_path, fps, length_scale)
     row_vec = np.linspace(215, 305, 12)
     col_vec = np.linspace(120, 400, 30)
     row_grid, col_grid = np.meshgrid(row_vec, col_vec)
@@ -1203,7 +1230,9 @@ def test_run_interpolate():
 
 def test_visualize_interpolate():
     folder_path = example_path("real_example_short")
-    _ = ia.run_tracking(folder_path)
+    fps = 1
+    length_scale = 1
+    _ = ia.run_tracking(folder_path, fps, length_scale)
     input_mask = True
     _ = ia.run_rotation(folder_path, input_mask)
     row_vec = np.linspace(220, 310, 12)
@@ -1215,15 +1244,23 @@ def test_visualize_interpolate():
     saved_paths = ia.run_interpolate(folder_path, row_col_sample, "interpolation", True)
     for pa in saved_paths:
         assert pa.is_file()
-    png_path_list, gif_path = ia.visualize_interpolate(folder_path, col_max=3, is_rotated=True)
-    for pa in png_path_list:
+    abs_png_path_list, row_png_path_list, col_png_path_list, abs_gif_path, row_gif_path, col_gif_path = ia.visualize_interpolate(folder_path, is_rotated=True)
+    for pa in abs_png_path_list:
         assert pa.is_file()
-    assert gif_path.is_file()
+    assert abs_gif_path.is_file()
+    for pa in row_png_path_list:
+        assert pa.is_file()
+    assert row_gif_path.is_file()
+    for pa in col_png_path_list:
+        assert pa.is_file()
+    assert col_gif_path.is_file()
 
 
 def test_visualize_interpolate_rotated():
     folder_path = example_path("real_example_short_rotated")
-    _ = ia.run_tracking(folder_path)
+    fps = 1
+    length_scale = 1
+    _ = ia.run_tracking(folder_path, fps, length_scale)
     _ = ia.run_rotation(folder_path, True)
     row_vec = np.linspace(195, 195 + 90, 12)
     col_vec = np.linspace(125, 400, 30)
@@ -1234,7 +1271,41 @@ def test_visualize_interpolate_rotated():
     saved_paths = ia.run_interpolate(folder_path, row_col_sample, is_rotated=True)
     for pa in saved_paths:
         assert pa.is_file()
-    png_path_list, gif_path = ia.visualize_interpolate(folder_path, col_max=3, is_rotated=True)
-    for pa in png_path_list:
+    abs_png_path_list, row_png_path_list, col_png_path_list, abs_gif_path, row_gif_path, col_gif_path = ia.visualize_interpolate(folder_path, is_rotated=True)
+    for pa in abs_png_path_list:
         assert pa.is_file()
-    assert gif_path.is_file()
+    assert abs_gif_path.is_file()
+    for pa in row_png_path_list:
+        assert pa.is_file()
+    assert row_gif_path.is_file()
+    for pa in col_png_path_list:
+        assert pa.is_file()
+    assert col_gif_path.is_file()
+
+
+def test_compute_pillar_secnd_moment():
+    pillar_width = 163
+    pillar_thickness = 33.2
+    pillar_secnd_moment_area = ia.compute_pillar_secnd_moment(pillar_width, pillar_thickness)
+    assert np.isclose(pillar_secnd_moment_area, (pillar_width*(pillar_thickness)**3)/12, atol=1)
+
+
+def test_compute_pillar_stiffnes():
+    pillar_modulus = 1.61
+    pillar_width = 163
+    pillar_thickness = 33.2    
+    pillar_length = 199
+    force_location = 163
+    I = ia.compute_pillar_secnd_moment(pillar_width, pillar_thickness)
+    pillar_stiffness_gt = (6*pillar_modulus*I)/((force_location**2)*(3*pillar_length-force_location))
+    pillar_stiffness = ia.compute_pillar_stiffnes(pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location)
+    assert np.isclose(pillar_stiffness, pillar_stiffness_gt, atol=0.01)
+
+
+def test_compute_pillar_force():
+    
+def compute_pillar_force(pillar_stiffness: float, pillar_avg_deflection: float, length_scale: float) -> np.ndarray:
+    """Given pillar stiffness in (uN/um), pillar average deflection in pixels and a length scale 
+    conversion from pixels to micrometers (um). Will compute pillar force in microNewtons (uN)."""
+    pillar_force = pillar_stiffness*pillar_avg_deflection*length_scale
+    return pillar_force
