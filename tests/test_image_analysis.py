@@ -518,23 +518,26 @@ def test_find_dist_all_step ():
     assert np.allclose(all_steps_mean_dist_array[:,1],mean_dist_1,atol=0.01)
     assert np.allclose(all_steps_mean_dist_array[:,2],mean_dist_2,atol=0.01)
 
+
 def test_test_frame_0_valley():
-    num_pts = 3
+    num_pts = 300
     num_frames = 100
-    tracker_0 = 50 * np.ones((num_pts, num_frames)) + np.random.random((num_pts, num_frames))
-    tracker_1 = 100 * np.ones((num_pts, num_frames)) + np.random.random((num_pts, num_frames))
+    np.random.seed(5)
+    tracker_0 = 10 * np.ones((num_pts, num_frames)) + np.random.random((num_pts, num_frames))*20
+    tracker_1 = 100 * np.ones((num_pts, num_frames)) + np.random.random((num_pts, num_frames))*20
     with pytest.warns(None) as record:
         ia.test_frame_0_valley (tracker_0, tracker_1, number_pts = 40, number_nearest_neigh = 50)
     assert len(record) == 1
 
 
 def test_test_frame_0_true_valley():
-    num_pts = 3
+    num_pts = 300
     num_frames = 100
-    tracker_0 = 100 * np.ones((num_pts, num_frames)) + np.random.random((num_pts, num_frames))
-    tracker_1 = 50 * np.ones((num_pts, num_frames)) + np.random.random((num_pts, num_frames))
+    np.random.seed(5)
+    tracker_0 = 100 * np.ones((num_pts, num_frames)) + np.random.random((num_pts, num_frames))*20
+    tracker_1 = 10 * np.ones((num_pts, num_frames)) + np.random.random((num_pts, num_frames))*20
     with pytest.warns(None) as record:
-        ia.test_frame_0_valley (tracker_0, tracker_1, number_pts = 40, number_nearest_neigh = 50)
+        ia.test_frame_0_valley (tracker_0, tracker_1, number_pts = 10, number_nearest_neigh = 30)
     assert len(record) == 0
 
 
