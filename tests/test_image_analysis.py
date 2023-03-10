@@ -1389,4 +1389,37 @@ def test_run_pillar_tracking():
     for pa in saved_paths:
         assert pa.is_file()
 
+def test_load_pillar_tracking_results():
+    folder_path = example_path("real_example_pillar_short")
+    pillar_modulus = 1.61
+    pillar_width = 163
+    pillar_thickness = 33.2    
+    pillar_length = 199
+    force_location = 163
+    length_scale = 1
+    _ = ia.run_pillar_tracking(folder_path, pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale)
+    _, _, _, _, _ = ia.load_pillar_tracking_results(folder_path=folder_path)
+    folder_path = example_path("io_testing_examples")
+    folder_path_0 = folder_path.joinpath("fake_example_0").resolve()
+    with pytest.raises(FileNotFoundError) as error:
+        ia.load_tracking_results(folder_path=folder_path_0)
+    assert error.typename == "FileNotFoundError"
+    folder_path_1 = folder_path.joinpath("fake_example_1").resolve()
+    with pytest.raises(FileNotFoundError) as error:
+        ia.load_tracking_results(folder_path=folder_path_1, is_rotated=True)
+    assert error.typename == "FileNotFoundError"
+
+
+def test_visualize_pillar_tracking():
+    folder_path = example_path("real_example_pillar_short")
+    pillar_modulus = 1.61
+    pillar_width = 163
+    pillar_thickness = 33.2    
+    pillar_length = 199
+    force_location = 163
+    length_scale = 1
+    _ = ia.run_pillar_tracking(folder_path, pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale)
+    saved_path = ia.visualize_pillar_tracking(folder_path)
+    assert saved_path.is_file
+
 
