@@ -1358,7 +1358,7 @@ def run_pillar_tracking(folder_path: Path, pillar_modulus: float, pillar_width: 
         # save pillar tracking results
         saved_paths = save_pillar_tracking(folder_path=folder_path, tracker_col_all=tracker_0_p1, tracker_row_all=tracker_1_p1, info=info_p1, pillar_force_abs=pillar_1_force_all, pillar_force_row=pillar_1_row_force_all, pillar_force_col=pillar_1_col_force_all, fname='pillar1_')
         saved_paths_2 = save_pillar_tracking(folder_path=folder_path, tracker_col_all=tracker_0_p2, tracker_row_all=tracker_1_p2, info=info_p2, pillar_force_abs=pillar_2_force_all, pillar_force_row=pillar_2_row_force_all, pillar_force_col=pillar_2_col_force_all, fname='pillar2_')
-        saved_paths.append(saved_paths_2)
+        saved_paths.extend(saved_paths_2)
     else:
         # load pillar mask
         mask_file_path = mask_folder_path.joinpath("pillar_mask_*.txt").resolve()

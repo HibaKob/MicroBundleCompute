@@ -1350,19 +1350,43 @@ def test_pillar_force_all_steps():
 
 
 def test_save_pillar_tracking():
-    folder_path = example_path("real_example_super_short")
+    folder_path = example_path("real_example_pillar_short")
     tracker_row_all = np.zeros((10, 100))
     tracker_col_all = np.zeros((10, 100))
-    pillar_force_abs = np.sqrt(2)
-    pillar_force_row = 1
-    pillar_force_col = 1
+    pillar_force_abs = np.sqrt(2)*np.ones(100)
+    pillar_force_row = np.ones(100)
+    pillar_force_col = np.ones(100)
     info = [[0, 10, 30], [1, 30, 35], [2, 35, 85]]
     info = np.asarray(info)
-    saved_paths = ia.save_pillar_tracking(folder_path=folder_path, tracker_row_all=tracker_row_all, tracker_col_all = tracker_col_all, pillar_force_abs = pillar_force_abs, pillar_force_row = pillar_force_row, pillar_force_col = pillar_force_col, info = info)
+    saved_paths = ia.save_pillar_tracking(folder_path=folder_path, tracker_row_all=tracker_row_all, tracker_col_all = tracker_col_all, pillar_force_abs = pillar_force_abs, pillar_force_row = pillar_force_row, pillar_force_col = pillar_force_col, info = info, fname=None)
     for pa in saved_paths:
         assert pa.is_file()
     assert len(saved_paths) == 6
 
-   
+def test_save_pillar_tracking_fname():
+    folder_path = example_path("real_example_pillar_short")
+    tracker_row_all = np.zeros((10, 100))
+    tracker_col_all = np.zeros((10, 100))
+    pillar_force_abs = np.sqrt(2)*np.ones(100)
+    pillar_force_row = np.ones(100)
+    pillar_force_col = np.ones(100)
+    info = [[0, 10, 30], [1, 30, 35], [2, 35, 85]]
+    info = np.asarray(info)
+    saved_paths = ia.save_pillar_tracking(folder_path=folder_path, tracker_row_all=tracker_row_all, tracker_col_all = tracker_col_all, pillar_force_abs = pillar_force_abs, pillar_force_row = pillar_force_row, pillar_force_col = pillar_force_col, info = info, fname="Pillar_1_")
+    for pa in saved_paths:
+        assert pa.is_file()
+    assert len(saved_paths) == 6
+
+def test_run_pillar_tracking():
+    folder_path = example_path("real_example_pillar_short")
+    pillar_modulus = 1.61
+    pillar_width = 163
+    pillar_thickness = 33.2    
+    pillar_length = 199
+    force_location = 163
+    length_scale = 1
+    saved_paths = ia.run_pillar_tracking(folder_path, pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale)
+    for pa in saved_paths:
+        assert pa.is_file()
 
 
