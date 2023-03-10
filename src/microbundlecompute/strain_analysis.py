@@ -51,29 +51,12 @@ def shrink_pair(v0: int, v1: int, sf: float) -> int:
     return new_v0, new_v1
 
 
-# def remove_pillar_region(mask: np.ndarray, clip_fraction: float = 0.5, clip_columns: bool = True, clip_rows: bool = False) -> np.ndarray:
-#     """Given a mask. Will approximately remove the pillar region."""
-#     box_mask = ia.mask_to_box(mask)
-#     r0, r1, c0, c1 = box_to_bound(box_mask)
-#     # because we only accept oriented masks, we can perform this operation by clipping columns
-#     new_c0, new_c1 = shrink_pair(c0, c1, clip_fraction)
-#     clip_mask = corners_to_mask(mask, r0, r1, new_c0, new_c1)
-#     # perform clipping
-#     new_mask = (mask * clip_mask > 0).astype("uint8")
-#     ############################################################################
-
-#     np.savetxt('/Users/hibakobeissi/Desktop/CagatayData/d9_1mm_stiff/box_to_bound.txt',[[r0], [r1], [c0], [c1]])
-#     # ############################################################################
-#     return new_mask
-
-# =============================================================================
 def remove_pillar_region(mask: np.ndarray, clip_fraction: float = 0.5, clip_columns: bool = True, clip_rows: bool = False ) -> np.ndarray:
     """Given a mask. Will approximately remove the pillar region."""
     box_mask = ia.mask_to_box(mask)
     r0, r1, c0, c1 = box_to_bound(box_mask)
-    
     new_r0, new_r1, new_c0, new_c1 = r0, r1, c0, c1
-    # because we only accept oriented masks, we can perform this operation by clipping columns
+    # because we only accept oriented masks, we can perform this operation by clipping columns and rows
     if clip_columns:
         new_c0, new_c1 = shrink_pair(c0, c1, clip_fraction)
     if clip_rows:
@@ -81,12 +64,8 @@ def remove_pillar_region(mask: np.ndarray, clip_fraction: float = 0.5, clip_colu
     clip_mask = corners_to_mask(mask, new_r0, new_r1, new_c0, new_c1)
     # perform clipping
     new_mask = (mask * clip_mask > 0).astype("uint8")
-    ############################################################################
-
-    # np.savetxt('/Users/hibakobeissi/Desktop/CagatayData/d9_1mm_stiff/box_to_bound.txt',[[r0], [r1], [c0], [c1]])
-    # ############################################################################
     return new_mask
-# =============================================================================
+
 
 def shrink_box(box: np.ndarray, shrink_row: float = 0.1, shrink_col: float = 0.1) -> np.ndarray:
     """Given a box and shrink factors. Will make the box smaller by the given fraction."""
@@ -117,18 +96,8 @@ def create_sub_domains(
     tyle_style = 2 will create a num_tile_row x num_tile_col sized grid and adjust the tile_dim_pix as need
     """
     # clip pillars from the mask
-    ##########################################################################
-    # plt.figure()
-    # plt.imsave('/Users/hibakobeissi/Desktop/Test_D1T3/OriginalMask.png',mask)
-    # plt.close()
-    ##########################################################################
     mask_removed_pillars = remove_pillar_region(mask, pillar_clip_fraction,clip_columns, clip_rows)
-    
-    ##########################################################################
-    # plt.figure()
-    # plt.imsave('/Users/hibakobeissi/Desktop/Test_D1T3/RemovedPillars_OUT.png',mask_removed_pillars)
-    # plt.close()
-    ##########################################################################
+
     if manual_sub:
         r0_user, r1_user, c0_user, c1_user = sub_extents
         user_box = bound_to_box(r0_user, r1_user, c0_user, c1_user)
@@ -200,23 +169,14 @@ def compute_F_from_Lambda_mat(Lambda_0: np.ndarray, Lambda_t: np.ndarray) -> np.
     # add in error handling if issues arise here --
     return F
 
-# def compute_Lambda_from_pts(row_pos: np.ndarray, col_pos: np.ndarray) -> np.ndarray:
-#     Lambda_mat = []
-#     num_pts = row_pos.shape[0]
-#     for kk in range(0, num_pts):
-#         for jj in range(kk + 1, num_pts):
-#             Lambda_mat.append([row_pos[kk] - row_pos[jj], col_pos[kk] - col_pos[jj]])
-#     Lambda_mat = np.asarray(Lambda_mat).T
-#     return Lambda_mat
 
-# =============================================================================
 def compute_Lambda_from_pts(row_pos: np.ndarray, col_pos: np.ndarray) -> np.ndarray:
     num_pts = row_pos.shape[0]
     pts_row_col = np.array([row_pos,col_pos])
     ii, jj = np.triu_indices(num_pts, k=1)
     Lambda_mat = pts_row_col[:,ii] - pts_row_col[:,jj]
     return Lambda_mat
-# =============================================================================
+
 
 def compute_sub_domain_strain(sd_tracker_row: np.ndarray, sd_tracker_col: np.ndarray) -> np.ndarray:
     """Given tracking point positions. Will return F at every frame with the first frame as the reference."""
@@ -386,35 +346,7 @@ def load_sub_domain_strain(folder_path: Path, fname="") -> List:
     info_reshape = np.reshape(info, (-1, 3))
     return sub_domain_F_rr_all, sub_domain_F_rc_all, sub_domain_F_cr_all, sub_domain_F_cc_all, sub_domain_row_all, sub_domain_col_all, info_reshape, strain_info
 
-# =============================================================================
-# def F_to_Ecc(F_rr: float, F_rc: float, F_cr: float, F_cc: float) -> float:
-#     """Given F, will compute E_cc (E_column_column) for visualization."""
-#     F_arr = np.asarray([[F_rr, F_rc], [F_cr, F_cc]])
-#     C = np.dot(F_arr.T, F_arr)
-#     E = 0.5 * (C - np.eye(2))
-#     return E[1, 1]
 
-
-# def F_to_Ecc_all(sub_domain_F_rr_all: List, sub_domain_F_rc_all: List, sub_domain_F_cr_all: List, sub_domain_F_cc_all: List) -> List:
-#     sub_domain_Ecc_all = []
-#     num_beats = len(sub_domain_F_rr_all)
-#     num_sub_domains = sub_domain_F_rr_all[0].shape[0]
-#     for kk in range(0, num_beats):
-#         num_frames = sub_domain_F_rr_all[kk].shape[1]
-#         Ecc_arr = np.zeros((num_sub_domains, num_frames))
-#         for jj in range(0, num_sub_domains):
-#             for ii in range(0, num_frames):
-#                 F_rr = sub_domain_F_rr_all[kk][jj, ii]
-#                 F_rc = sub_domain_F_rc_all[kk][jj, ii]
-#                 F_cr = sub_domain_F_cr_all[kk][jj, ii]
-#                 F_cc = sub_domain_F_cc_all[kk][jj, ii]
-#                 Ecc_arr[jj, ii] = F_to_Ecc(F_rr, F_rc, F_cr, F_cc)
-#         sub_domain_Ecc_all.append(Ecc_arr)
-#     return sub_domain_Ecc_all
-
-# =============================================================================
-# =============================================================================
-#
 def F_to_E(F_rr: float, F_rc: float, F_cr: float, F_cc: float) -> float:
     """Given F, will compute E_cc (E_column_column) for visualization."""
     F_arr = np.asarray([[F_rr, F_rc], [F_cr, F_cc]])
@@ -445,16 +377,14 @@ def F_to_E_all(sub_domain_F_rr_all: List, sub_domain_F_rc_all: List, sub_domain_
         sub_domain_Ecr_all.append(Ecr_arr)
         sub_domain_Err_all.append(Err_arr)
     return sub_domain_Ecc_all, sub_domain_Ecr_all, sub_domain_Err_all
-# =============================================================================
+
 
 def get_text_str(row: int, col: int) -> str:
     """Given the row and the column of a location. Will return the row and column position string."""
     test_str = "%s%i" % (chr(row + 65), col + 1)
     return test_str
 
-# =============================================================================
-# CHECK HOW FONTSIZE LOOKS!!!!
-# =============================================================================
+
 def png_sub_domains_numbered(
     folder_path: Path,
     example_tiff: np.ndarray,

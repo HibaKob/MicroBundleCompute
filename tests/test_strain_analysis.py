@@ -99,7 +99,7 @@ def test_shrink_box():
 def test_remove_pillar_region():
     file_path = tissue_mask_path("real_example_super_short")
     mask = ia.read_txt_as_mask(file_path)
-    new_mask = sa.remove_pillar_region(mask)
+    new_mask = sa.remove_pillar_region(mask, clip_columns = True, clip_rows = False )
     assert np.sum(mask) > np.sum(new_mask)
     box = ia.mask_to_box(mask)
     _, _, c0, c1 = sa.box_to_bound(box)
@@ -107,6 +107,14 @@ def test_remove_pillar_region():
     _, _, c0_new, c1_new = sa.box_to_bound(new_box)
     assert c0_new > c0
     assert c1_new < c1
+    new_mask = sa.remove_pillar_region(mask, clip_columns = False, clip_rows = True )
+    assert np.sum(mask) > np.sum(new_mask)
+    box = ia.mask_to_box(mask)
+    r0, r1, _, _ = sa.box_to_bound(box)
+    new_box = ia.mask_to_box(new_mask)
+    r0_new, r1_new, _, _ = sa.box_to_bound(new_box)
+    assert r0_new > r0
+    assert r1_new < r1
 
 
 def test_create_sub_domains():
@@ -114,15 +122,18 @@ def test_create_sub_domains():
     mask = ia.read_txt_as_mask(file_path)
     tile_style = 1
     tile_box_list, tile_dim_pix, num_tile_row, num_tile_col = sa.create_sub_domains(mask, pillar_clip_fraction=0.5, shrink_row=0.1, shrink_col=0.1, tile_dim_pix=40, num_tile_row=5, num_tile_col=3, tile_style=tile_style)
-    assert len(tile_box_list) == 15
+    assert len(tile_box_list) == num_tile_row*num_tile_col
     assert tile_dim_pix == 40
-    assert num_tile_row == 3
-    assert num_tile_col == 5
     tile_style = 2
     tile_box_list, tile_dim_pix, num_tile_row, num_tile_col = sa.create_sub_domains(mask, pillar_clip_fraction=0.5, shrink_row=0.1, shrink_col=0.1, tile_dim_pix=40, num_tile_row=10, num_tile_col=6, tile_style=tile_style)
     assert len(tile_box_list) == 60
     assert num_tile_row == 10
     assert num_tile_col == 6
+    tile_style = 1
+    sub_extents = [163, 361, 132, 377]
+    tile_box_list, tile_dim_pix, num_tile_row, num_tile_col = sa.create_sub_domains(mask, pillar_clip_fraction=0.5, shrink_row=0.1, shrink_col=0.1, tile_dim_pix=40, num_tile_row=5, num_tile_col=3, tile_style=tile_style, manual_sub = True, sub_extents = sub_extents)
+    assert len(tile_box_list) == num_tile_row*num_tile_col
+    assert tile_dim_pix == 40
 
 
 def test_is_in_box():
@@ -144,7 +155,7 @@ def test_isolate_sub_domain_markers():
     img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
     file_path = tissue_mask_path("real_example_super_short")
     mask = ia.read_txt_as_mask(file_path)
-    tracker_col, tracker_row = ia.track_all_steps(img_list_uint8, mask)
+    tracker_col, tracker_row = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
     tracker_col_all = [tracker_col]
     tracker_row_all = [tracker_row]
     for sd_box in tile_box_list:
@@ -198,7 +209,7 @@ def test_compute_sub_domain_strain():
     name_list_path = ia.image_folder_to_path_list(folder_path)
     tiff_list = ia.read_all_tiff(name_list_path)
     img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
-    tracker_col, tracker_row = ia.track_all_steps(img_list_uint8, mask)
+    tracker_col, tracker_row = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
     tracker_col_all = [tracker_col]
     tracker_row_all = [tracker_row]
     sd_box = tile_box_list[0]
@@ -222,7 +233,7 @@ def test_compute_sub_domain_position():
     name_list_path = ia.image_folder_to_path_list(folder_path)
     tiff_list = ia.read_all_tiff(name_list_path)
     img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
-    tracker_col, tracker_row = ia.track_all_steps(img_list_uint8, mask)
+    tracker_col, tracker_row = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
     tracker_col_all = [tracker_col]
     tracker_row_all = [tracker_row]
     sd_box = tile_box_list[0]
@@ -244,7 +255,7 @@ def test_compute_sub_domain_position_strain_all():
     name_list_path = ia.image_folder_to_path_list(folder_path)
     tiff_list = ia.read_all_tiff(name_list_path)
     img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
-    tracker_col, tracker_row = ia.track_all_steps(img_list_uint8, mask)
+    tracker_col, tracker_row = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
     tracker_col_all = [tracker_col, tracker_col]
     tracker_row_all = [tracker_row, tracker_row]
     sub_domain_F_all, sub_domain_row_all, sub_domain_col_all = sa.compute_sub_domain_position_strain_all(tracker_row_all, tracker_col_all, sd_box_list)
@@ -269,7 +280,7 @@ def test_format_F_for_save():
     name_list_path = ia.image_folder_to_path_list(folder_path)
     tiff_list = ia.read_all_tiff(name_list_path)
     img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
-    tracker_col, tracker_row = ia.track_all_steps(img_list_uint8, mask)
+    tracker_col, tracker_row = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
     tracker_col_all = [tracker_col, tracker_col]
     tracker_row_all = [tracker_row, tracker_row]
     sub_domain_F_all, _, _ = sa.compute_sub_domain_position_strain_all(tracker_row_all, tracker_col_all, sd_box_list)
@@ -295,7 +306,7 @@ def test_format_sd_row_col_for_save():
     name_list_path = ia.image_folder_to_path_list(folder_path)
     tiff_list = ia.read_all_tiff(name_list_path)
     img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
-    tracker_col, tracker_row = ia.track_all_steps(img_list_uint8, mask)
+    tracker_col, tracker_row = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
     tracker_col_all = [tracker_col, tracker_col]
     tracker_row_all = [tracker_row, tracker_row]
     _, sub_domain_row_all, sub_domain_col_all = sa.compute_sub_domain_position_strain_all(tracker_row_all, tracker_col_all, sd_box_list)
@@ -317,7 +328,7 @@ def test_save_sub_domain_strain():
     name_list_path = ia.image_folder_to_path_list(folder_path)
     tiff_list = ia.read_all_tiff(name_list_path)
     img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
-    tracker_col, tracker_row = ia.track_all_steps(img_list_uint8, mask)
+    tracker_col, tracker_row = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
     tracker_col_all = [tracker_col, tracker_col]
     tracker_row_all = [tracker_row, tracker_row]
     sub_domain_F_all, sub_domain_row_all, sub_domain_col_all = sa.compute_sub_domain_position_strain_all(tracker_row_all, tracker_col_all, sd_box_list)
@@ -337,13 +348,15 @@ def test_load_sub_domain_strain():
     name_list_path = ia.image_folder_to_path_list(folder_path)
     tiff_list = ia.read_all_tiff(name_list_path)
     img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
-    tracker_col, tracker_row = ia.track_all_steps(img_list_uint8, mask)
+    tracker_col, tracker_row = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
     tracker_col_all = [tracker_col, tracker_col]
     tracker_row_all = [tracker_row, tracker_row]
     sub_domain_F_all, sub_domain_row_all, sub_domain_col_all = sa.compute_sub_domain_position_strain_all(tracker_row_all, tracker_col_all, sd_box_list)
     strain_sub_domain_info = np.asarray([[num_tile_row, num_tile_col], [tile_dim_pix, tile_dim_pix], [200, 200], [0, 1]])
     input_path = example_path("real_example_short")
-    _ = ia.run_tracking(input_path)
+    fps = 1
+    length_scale = 1
+    _ = ia.run_tracking(input_path, fps, length_scale)
     _ = sa.save_sub_domain_strain(input_path, sub_domain_F_all, sub_domain_row_all, sub_domain_col_all, strain_sub_domain_info)
     sub_domain_F_rr_all, sub_domain_F_rc_all, sub_domain_F_cr_all, sub_domain_F_cc_all, sub_domain_row_all, sub_domain_col_all, _, _ = sa.load_sub_domain_strain(input_path)
     num_subdomains = len(sd_box_list)
@@ -374,22 +387,26 @@ def test_load_sub_domain_strain_errors():
     assert error.typename == "FileNotFoundError"
 
 
-def test_F_to_Ecc():
+def test_F_to_E():
     F_rr = 1
     F_rc = 0
     F_cr = 0
     F_cc = 1
-    E_cc = sa.F_to_Ecc(F_rr, F_rc, F_cr, F_cc)
+    E_cc, E_cr, E_rr = sa.F_to_E(F_rr, F_rc, F_cr, F_cc)
     assert E_cc == 0
+    assert E_cr == 0
+    assert E_rr == 0
     F_rr = 2
     F_rc = 0
     F_cr = 0
     F_cc = 4
-    E_cc = sa.F_to_Ecc(F_rr, F_rc, F_cr, F_cc)
+    E_cc, E_cr, E_rr = sa.F_to_E(F_rr, F_rc, F_cr, F_cc)
     assert np.isclose(E_cc, 7.5)
+    assert np.isclose(E_cr, 0)
+    assert np.isclose(E_rr, 1.5)
 
 
-def test_F_to_Ecc_all():
+def test_F_to_E_all():
     file_path = tissue_mask_path("real_example_super_short")
     mask = ia.read_txt_as_mask(file_path)
     tile_style = 1
@@ -398,14 +415,18 @@ def test_F_to_Ecc_all():
     name_list_path = ia.image_folder_to_path_list(folder_path)
     tiff_list = ia.read_all_tiff(name_list_path)
     img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
-    tracker_col, tracker_row = ia.track_all_steps(img_list_uint8, mask)
+    tracker_col, tracker_row = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
     tracker_col_all = [tracker_col, tracker_col]
     tracker_row_all = [tracker_row, tracker_row]
     sub_domain_F_all, _, _ = sa.compute_sub_domain_position_strain_all(tracker_row_all, tracker_col_all, sd_box_list)
     sub_domain_F_rr_all, sub_domain_F_rc_all, sub_domain_F_cr_all, sub_domain_F_cc_all = sa.format_F_for_save(sub_domain_F_all)
-    sub_domain_Ecc_all = sa.F_to_Ecc_all(sub_domain_F_rr_all, sub_domain_F_rc_all, sub_domain_F_cr_all, sub_domain_F_cc_all)
+    sub_domain_Ecc_all, sub_domain_Ecr_all, sub_domain_Err_all = sa.F_to_E_all(sub_domain_F_rr_all, sub_domain_F_rc_all, sub_domain_F_cr_all, sub_domain_F_cc_all)
     assert len(sub_domain_Ecc_all) == len(tracker_col_all)
-    assert sub_domain_Ecc_all[0].shape == (len(sd_box_list), sub_domain_F_rr_all[0].shape[1])
+    assert len(sub_domain_Ecr_all) == len(tracker_col_all)
+    assert len(sub_domain_Err_all) == len(tracker_col_all)
+    assert sub_domain_Ecc_all[0].shape == (len(sd_box_list), sub_domain_F_cc_all[0].shape[1])
+    assert sub_domain_Ecr_all[0].shape == (len(sd_box_list), sub_domain_F_cr_all[0].shape[1])
+    assert sub_domain_Err_all[0].shape == (len(sd_box_list), sub_domain_F_cc_all[0].shape[1])
 
 
 def test_run_sub_domain_strain_analysis():
