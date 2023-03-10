@@ -1361,7 +1361,8 @@ def run_pillar_tracking(folder_path: Path, pillar_modulus: float, pillar_width: 
         saved_paths.extend(saved_paths_2)
     else:
         # load pillar mask
-        mask_file_path = mask_folder_path.joinpath("pillar_mask_*.txt").resolve()
+        #mask_file_path = mask_folder_path.joinpath('pillar_mask_*.txt').resolve()
+        mask_file_path =  glob.glob(str(mask_folder_path) + '/pillar_mask_*.txt')[0]
         mask = read_txt_as_mask(mask_file_path)
         # perform tracking
         tracker_0, tracker_1 = track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
