@@ -431,7 +431,9 @@ def test_F_to_E_all():
 
 def test_run_sub_domain_strain_analysis():
     input_path = example_path("real_example_short")
-    _ = ia.run_tracking(input_path)
+    fps = 1
+    length_scale = 1
+    _ = ia.run_tracking(input_path, fps, length_scale)
     saved_paths = sa.run_sub_domain_strain_analysis(input_path)
     for sap in saved_paths:
         assert sap.is_file()
@@ -452,7 +454,9 @@ def test_png_sub_domains_numbered():
     name_list_path = ia.image_folder_to_path_list(movie_folder)
     tiff_list = ia.read_all_tiff(name_list_path)
     example_tiff = tiff_list[0]
-    _ = ia.run_tracking(folder_path)
+    fps = 1
+    length_scale = 1
+    _ = ia.run_tracking(folder_path, fps, length_scale)
     _ = sa.run_sub_domain_strain_analysis(folder_path)
     _, _, _, _, sub_domain_row_all, sub_domain_col_all, _, strain_info = sa.load_sub_domain_strain(folder_path)
     # update to using loaded info!
@@ -467,30 +471,58 @@ def test_png_sub_domains_numbered():
 
 def test_png_sub_domain_strain_timeseries_all():
     folder_path = example_path("real_example_short")
-    _ = ia.run_tracking(folder_path)
+    fps = 1
+    length_scale = 1
+    _ = ia.run_tracking(folder_path, fps, length_scale)
     _ = sa.run_sub_domain_strain_analysis(folder_path)
     sub_domain_F_rr_all, sub_domain_F_rc_all, sub_domain_F_cr_all, sub_domain_F_cc_all, sub_domain_row_all, sub_domain_col_all, info, strain_info = sa.load_sub_domain_strain(folder_path)
-    sub_domain_Ecc_all = sa.F_to_Ecc_all(sub_domain_F_rr_all, sub_domain_F_rc_all, sub_domain_F_cr_all, sub_domain_F_cc_all)
+    sub_domain_Ecc_all, sub_domain_Ecr_all, sub_domain_Err_all = sa.F_to_E_all(sub_domain_F_rr_all, sub_domain_F_rc_all, sub_domain_F_cr_all, sub_domain_F_cc_all)
     mask_path = tissue_mask_path("real_example_short")
     mask = ia.read_txt_as_mask(mask_path)
     tile_style = 1
     _, _, num_sd_row, num_sd_col = sa.create_sub_domains(mask, pillar_clip_fraction=0.5, shrink_row=0.1, shrink_col=0.1, tile_dim_pix=40, num_tile_row=5, num_tile_col=3, tile_style=tile_style)
-    img_path = sa.png_sub_domain_strain_timeseries_all(folder_path, sub_domain_Ecc_all, num_sd_row, num_sd_col)
+    img_path = sa.png_sub_domain_strain_timeseries_all(folder_path, sub_domain_Ecc_all, num_sd_row, num_sd_col,"Ecc")
     for ig in img_path:
         assert ig.is_file()
+    img_path = sa.png_sub_domain_strain_timeseries_all(folder_path, sub_domain_Ecc_all, num_sd_row, num_sd_col,"Ecr")
+    for ig in img_path:
+        assert ig.is_file()
+    img_path = sa.png_sub_domain_strain_timeseries_all(folder_path, sub_domain_Ecc_all, num_sd_row, num_sd_col,"Err")
+    for ig in img_path:
+        assert ig.is_file()
+
+def test_compute_min_max_strain():
+    info = [[0, 5, 35], [1, 35, 65], [2, 65, 95]]
+    info = np.asarray(info)
+    num_beats = len(info)
+    num_pts = 10
+    num_frames = 100
+    num_beat_frames = 30
+    sub_domain_E_beat = 100 * np.ones((num_pts, num_beat_frames)) + np.random.random((num_pts, num_beat_frames))
+    sub_domain_E_all = np.zeros((num_beats,num_pts,num_frames))
+    sub_domain_E_all [0,:,5:35] = sub_domain_E_beat
+    sub_domain_E_all [1,:,35:65] = sub_domain_E_beat
+    sub_domain_E_all [2,:,65:95] = sub_domain_E_beat
+    min_E_all = np.min(sub_domain_E_all)
+    max_E_all = np.max(sub_domain_E_all)
+    min_E_c, max_E_c = sa.compute_min_max_strain(sub_domain_E_all, info)
+    assert np.isclose(min_E_all, min_E_c)
+    assert np.isclose(max_E_all, max_E_c)
 
 
 def test_pngs_sub_domain_strain_and_gif():
     folder_path = example_path("real_example_short")
-    _ = ia.run_tracking(folder_path)
+    fps = 1
+    length_scale = 1
+    _ = ia.run_tracking(folder_path, fps, length_scale)
     _ = sa.run_sub_domain_strain_analysis(folder_path)
     movie_folder = movie_path("real_example_short")
     name_list_path = ia.image_folder_to_path_list(movie_folder)
     tiff_list = ia.read_all_tiff(name_list_path)
     sub_domain_F_rr_all, sub_domain_F_rc_all, sub_domain_F_cr_all, sub_domain_F_cc_all, sub_domain_row_all, sub_domain_col_all, info, strain_info = sa.load_sub_domain_strain(folder_path)
     sub_domain_side = strain_info[1, 0]
-    sub_domain_Ecc_all = sa.F_to_Ecc_all(sub_domain_F_rr_all, sub_domain_F_rc_all, sub_domain_F_cr_all, sub_domain_F_cc_all)
-    saved_paths = sa.pngs_sub_domain_strain(folder_path, tiff_list, sub_domain_row_all, sub_domain_col_all, sub_domain_Ecc_all, sub_domain_side, info)
+    sub_domain_Ecc_all, _, _ = sa.F_to_E_all(sub_domain_F_rr_all, sub_domain_F_rc_all, sub_domain_F_cr_all, sub_domain_F_cc_all)
+    saved_paths = sa.pngs_sub_domain_strain(folder_path, tiff_list, sub_domain_row_all, sub_domain_col_all, sub_domain_Ecc_all, sub_domain_side, info, "Ecc")
     for sap in saved_paths:
         assert sap.is_file()
     gif_path = sa.create_gif(folder_path, saved_paths)

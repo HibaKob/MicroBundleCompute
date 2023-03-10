@@ -415,7 +415,6 @@ def png_sub_domains_numbered(
             corners_cc = [center_col - sds, center_col + sds, center_col + sds, center_col - sds, center_col - sds]
             plt.plot(corners_cc, corners_rr, "k-", linewidth=1)
     plt.axis("off")
-    # plt.savefig(str(img_path))
     plt.savefig(str(img_path),format='pdf')
     plt.close()
     return img_path
@@ -461,62 +460,13 @@ def png_sub_domain_strain_timeseries_all(
         box = ax.get_position()
         ax.set_position([box.x0, box.y0 + box.height * 0.25, box.width, box.height * 0.75])
         ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=num_sd_col)
-        #img_path = pngs_folder_path.joinpath(fname + "_beat%i.png" % (kk)).resolve()
         img_path = pngs_folder_path.joinpath(fname + "_beat%i.pdf" % (kk)).resolve()
-        # plt.savefig(str(img_path))
         plt.savefig(str(img_path), format='pdf')
         plt.close()
         path_list.append(img_path)
     return path_list
 
-''' Frame label starts from frame_i of beat_x'''
-# def png_sub_domain_strain_timeseries_all(
-#     folder_path: Path,
-#     sub_domain_strain_all: List,
-#     num_sd_row: int,
-#     num_sd_col: int,
-#     info: np.ndarray,
-#     col_map: object = plt.cm.rainbow,
-#     *,
-#     fname: str = "strain_timeseries_Ecc",
-#     xlabel: str = "frame",
-#     ylabel: str = "strain Ecc"
-# ) -> List:
-#     """Given strain timeseries. Will plot all timeseries on the same axis."""
-#     vis_folder_path = ia.create_folder(folder_path, "visualizations")
-#     pngs_folder_path = ia.create_folder(vis_folder_path, "strain_pngs")
-#     num_beats = info.shape[0]
-#     path_list = []
-#     for kk in range(0, num_beats):
-#         plt.figure()
-#         ax = plt.subplot(111)
-#         sub_domain_strain = sub_domain_strain_all[kk]
-#         start_idx = int(info[kk, 1])
-#         end_idx = int(info[kk, 2])
-#         frames = range(start_idx,end_idx+1,2)
-#         for cc in range(0, num_sd_col):
-#             for rr in range(0, num_sd_row):
-#                 lab = get_text_str(rr, cc)
-#                 idx = rr * num_sd_col + cc
-#                 lab = get_text_str(rr, cc)
-#                 ax.plot(sub_domain_strain[idx, :], label=lab, color=col_map(idx / (num_sd_col * num_sd_row)))
-#         ax.xaxis.set_ticks(range(0,2*len(frames)-1,2))
-#         ax.set_xticklabels([str(x) for x in frames])
-#         ax.set_xlabel(xlabel)
-#         ax.set_ylabel(ylabel)
-#         ax.set_title("beat %i" % (kk))
-#         box = ax.get_position()
-#         ax.set_position([box.x0, box.y0 + box.height * 0.25, box.width, box.height * 0.75])
-#         ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=num_sd_col)
-#         #img_path = pngs_folder_path.joinpath(fname + "_beat%i.png" % (kk)).resolve()
-#         img_path = pngs_folder_path.joinpath(fname + "_beat%i.pdf" % (kk)).resolve()
-#         # plt.savefig(str(img_path))
-#         plt.savefig(str(img_path), format='pdf')
-#         plt.close()
-#         path_list.append(img_path)
-#     return path_list
 
-# =============================================================================
 def compute_min_max_strain (
     sub_domain_E_all,
     info: np.ndarray
@@ -533,7 +483,6 @@ def compute_min_max_strain (
     
     return min_E_c, max_E_c
    
-# =============================================================================
 
 def pngs_sub_domain_strain(
     folder_path: Path,
@@ -598,22 +547,6 @@ def pngs_sub_domain_strain(
     return path_list
 
 
-# =============================================================================
-'''Using imageio or PIL'''
-# def create_gif(folder_path: Path, png_path_list: List, fname="sub_domain_strain") -> Path:
-#     """Given the pngs path list. Will create a gif."""
-#     img_list = []
-#     for pa in png_path_list:
-#         # img_list.append(imageio.imread(pa))
-#         img_list.append(Image.open(pa))
-#     fn_gif = fname + ".gif"
-#     gif_path = folder_path.joinpath("visualizations").resolve().joinpath(fn_gif).resolve()
-#     # imageio.mimsave(str(gif_path), img_list)
-#     img_list[0].save(fp=str(gif_path), format='GIF', append_images=img_list[1:], save_all=True)
-#     return gif_path
-# =============================================================================
-
-# ==================================================================================================
 def create_gif(folder_path: Path, png_path_list: List, fname="sub_domain_strain") -> Path:
     """Given the pngs path list. Will create a gif."""
     img_list = []
@@ -630,7 +563,7 @@ def create_gif(folder_path: Path, png_path_list: List, fname="sub_domain_strain"
     ani = animation.ArtistAnimation(fig, img_list,interval=100)
     ani.save(gif_path,dpi=100)
     return gif_path
-# ==================================================================================================
+
 
 def run_sub_domain_strain_analysis(
     folder_path: Path,
