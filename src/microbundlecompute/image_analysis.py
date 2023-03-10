@@ -1362,7 +1362,7 @@ def run_pillar_tracking(folder_path: Path, pillar_modulus: float, pillar_width: 
     else:
         # load pillar mask
         #mask_file_path = mask_folder_path.joinpath('pillar_mask_*.txt').resolve()
-        mask_file_path =  glob.glob(str(mask_folder_path) + '/pillar_mask_*.txt')[0]
+        mask_file_path =  glob.glob(str(mask_folder_path) + '/*pillar_mask_*.txt')[0]
         mask = read_txt_as_mask(mask_file_path)
         # perform tracking
         tracker_0, tracker_1 = track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
@@ -1443,7 +1443,7 @@ def visualize_pillar_tracking(folder_path: Path) -> Path:
     else:
         # load pillar force results
         pillar_tracker_row, pillar_tracker_col, all_pillar_force, _, _ = load_pillar_tracking_results(folder_path)
-        mean_abs_disp, _, _ = compute_pillar_position_timeseries(pillar_tracker_row,pillar_tracker_col)
+        mean_abs_disp, mean_disp_all_row, mean_disp_all_col = compute_pillar_position_timeseries(pillar_tracker_row,pillar_tracker_col)
         
         plt.figure()
         plt.plot(mean_abs_disp)
@@ -1454,8 +1454,8 @@ def visualize_pillar_tracking(folder_path: Path) -> Path:
         plt.close()
         
         plt.figure()
-        plt.plot(pillar_tracker_row, label='row (vertical) displacement')
-        plt.plot(pillar_tracker_col, label='column (horizontal) displacement')
+        plt.plot(mean_disp_all_row, label='row (vertical) displacement')
+        plt.plot(mean_disp_all_col, label='column (horizontal) displacement')
         plt.ylabel(r'pillar mean displacement (pixels)')
         plt.xlabel('frame')
         plt.legend(loc='upper right')
