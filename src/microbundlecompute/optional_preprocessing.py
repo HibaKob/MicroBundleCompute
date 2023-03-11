@@ -30,7 +30,7 @@ def filter_all_images(path_list: List, kernel) -> List:
         original_img = io.imread(img)
         filtered_img = apply_image_kernel(original_img, kernel)
         io.imsave(img,filtered_img)
-        filtered_img_list.append(img)
+        filtered_img_list.append(filtered_img)
     return filtered_img_list
 
 
