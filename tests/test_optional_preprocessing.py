@@ -77,6 +77,3 @@ def test_adjust_first_valley():
     raw_movie_path = folder_path.joinpath("unadjusted_movie").resolve()
     raw_images = glob.glob(str(raw_movie_path) + '/*.TIF')
     assert len(adjusted_img_paths) == (len(raw_images) - valley_image)
-
-
-    
