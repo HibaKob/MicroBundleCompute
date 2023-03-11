@@ -65,10 +65,18 @@ def test_filter_all_images():
 def test_run_image_filtering():
     folder_path = example_path("example_image_filter")
     kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
-    filtered_img_list = op.filter_all_images(folder_path, kernel)
+    filtered_img_list = op.run_image_filtering(folder_path, kernel)
     raw_images = glob_movie(folder_path)
     assert len(filtered_img_list) == len(raw_images)
 
+
+def test_adjust_first_valley():
+    folder_path = example_path("example_adjust_valley")
+    valley_image = 5
+    adjusted_img_paths = op.adjust_first_valley(folder_path, valley_image)
+    raw_movie_path = folder_path.joinpath("unadjusted_movie").resolve()
+    raw_images = glob.glob(str(raw_movie_path) + '/*.TIF')
+    assert len(adjusted_img_paths) == (len(raw_images) - valley_image)
 
 
     
