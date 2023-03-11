@@ -531,10 +531,20 @@ def test_pngs_sub_domain_strain_and_gif():
 
 def test_visualize_sub_domain_strain():
     folder_path = example_path("real_example_short")
-    png_path_list, gif_path, loc_legend_path, timeseries_path_list = sa.visualize_sub_domain_strain(folder_path)
-    for sap in png_path_list:
+    png_path_list_Ecc, png_path_list_Ecr, png_path_list_Err, gif_path_Ecc, gif_path_Ecr, gif_path_Err, loc_legend_path, timeseries_path_list_Ecc, timeseries_path_list_Ecr, timeseries_path_list_Err = sa.visualize_sub_domain_strain(folder_path)
+    for sap in png_path_list_Ecc:
         assert sap.is_file()
-    assert gif_path.is_file()
+    assert gif_path_Ecc.is_file()
+    for sap in png_path_list_Ecr:
+        assert sap.is_file()
+    assert gif_path_Ecr.is_file()
+    for sap in png_path_list_Err:
+        assert sap.is_file()
+    assert gif_path_Err.is_file()
     assert loc_legend_path.is_file()
-    for tpl in timeseries_path_list:
+    for tpl in timeseries_path_list_Ecc:
+        assert tpl.is_file()
+    for tpl in timeseries_path_list_Ecr:
+        assert tpl.is_file()
+    for tpl in timeseries_path_list_Err:
         assert tpl.is_file()
