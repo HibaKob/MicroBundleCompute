@@ -4,6 +4,8 @@ from pathlib import Path
 import numpy as np
 import cv2
 import glob
+import shutil
+import os
 
 
 def files_path():
@@ -72,8 +74,15 @@ def test_run_image_filtering():
 
 def test_adjust_first_valley():
     folder_path = example_path("example_adjust_valley")
+    unadjusted_movie_path = folder_path.joinpath("unadjusted_movie").resolve()
+    adjusted_movie_path = movie_path(folder_path)
+    if os.path.exists(unadjusted_movie_path):
+        shutil.rmtree(adjusted_movie_path)
+        op.rename_folder(folder_path,"unadjusted_movie","movie")
     valley_image = 5
     adjusted_img_paths = op.adjust_first_valley(folder_path, valley_image)
     raw_movie_path = folder_path.joinpath("unadjusted_movie").resolve()
     raw_images = glob.glob(str(raw_movie_path) + '/*.TIF')
     assert len(adjusted_img_paths) == (len(raw_images) - valley_image)
+
+     

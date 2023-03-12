@@ -429,11 +429,11 @@ def test_save_beat_info():
 
 
 def test_test_frame_0_valley():
-    mov_path = movie_path("real_example_short")
+    mov_path = movie_path("example_frame0_not_valley")
     name_list_path = ia.image_folder_to_path_list(mov_path)
     tiff_list = ia.read_all_tiff(name_list_path)
     img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
-    mask_path = tissue_mask_path("real_example_short")
+    mask_path = tissue_mask_path("example_frame0_not_valley")
     mask = ia.read_txt_as_mask(mask_path)
     tracker_0, tracker_1 = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
     timeseries, _, _, _  = ia. compute_abs_position_timeseries(tracker_0, tracker_1)

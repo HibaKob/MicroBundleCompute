@@ -5,7 +5,6 @@ from typing import List
 import numpy as np
 import cv2
 import os
-import glob
 
 
 def rename_folder(folder_path: Path, folder_name: str, new_folder_name: str) -> Path:
