@@ -21,7 +21,20 @@ We will configure these once we make the repository public:
 * [Acknowledgements](#acknowledge)
 
 ## Project Summary <a name="summary"></a>
-The MicroBundleCompute software is mainly developed to track and analyze the beating action of lab engineered cardiac microtissues or microbundles from brightfield movie frames. In this repository, we share the source code, steps to download and install the software, tutorials on how to run the different main and optional functionalities of the software, and details about code validation.  
+The MicroBundleCompute software is developed as a multi-purpose tool for analyzing heterogeneous cardiac microtissue deformation and strain from brightfield movies of beating microtissue. In this repository, we share the source code, steps to download and install the software, tutorials on how to run the different main and optional functionalities of the software, and details about code validation. 
+
+Briefly, the software requires two main inputs: `1)` a binary mask of the tissue and `2)` consecutive movie frames of the beating microtissue. The mask can be either generated manually or externally, or automatically using one of the software’s built-in functionalities. Tracking points identified as Shi-Tomasi corner points are then computed on the first frame of the movie and tracked
+across all frames. From this preliminary tracking, we can identify individual beats. This allows us to perform the analysis per beat by tracking the
+marker points identified at the first frame of each beat across the beat frames. From these tracked points, we are able to compute full-field displacements,
+and subdomain-averaged strains. We also include post-processing functionalities to rotate the images and tracking results as well as interpolate
+the results at query points. To visualize the results, the software outputs timeseries plots per beat and movies of full-field results. Finally, we validate our software against synthetically generated beating microtissue data with a known ground truth.
+
+
+
+Additionally, the user can also specify to track the pillars or posts to which the microtissue is attached. In this case, a mask for the pillars (posts) should be provided. The outputs for this tracking option are timeseries plots of the pillars' mean absolute displacement and force results. We note that this additional functionality has not been vigorously validated at the moment.  
+
+
+ 
 
 ## Project Roadmap <a name="roadmap"></a>
 
