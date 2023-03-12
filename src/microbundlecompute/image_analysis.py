@@ -265,66 +265,18 @@ def save_beat_info(folder_path: Path,frequency: float, amplitude: float) -> Path
     return file_path
 
 
-def generate_n_randints(number_pts: int, start: int, end: int, seed: int) -> np.ndarray:
-    """Given desired number of random points, start, end and seed for random number generator.
-    Will output the specified number of radom integers."""
-    rng = np.random.default_rng(seed)
-    random_pts = rng.integers(low=start, high=end, size=number_pts)  
-    return random_pts
-
-
-def find_distance_arrays (query_array: np.ndarray, reference_array: np.ndarray) -> np.ndarray:
-    """Given two 2D arrays. Will output a 2D array of all pair-wise distances."""
-    distance = distance_matrix(query_array,reference_array, p=2)
-    return distance
-
-
-def find_nearest_pts (tracker_row_all: np.ndarray, tracker_col_all: np.ndarray, 
-                      query_pts_idx: np.ndarray, number_nearest_neigh: int) -> np.ndarray:
-    """Given tracking results, indices of query points and number of nearest neighbors (n). Will 
-    return the indices of the n nearest neighbors of all given query points."""
-    step_0_row_col = np.asarray([tracker_row_all[:,0],tracker_col_all[:,0]]).T
-    step_0_query_pts = step_0_row_col[query_pts_idx,:]
-    step_0_distance = find_distance_arrays(step_0_query_pts,step_0_row_col)
-    nearest_neigh_idx = np.argsort(step_0_distance)[:,1:number_nearest_neigh+1]
-    return nearest_neigh_idx
-
-
-def find_dist_all_steps (tracker_row_all: np.ndarray, tracker_col_all: np.ndarray, 
-               query_pts_idx: np.ndarray, nearest_neigh_idx: np.ndarray) -> np.ndarray:
+def test_frame_0_valley(timeseries: np.ndarray, info: np.ndarray):
+    valley_pairs = info.T[1:]
+    valleys = np.unique(valley_pairs.ravel())
+    valleys = np.asarray(valleys, dtype=int)
+    min_valley_mean_abs_disp = np.min(timeseries[valleys])
+    tracked_timeseries = timeseries[valleys[0]:]
+    min_nonzero_mean_abs_disp = np.min(tracked_timeseries[tracked_timeseries!=0])
     
-    number_steps = np.shape(tracker_row_all)[1]
-    number_query_pts = len(query_pts_idx)
-    
-    all_steps_mean_dist = []
-    for kk in range(number_steps):
-        step_tracker_row_col = np.asarray([tracker_row_all[:,kk],tracker_col_all[:,kk]]).T
-        query_pts_row_col = step_tracker_row_col[query_pts_idx,:]
-        all_mean_dist_query_pts = []
-        for jj in range(number_query_pts):
-            distance = find_distance_arrays([query_pts_row_col[jj,:]],step_tracker_row_col[nearest_neigh_idx[jj,:]])
-            mean_dist = np.mean(distance)
-            all_mean_dist_query_pts.append(mean_dist)
-        all_steps_mean_dist.append(all_mean_dist_query_pts) 
-    all_steps_mean_dist_array = np.asarray(all_steps_mean_dist)
-    return all_steps_mean_dist_array
-
-
-def test_frame_0_valley (tracker_row_all: np.ndarray, tracker_col_all: np.ndarray, number_pts: int, 
-                         number_nearest_neigh: int):  
-    start = 0
-    end = np.shape(tracker_row_all)[0]
-    seed = 20
-    query_pts_idx = generate_n_randints(number_pts,start,end,seed)
-    nearest_neigh_idx = find_nearest_pts(tracker_row_all,tracker_col_all,query_pts_idx,number_nearest_neigh)
-    timeseries_all_steps = find_dist_all_steps (tracker_row_all, tracker_col_all, query_pts_idx, nearest_neigh_idx)
-    mean_timeseries_all_steps = np.mean(timeseries_all_steps,axis=0)
-    timeseries_offset = timeseries_all_steps - mean_timeseries_all_steps
-    signs = np.sign(timeseries_offset)
-    nmbr_negative_step_0 = len(np.where(signs[0,:]<0)[0])
-    if nmbr_negative_step_0/number_pts > 0.7:
+    if np.isclose(min_valley_mean_abs_disp,min_nonzero_mean_abs_disp, atol=0.01):
+        pass
+    else:
         warnings.warn('Input video does not start from a valley position. Consider adjusting the video using the preprocessing function "adjust_first_valley".')
-
 
 
 def split_tracking(tracker_0: np.ndarray, tracker_1: np.ndarray, info: np.ndarray) -> Path:
@@ -403,11 +355,11 @@ def run_tracking(folder_path: Path, fps: int, length_scale: float) -> List:
     tissue_width = get_tissue_width(mask)
     # perform tracking
     tracker_0, tracker_1 = track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
-    # test if frame 0 is a valley frame or not: warn the user
-    test_frame_0_valley(tracker_0,tracker_1,40,50)
     # perform timeseries segmentation
     timeseries, _, _, _ = compute_abs_position_timeseries(tracker_0, tracker_1)
     info =  compute_valleys(timeseries)
+    # test if frame 0 is a valley frame or not: warn the user
+    test_frame_0_valley(timeseries, info)
     # split tracking results
     tracker_0_all, tracker_1_all = split_tracking(tracker_0, tracker_1, info)
     # compute beat frequency and amplitude

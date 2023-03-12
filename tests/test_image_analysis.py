@@ -428,116 +428,33 @@ def test_save_beat_info():
     assert saved_path.is_file()
 
 
-def test_generate_n_randints():
-    seed = 20
-    start = 0
-    end  = 100
-    number_pts = 10
-    randm_pts = ia.generate_n_randints(number_pts = number_pts, start = start, end = end, seed = seed)
-    assert len(randm_pts) == number_pts
-    assert np.min(randm_pts) >= start
-    assert np.max(randm_pts) < end
-
-
-def test_find_distance_arrays():
-    array_1 = np.array([[1,2,3,4],[1,2,3,4]]).T
-    array_2 = np.array([[0,0,1,1],[0,1,0,1]]).T
-    all_dist_gt = []
-    for pp in range(array_1.shape[0]):
-        for qq in range(array_2.shape[0]):
-            pt_1 = array_1[pp]
-            pt_2 = array_2[qq]
-            diff = pt_2 - pt_1
-            euc_dist = np.sqrt(diff[0]**2 + diff[1]**2)
-            all_dist_gt.append(euc_dist)
-    all_dist_gt_array = np.asarray(all_dist_gt).reshape(array_1.shape[0],array_2.shape[0])
-
-    distance = ia.find_distance_arrays(array_1 ,array_2)
-    assert distance.shape == (array_1.shape[0],array_2.shape[0])
-    assert np.allclose(distance, all_dist_gt_array, atol=0.01)
-
-
-def test_find_nearest_pts():
-    tracker_0 = np.zeros((10, 100))
-    start = 0
-    end = tracker_0.shape[1]
-    tracker_1 = np.linspace(start=start, stop=end, num=10*end)
-    tracker_1 = tracker_1.reshape(tracker_0.shape)
-    number_nearest_neigh = 5
-    query_pts_idx  = [0,1,2]
-    number_query_pts = len(query_pts_idx)
-    nearest_neigh_idx = ia.find_nearest_pts (tracker_0, tracker_1, query_pts_idx = query_pts_idx, number_nearest_neigh = number_nearest_neigh)
-    assert nearest_neigh_idx.shape == (number_query_pts,number_nearest_neigh)
-    assert np.max(nearest_neigh_idx) < (number_nearest_neigh + 1)
-
-
-def test_find_dist_all_step ():
-    tracker_0 = np.zeros((10, 100))
-    start = 0
-    end = tracker_0.shape[1]
-    tracker_1 = np.linspace(start=start, stop=end, num=1000)
-    tracker_1 = tracker_1.reshape(tracker_0.shape)
-    number_nearest_neigh = 2
-    query_pts_idx = [0,1,2]
-    number_query_pts = len(query_pts_idx)
-    nearest_neigh_idx = ia.find_nearest_pts (tracker_0, tracker_1, query_pts_idx = query_pts_idx, number_nearest_neigh = number_nearest_neigh)
-    all_steps_mean_dist_array = ia.find_dist_all_steps(tracker_0, tracker_1, query_pts_idx, nearest_neigh_idx)
-    """Establish ground truth results"""
-    pt_0 = np.array([tracker_0[0,:],tracker_1[0,:]])
-    pt_1 = np.array([tracker_0[1,:],tracker_1[1,:]])
-    pt_2 = np.array([tracker_0[2,:],tracker_1[2,:]])
-
-    pt_0_neigh_1 = np.array([tracker_0[nearest_neigh_idx[0,0],:],tracker_1[nearest_neigh_idx[0,0],:]])
-    pt_0_neigh_2 = np.array([tracker_0[nearest_neigh_idx[0,1],:],tracker_1[nearest_neigh_idx[0,1],:]])
-    diff_0_1 = pt_0 - pt_0_neigh_1
-    diff_0_2 = pt_0 - pt_0_neigh_2
-    dist_0_1 = np.sqrt(diff_0_1[0]**2 + diff_0_1[1]**2)
-    dist_0_2 = np.sqrt(diff_0_2[0]**2 + diff_0_2[1]**2)
-    dist_0 = np.array([dist_0_1,dist_0_2])
-    mean_dist_0 = np.mean(dist_0)
-
-    pt_1_neigh_1 = np.array([tracker_0[nearest_neigh_idx[1,0],:],tracker_1[nearest_neigh_idx[1,0],:]])
-    pt_1_neigh_2 = np.array([tracker_0[nearest_neigh_idx[1,1],:],tracker_1[nearest_neigh_idx[1,1],:]])
-    diff_1_1 = pt_1 - pt_1_neigh_1
-    diff_1_2 = pt_1 - pt_1_neigh_2
-    dist_1_1 = np.sqrt(diff_1_1[0]**2 + diff_1_1[1]**2)
-    dist_1_2 = np.sqrt(diff_1_2[0]**2 + diff_1_2[1]**2)
-    dist_1 = np.array([dist_1_1,dist_1_2])
-    mean_dist_1 = np.mean(dist_1)
-
-    pt_2_neigh_1 = np.array([tracker_0[nearest_neigh_idx[2,0],:],tracker_1[nearest_neigh_idx[2,0],:]])
-    pt_2_neigh_2 = np.array([tracker_0[nearest_neigh_idx[2,1],:],tracker_1[nearest_neigh_idx[2,1],:]])
-    diff_2_1 = pt_2 - pt_2_neigh_1
-    diff_2_2 = pt_2 - pt_2_neigh_2
-    dist_2_1 = np.sqrt(diff_2_1[0]**2 + diff_2_1[1]**2)
-    dist_2_2 = np.sqrt(diff_2_2[0]**2 + diff_2_2[1]**2)
-    dist_2 = np.array([dist_2_1,dist_2_2])
-    mean_dist_2 = np.mean(dist_2)
-    assert all_steps_mean_dist_array.shape == (end,number_query_pts)
-    assert np.allclose(all_steps_mean_dist_array[:,0],mean_dist_0,atol=0.01)
-    assert np.allclose(all_steps_mean_dist_array[:,1],mean_dist_1,atol=0.01)
-    assert np.allclose(all_steps_mean_dist_array[:,2],mean_dist_2,atol=0.01)
-
-
 def test_test_frame_0_valley():
-    num_pts = 300
-    num_frames = 100
-    np.random.seed(5)
-    tracker_0 = 10 * np.ones((num_pts, num_frames)) + np.random.random((num_pts, num_frames))*20
-    tracker_1 = 100 * np.ones((num_pts, num_frames)) + np.random.random((num_pts, num_frames))*20
+    mov_path = movie_path("real_example_short")
+    name_list_path = ia.image_folder_to_path_list(mov_path)
+    tiff_list = ia.read_all_tiff(name_list_path)
+    img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
+    mask_path = tissue_mask_path("real_example_short")
+    mask = ia.read_txt_as_mask(mask_path)
+    tracker_0, tracker_1 = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
+    timeseries, _, _, _  = ia. compute_abs_position_timeseries(tracker_0, tracker_1)
+    info = ia.compute_valleys(timeseries)
     with pytest.warns(None) as record:
-        ia.test_frame_0_valley (tracker_0, tracker_1, number_pts = 40, number_nearest_neigh = 50)
+        ia.test_frame_0_valley (timeseries, info)
     assert len(record) == 1
 
 
 def test_test_frame_0_true_valley():
-    num_pts = 300
-    num_frames = 100
-    np.random.seed(5)
-    tracker_0 = 100 * np.ones((num_pts, num_frames)) + np.random.random((num_pts, num_frames))*20
-    tracker_1 = 10 * np.ones((num_pts, num_frames)) + np.random.random((num_pts, num_frames))*20
+    mov_path = movie_path("real_example_short")
+    name_list_path = ia.image_folder_to_path_list(mov_path)
+    tiff_list = ia.read_all_tiff(name_list_path)
+    img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
+    mask_path = tissue_mask_path("real_example_short")
+    mask = ia.read_txt_as_mask(mask_path)
+    tracker_0, tracker_1 = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
+    timeseries, _, _, _  = ia. compute_abs_position_timeseries(tracker_0, tracker_1)
+    info = ia.compute_valleys(timeseries)
     with pytest.warns(None) as record:
-        ia.test_frame_0_valley (tracker_0, tracker_1, number_pts = 10, number_nearest_neigh = 30)
+        ia.test_frame_0_valley (timeseries, info)
     assert len(record) == 0
 
 
