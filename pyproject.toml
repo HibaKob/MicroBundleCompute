@@ -8,6 +8,7 @@ name = "microbundlecompute"
 version = "0.0.0"
 authors = [
   { name="Emma Lejeune", email="elejeune@bu.edu" },
+  { name="Hiba Kobeissi", email="hibakob@bu.edu" },
 ]
 description = "microbundlecompute workflow"
 readme = "README.md"
@@ -30,6 +31,7 @@ dependencies = [
     "fonttools==4.38.0",
     "idna==3.4",
     "imageio==2.22.2",
+    "ffmpeg==4.2.2",
     "imageio-ffmpeg==0.4.7",
     "iniconfig==1.1.1",
     "kiwisolver==1.4.4",
