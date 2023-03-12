@@ -51,11 +51,11 @@ At present (**march 2023**), we have validated our software on a preliminary dat
 
 The best way to do this is to create a GitHub account and ``clone`` the repository. However, you can also download the repository by clicking the green ``Code`` button and selecting ``Download ZIP``. Download and unzip the ``MicroBundleCompute-master`` folder and place it in a convenient location on your computer.
 
-Alternatively, you can run the following command in a terminal:
+Alternatively, you can run the following command in a ``Terminal`` session:
 ```bash
 git clone https://github.com/elejeune11/MicroBundleCompute.git
 ```
-Following this step, ``MicroBundleCompute`` folder will be downloaded in your ''terminal'' directory. 
+Following this step, ``MicroBundleCompute`` folder will be downloaded in your ``Terminal`` directory. 
 
 ### Create and activate a conda virtual environment
 
