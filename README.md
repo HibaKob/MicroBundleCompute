@@ -49,12 +49,13 @@ At present (**march 2023**), we have validated our software on a preliminary dat
 
 ### Get a copy of the microbundle compute repository on your local machine
 
-The best way to do this is to create a GitHub account and ``clone`` the repository. However, you can also download the repository by clicking the green ``Code`` button and selecting ``Download ZIP``. Downloaded and unzip the ``microbundlecompute-main`` folder and place it in a convenient location on your computer.
+The best way to do this is to create a GitHub account and ``clone`` the repository. However, you can also download the repository by clicking the green ``Code`` button and selecting ``Download ZIP``. Download and unzip the ``MicroBundleCompute-master`` folder and place it in a convenient location on your computer.
 
 Alternatively, you can run the following command in a terminal:
 ```bash
 git clone https://github.com/elejeune11/MicroBundleCompute.git
 ```
+Following this step, ``MicroBundleCompute`` folder will be downloaded in your ''terminal'' directory. 
 
 ### Create and activate a conda virtual environment
 
@@ -82,26 +83,27 @@ Note that once you have created this virtual environment you can ``activate`` an
 
 ### Install microbundle compute
 
-1. Use a ``Terminal`` session to navigate to the ``microbundlecompute-main`` folder. The command ``cd`` will allow you to do this (see: [terminal cheat sheet](https://terminalcheatsheet.com/))
+1. Use a ``Terminal`` session to navigate to the ``MicroBundleCompute-master`` folder or ``MicroBundleCompute`` folder (depending on the method you followed to download the github repository). The command ``cd`` will allow you to do this (see: [terminal cheat sheet](https://terminalcheatsheet.com/))
 2. Type the command ``ls`` and make sure that the file ``pyproject.toml`` is in the current directory.
 3. Now, create an editable install of microbundle compute:
 ```bash
 pip install -e .
 ```
-4. If you would like to see what packages this has installed, you can type ``pip list``
+4. If you would like to see what packages were installed, you can type ``pip list``
 5. You can test that the code is working with pytest (all tests should pass):
 ```bash
 pytest -v --cov=microbundlecompute  --cov-report term-missing
 ```
 6. To run the code from the terminal, simply start python (type ``python``) and then type ``from microbundlecompute import image_analysis as ia``. For example:
 ```bash
-(microbundle-compute-env) eml-macbook-pro:microbundlecompute-main emma$ python
-Python 3.9.13 | packaged by conda-forge | (main, May 27 2022, 17:01:00) 
-[Clang 13.0.1 ] on darwin
+(microbundle-compute-env) hibakobeissi@Hibas-MacBook-Pro ~ % python
+Python 3.9.13 (main, Oct 13 2022, 16:12:19) 
+[Clang 12.0.0 ] :: Anaconda, Inc. on darwin
 Type "help", "copyright", "credits" or "license" for more information.
 >>> from microbundlecompute import image_analysis as ia
 >>> ia.hello_microbundle_compute()
->>> "Hello World!
+'Hello World!'
+>>> 
 ```
 
 ## Tutorial <a name="tutorial"></a>
