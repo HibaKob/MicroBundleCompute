@@ -29,7 +29,8 @@ marker points identified at the first frame of each beat across the beat frames.
 and subdomain-averaged strains. We also include post-processing functionalities to rotate the images and tracking results as well as interpolate
 the results at query points. To visualize the results, the software outputs timeseries plots per beat and movies of full-field results. Finally, we validate our software against synthetically generated beating microtissue data with a known ground truth.
 
-
+<p align = "center">
+<img alt="code pipeline" src="tutorials/figs/code_pipeline.png" width="95%" />
 
 Additionally, the user can also specify to track the pillars or posts to which the microtissue is attached. In this case, a mask for the pillars (posts) should be provided. The outputs for this tracking option are timeseries plots of the pillars' mean absolute displacement and force results. We note that this additional functionality has not been vigorously validated at the moment.  
 
