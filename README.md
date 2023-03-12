@@ -42,7 +42,7 @@ The roadmap for this collaborative endeavor is as follows:
 
 `Preliminary Dataset + Software` $\mapsto$ `Published Software Package` $\mapsto$ `Published Validation Examples and Tutorial` $\mapsto$ `Larger Dataset + Software Testing and Validation` $\mapsto$ `Automated Analysis of High-Throughput Experiments`
 
-At present (**march 2023**), we have validated our software on a preliminary dataset in addition to a synthetically generated dataset (please find more details on the [SyntheticMicroBundle github page](https://github.com/HibaKob/SyntheticMicroBundle) and the [main manuscript](add link)). We also include details on validation against manual tracking [here](add link to SA). In the next stage, we are particularly interested in expanding our dataset and perform further software validation and testing. 
+At present (**march 2023**), we have validated our software on a preliminary dataset in addition to a synthetically generated dataset (please find more details on the [SyntheticMicroBundle github page](https://github.com/HibaKob/SyntheticMicroBundle) and the [main manuscript](**add link**)). We also include details on validation against manual tracking [here](**add link to SA**). In the next stage, we are particularly interested in expanding our dataset and perform further software validation and testing. 
  Specifically, we aim to `1)` identify scenarios where our approach fails, `2)` create functions to accomodate these cases, and `3)` compare software results to previous manual approaches for extracting quantitative information, especially for pillar tracking. We will continue to update this repository as the project progresses.
 
 ## Installation Instructions <a name="install"></a>
@@ -51,6 +51,10 @@ At present (**march 2023**), we have validated our software on a preliminary dat
 
 The best way to do this is to create a GitHub account and ``clone`` the repository. However, you can also download the repository by clicking the green ``Code`` button and selecting ``Download ZIP``. Downloaded and unzip the ``microbundlecompute-main`` folder and place it in a convenient location on your computer.
 
+Alternatively, you can run the following command in a terminal:
+```bash
+git clone https://github.com/elejeune11/MicroBundleCompute.git
+```
 
 ### Create and activate a conda virtual environment
 
