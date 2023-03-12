@@ -21,7 +21,7 @@ We will configure these once we make the repository public:
 * [Acknowledgements](#acknowledge)
 
 ## Project Summary <a name="summary"></a>
-
+The MicroBundleCompute software is mainly developed to track and analyze the beating action of lab engineered cardiac microtissues or microbundles from brightfield movie frames. In this repository, we share the source code, steps to download and install the software, tutorials on how to run the different main and optional functionalities of the software, and details about code validation.  
 
 ## Project Roadmap <a name="roadmap"></a>
 
