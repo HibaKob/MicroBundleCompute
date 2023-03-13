@@ -161,7 +161,13 @@ In the current version of the code, there are 5 core functionalities available f
 
  To be able to run the code, we stress that for the code snippets in this section, the variable ``input_folder`` is a [``PosixPath``](https://docs.python.org/3/library/pathlib.html) that specifies the relative path between where the code is being run (for example the provided ``tutorials`` folder) and the ``example_folder`` defined [above](#data_prep) that the user wishes to analyze.
 #### Tissue tracking
-##### Automatic mask generation
+If the user wishes to use the ``run_code.py`` file to run the software, the ``track_mode`` should be specified as indicated below:
+
+```bash
+"""Specify if pillar or tissue tracking"""
+track_mode = "tissue" # "pillar" or "tissue"
+```
+ Alternatively, the user can run the tissue tracking functions directly in a ``microbundle-compute-env`` python terminal as we show below.
 
 The function ``run_create_tissue_mask`` will use a specified segmentation function (e.g., ``seg_fcn_num = 1``), a movie frame number (e.g., ``frame_num = 0``), and a method (e.g., ``method = "minimum"``) to create a tissue mask text file with the name specified by the variable ``fname``. The subsequent steps of the code will require a file called ``tissue_mask.txt`` that should either be created with this function or manually. At present, there are three segmentation function types available: ``1)`` a straightforward threshold base
 d mask, ``2)`` a threshold based mask that is applied after a Sobel filter, and ``3)`` a straightforward threshold based mask that is applied to either the ``minimum`` or the ``maximum`` (specified by the ``method`` input) of all movie frames. 
@@ -307,7 +313,17 @@ For subdomain division, choosing ``tile_style = 1`` will fit the maximum number 
 <img alt="sub-domain strains movie" src="tutorials/figs/sub_domain_strain_Ecc.gif" width="85%" />
 </p>
 
-At present, strain visualizations show the column-column entry of the Green-Lagrange strain tensor ( $E_{cc}$ where $c$ is the global horizontal coordinate axis defined by the image column). The deformation gradient of each sub-domain is saved so visualizing alternative strain quantities is straightforward.
+#### Pillar tracking
+If the user wishes to use the ``run_code.py`` file to run the software, the ``track_mode`` should be specified as indicated below:
+
+```bash
+"""Specify if pillar or tissue tracking"""
+track_mode = "pillar" # "pillar" or "tissue"
+```
+ Alternatively, the user can run the pillar tracking functions directly in a ``microbundle-compute-env`` python terminal as we show below.
+
+##### Fiducial marker identification, tracking, and visualization
+
 
 ## Validation <a name="validation"></a>
 
