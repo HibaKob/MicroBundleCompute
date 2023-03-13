@@ -1182,8 +1182,8 @@ def test_visualize_interpolate_rotated():
     length_scale = 1
     _ = ia.run_tracking(folder_path, fps, length_scale)
     _ = ia.run_rotation(folder_path, True)
-    row_vec = np.linspace(195, 195 + 90, 12)
-    col_vec = np.linspace(125, 400, 30)
+    row_vec = np.linspace(230, 320, 12)
+    col_vec = np.linspace(110, 390, 30)
     row_grid, col_grid = np.meshgrid(row_vec, col_vec)
     row_sample = row_grid.reshape((-1, 1))
     col_sample = col_grid.reshape((-1, 1))
