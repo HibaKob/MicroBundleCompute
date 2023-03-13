@@ -207,6 +207,62 @@ The function ``run_visualization`` is for visualizing the tracking results. The 
 <p align = "center">
 <img alt="absolute displacement" src="tutorials/figs/abs_disp.gif" width="60%" />
 
+##### Post-tracking rotation
+It is possible that the images may not be aligned with the desired global coordinate system, being in the horizontal and vertical directions for this code. After tracking, it is possible to rotate both the images and the tracking results based on a specified center of rotation and desired horizontal axis vector. Note that rotation must be run after tracking. This was an intentional ordering as rotating the images involves interpolation which will potential lead to loss of information. To automatically rotate based on the mask, run the code with the following inputs:
+
+```bash
+input_mask = True  # this will use the mask to determine the rotation vector.
+ia.run_rotation(input_folder, input_mask)
+```
+To rotate based on specified center, set ``input_mask = False`` and provide additional command line arguments. For example:
+
+```bash
+input_mask = False
+center_row_input = 100
+center_col_input = 100
+vec_input = np.asarray([1, 0])
+
+ia.run_rotation(input_folder, input_mask, center_row_input=center_row_input, center_col_input=center_col_input, vec_input=vec_input)
+```
+
+<p align = "center">
+<img alt="tissue mask rotation 1" src="tutorials/figs/tissue_mask_rot.png" width="35%" />
+&nbsp
+&nbsp
+<img alt="tissue mask rotation 2" src="tutorials/figs/tissue_mask.png" width="35%" />
+</p>
+
+To visualize the rotated results, run the ``run_rotation_visualization`` function. For example: 
+
+```bash
+automatic_color_constraint = True # Put False if manual limits are to be specified
+col_min = 0
+col_max = 3
+col_map = plt.cm.viridis
+
+ia.run_rotation_visualization(input_folder, automatic_color_constraint=automatic_color_constraint, col_min=col_min, col_max=col_max,col_map = col_map)
+```
+
+Note: We also provide a function ``run_scale_and_center_coordinates()`` to transform the tracking results (rescale and center). If needed, this should be used as a final step.
+
+##### Post-tracking interpolation and visualization
+The tracking results are returned at the automatically identified fiducial marker points. However, it may be useful to know displacements at other locations (e.g., on a grid). After tracking and rotation, we can interpolate the displacement field to specified sampling points. For example one can do:
+
+```bash
+row_vec = np.linspace(215, 305, 12)
+col_vec = np.linspace(120, 400, 30)
+row_grid, col_grid = np.meshgrid(row_vec, col_vec)
+row_sample = row_grid.reshape((-1, 1))
+col_sample = col_grid.reshape((-1, 1))
+row_col_sample = np.hstack((row_sample, col_sample))
+fname = "interpolated_rotated"
+ia.run_interpolate(input_folder, row_col_sample, fname, is_rotated=True)
+```
+
+<p align = "center">
+<img alt="tracking visualization with interpolation" src="tutorials/figs/rotated_abs_disp_with_interp_short.gif" width="50%" />
+</p>
+
 ## Validation <a name="validation"></a>
 
 

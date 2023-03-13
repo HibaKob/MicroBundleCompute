@@ -78,7 +78,7 @@ elif track_mode == "tissue":
     input_mask = True  # this will use the mask to determine the rotation vector.
     ia.run_rotation(input_folder, input_mask)
     
-    ia.run_rotation_visualization(input_folder, automatic_color_constraint=automatic_color_constraint, col_min=col_min, col_max=col_max)
+    ia.run_rotation_visualization(input_folder, automatic_color_constraint=automatic_color_constraint, col_min=col_min, col_max=col_max, col_map=col_map)
 
     # interpolate results
     row_vec = np.linspace(215, 305, 12)
