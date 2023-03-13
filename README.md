@@ -113,22 +113,24 @@ Type "help", "copyright", "credits" or "license" for more information.
 
 
 ## To-Do List <a name="todo"></a>
-- [ ] Adjust code so that the dictionaries for timeseries segmentation are computed automatically
-- [ ] Adjust code so that the dictionaries for feature and tracking parameters can be conveniently adjusted
-- [ ] Orient output (strain, displacement) direction with major axes of microbundle 
-- [ ] Add functionality to compute beating frequency (might be useful to other groups)
-- [ ] Ensure that division into subdomains does not result in singular matrices
-- [ ] Validate displacement and strain output (synthetic data + manual tracking)
-- [ ] Clean code
+- [ ] Expand the test example dataset
+- [ ] Compare pillar tracking functionality to tools available in the literature
+- [ ] Extend the software capabilities to include tracking of calcium images
 - [ ] Explore options for additional analysis/visualization
-- [ ] Automate mask creation
+
 
 ## References to Related Work <a name="references"></a>
+Related work can be found here:
+* Das, S. L., Sutherland, B. P., Lejeune, E., Eyckmans, J., & Chen, C. S. (2022). Mechanical response of cardiac microtissues to acute localized injury. American Journal of Physiology-Heart and Circulatory Physiology, 323(4), H738-H748.
 
+Related repositories include:
+* https://github.com/elejeune11/Das-manuscript-2022
+* https://github.com/HibaKob/SyntheticMicroBundle (synthetic dataset)
+* https://github.com/elejeune11/MicroBundleCompute-Lite (deprecated version of the code)
 
 ## Contact Information <a name="contact"></a>
-
+For additional information, please contact Emma Lejeune ``elejeune@bu.edu`` or Hiba Kobeissi ``hibakob@bu.edu``.
 
 ## Acknowledgements <a name="acknowledge"></a>
-
+Thank you to Shoshana Das for providing the example tissue included with this repository. And -- thank you to Chad Hovey for providing templates for I/O, testing, and installation via the [Sandia Injury Biomechanics Laboratory](https://github.com/sandialabs/sibl) repository.
 
