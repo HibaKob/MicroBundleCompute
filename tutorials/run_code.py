@@ -112,7 +112,7 @@ elif track_mode == "tissue":
     col_min = -0.025
     col_max = 0.025
     col_map = plt.cm.RdBu
-    sa.visualize_sub_domain_strain(input_folder, automatic_color_constraint, col_min, col_max, col_map,is_rotated = True)    
+    sa.visualize_sub_domain_strain(input_folder, automatic_color_constraint, col_min, col_max, col_map, is_rotated = True)    
 
 else:
     print("track_mode should be either 'pillar' or 'tissue'")

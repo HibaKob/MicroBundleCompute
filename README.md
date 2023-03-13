@@ -214,6 +214,11 @@ It is possible that the images may not be aligned with the desired global coordi
 input_mask = True  # this will use the mask to determine the rotation vector.
 ia.run_rotation(input_folder, input_mask)
 ```
+
+<p align = "center">
+<img alt="rotation direction" src="tutorials/figs/rotation direction.png" width="90%" />
+
+
 To rotate based on specified center, set ``input_mask = False`` and provide additional command line arguments. For example:
 
 ```bash
@@ -224,12 +229,6 @@ vec_input = np.asarray([1, 0])
 
 ia.run_rotation(input_folder, input_mask, center_row_input=center_row_input, center_col_input=center_col_input, vec_input=vec_input)
 ```
-
-<p align = "center">
-<img alt="rotation direction" src="tutorials/figs/rotation direction.png" width="90%" />
-&nbsp
-&nbsp
-
 
 To visualize the rotated results, run the ``run_rotation_visualization`` function. For example: 
 
@@ -261,6 +260,54 @@ ia.run_interpolate(input_folder, row_col_sample, fname, is_rotated=True)
 <p align = "center">
 <img alt="tracking visualization with interpolation" src="tutorials/figs/rotated_abs_disp_with_interp.gif" width="60%" />
 </p>
+
+##### Post-tracking strain computation and visualization
+After tracking, we can compute sub-domain strains. The function ``run_sub_domain_strain_analysis`` will automatically rotate the microtissue before performing strain sub-domain analysis to match the global row (vertical) vs. column (horizontal) coordinate system. To do this, we use the shape of the mask to automatically define an array of sub-domains. We note that there is no need for any prior rotation or interpolation.
+The average strain within each sub-domain will then be computed from the tracking results. Altering the inputs to the function ``run_sub_domain_strain_analysis`` will change the way the sub-domains are initialized.
+
+```bash
+from microbundlecompute import strain_analysis as sa
+
+# run the strain analysis (will automatically rotate based on the mask)
+pillar_clip_fraction = 0.5
+clip_columns = True
+clip_rows = True
+shrink_row = 0.1
+shrink_col = 0.1
+tile_dim_pix = 40
+num_tile_row = 3
+num_tile_col = 5
+tile_style = 1 # or 2
+manual_sub = False # or True
+sub_extents = None # if manual_sub = True provide as [r0,r1,c0,c1]
+sa.run_sub_domain_strain_analysis(input_folder, pillar_clip_fraction, shrink_row, shrink_col, tile_dim_pix, num_tile_row, num_tile_col, tile_style, is_rotated = True,clip_columns=clip_columns,clip_rows=clip_rows, manual_sub=manual_sub, sub_extents=sub_extents)
+
+# visualize the strain analysis results
+automatic_color_constraint = True 
+col_min = -0.025
+col_max = 0.025
+col_map = plt.cm.RdBu
+sa.visualize_sub_domain_strain(input_folder, automatic_color_constraint, col_min, col_max, col_map, is_rotated = True)
+```
+
+The input ``pillar_clip_fraction`` allows the user to reduce the size of the region for strain computation by clipping from the tissue mask. The inputs ``clip_columns`` and ``clip_rows`` indicate whether the clipping is to take place in the column (horizontal) direction, row (vertical) direction, or both in directions. 
+
+Alternatively, manual subdomain extents can be specified for subdomain strain computation. Simply set the input ``manual_sub = True`` and provide the corners of a rectangular domain as an input to ``sub_extents = [r0,r1,c0,c1]`` where ``r0,c0`` is the top left corner and ``r1,c1`` is the bottom right corner.
+
+For subdomain division, choosing ``tile_style = 1`` will fit the maximum number of tiles with the specified side length ``tile_dim_pix``. For ``tile_style = 2``, the algorithm will use the specified grid size (``num_tile_row``, ``num_tile_col``) and adjust the side length. In other words, ``tile_style = 1`` will fix ``tile_dim_pix`` and adapt ``num_tile_row`` and ``num_tile_col`` accordingly, while ``tile_style = 2`` will retain the input values for ``num_tile_row`` and ``num_tile_col`` and calculate an appropriate ``tile_dim_pix``.
+
+<p align = "center">
+<img alt="sub-domain visualization" src="tutorials/figs/strain_sub_domain_key.png" width="33%" />
+&nbsp
+&nbsp
+<img alt="sub-domain strains" src="tutorials/figs/strain_timeseries_Ecc_beat0.png" width="44%" />
+</p>
+
+<p align = "center">
+<img alt="sub-domain strains movie" src="tutorials/figs/sub_domain_strain_Ecc.gif" width="85%" />
+</p>
+
+At present, strain visualizations show the column-column entry of the Green-Lagrange strain tensor ( $E_{cc}$ where $c$ is the global horizontal coordinate axis defined by the image column). The deformation gradient of each sub-domain is saved so visualizing alternative strain quantities is straightforward.
 
 ## Validation <a name="validation"></a>
 
