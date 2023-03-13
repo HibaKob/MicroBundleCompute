@@ -42,7 +42,7 @@ The roadmap for this collaborative endeavor is as follows:
 
 `Preliminary Dataset + Software` $\mapsto$ `Published Software Package` $\mapsto$ `Published Validation Examples and Tutorial` $\mapsto$ `Larger Dataset + Software Testing and Validation` $\mapsto$ `Automated Analysis of High-Throughput Experiments`
 
-At present (**march 2023**), we have validated our software on a preliminary dataset in addition to a synthetically generated dataset (please find more details on the [SyntheticMicroBundle github page](https://github.com/HibaKob/SyntheticMicroBundle) and the [main manuscript](**add link**)). We also include details on validation against manual tracking [here](**add link to SA**). In the next stage, we are particularly interested in expanding our dataset and perform further software validation and testing. 
+At present (**march 2023**), we have validated our software on a preliminary dataset in addition to a synthetically generated dataset (please find more details on the [SyntheticMicroBundle github page](https://github.com/HibaKob/SyntheticMicroBundle) and the [main manuscript](**add link**)). We also include details on validation against manual tracking [here](**add link to SA**). In the next stage, we are particularly interested in expanding our dataset and performing further software validation and testing. 
  Specifically, we aim to `1)` identify scenarios where our approach fails, `2)` create functions to accomodate these cases, and `3)` compare software results to previous manual approaches for extracting quantitative information, especially for pillar tracking. We will continue to update this repository as the project progresses.
 
 ## Installation Instructions <a name="install"></a>
@@ -140,7 +140,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 All masks, whether for the tissue or the pillars, will be contained in the ``masks`` folder. Critically:
 1. The current version of the code can use externally generated masks titled ``tissue_mask.txt`` for the tissue and ``pillar_mask_1.txt`` and ``pillar_mask_2.txt`` for the pillars. We note here that if the user wishes to track one pillar only, it is enough to provide either ``pillar_mask_1.txt`` or ``pillar_mask_2.txt``.
 3. Future functionality for new mask generation functions is possible.
-4. In our examples, ``tissue_mask.png``, ``pillar_mask_1.png``, and ``pillar_mask_1=2.png`` are simply visualizations of the corresponding mask text files. They are not necessary to run the code.
+4. In our examples, ``tissue_mask.png``, ``pillar_mask_1.png``, and ``pillar_mask_2.png`` are simply visualizations of the corresponding mask text files. They are not necessary to run the code.
 
 For the code to work properly, we provide below an example of the initial folder structure if both tissue and pillar tracking are to be run. Alternatively, if only one option is chosen, the corresponding mask(s) only is(are) required to be contained in the ``masks`` folder.
 ```bash
@@ -155,6 +155,7 @@ For the code to work properly, we provide below an example of the initial folder
 |                |___"pillar_mask_2.txt"
 |                |___"pillar_mask_2.png"      (optional)
 
+```
 ### Current core functionalities
 In the tutorial provided, there are 5 core functionalities available. As a brief note, it is: (1) not necessary to use all functionality (e.g., you can consider displacement but ignore strain or skip the visualization steps), (2) additional functionality is currently under development, and (3) for the code snippets in this section the variable ``folder_path`` is a [``PosixPath``](https://docs.python.org/3/library/pathlib.html) that specifies the relative path between where the code is being run and the ``example_folder`` defined [above](#data_prep).
 ## Validation <a name="validation"></a>
