@@ -157,7 +157,23 @@ For the code to work properly, we provide below an example of the initial folder
 
 ```
 ### Current core functionalities
-In the tutorial provided, there are 5 core functionalities available. As a brief note, it is: (1) not necessary to use all functionality (e.g., you can consider displacement but ignore strain or skip the visualization steps), (2) additional functionality is currently under development, and (3) for the code snippets in this section the variable ``folder_path`` is a [``PosixPath``](https://docs.python.org/3/library/pathlib.html) that specifies the relative path between where the code is being run and the ``example_folder`` defined [above](#data_prep).
+In the current version of the code, there are 5 core functionalities available for tissue tracking and 2 core functionalities for pillar tracking. As a brief note, it is: (1) not necessary to use all functionalities (e.g., you can consider displacement results but ignore strain calculations for tissue tracking or skip the visualization steps), and (2) for the code snippets in this section the variable ``input_folder`` is a [``PosixPath``](https://docs.python.org/3/library/pathlib.html) that specifies the relative path between where the code is being run (for example the provided ``tutorials`` folder) and the ``example_folder`` defined [above](#data_prep) that the user wishes to analyze.
+
+
+#### Automatic mask generation
+
+The function ``run_create_tissue_mask`` will use a specified segmentation function (e.g., ``seg_fcn_num = 1`` ) and movie frame number (e.g., ``frame_num = 0``) to create a tissue mask text file with the name specified by the variable ``fname``. The subsequent steps of the code will require a file called ``tissue_mask.txt`` that should either be created with this function or manually. At present, there are two segmentation function types available: (1) a straightforward threshold based mask, and (2) a threshold based mask that is applied after a Sobel filter.
+
+```bash
+from microbundlecomputelite import create_tissue_mask as ctm
+from pathlib import Path
+
+input_folder = Path(folder_path)
+seg_fcn_num = 1
+fname = "tissue_mask"
+frame_num = 0
+ctm.run_create_tissue_mask(input_folder, seg_fcn_num, fname, frame_num)
+```
 ## Validation <a name="validation"></a>
 
 
