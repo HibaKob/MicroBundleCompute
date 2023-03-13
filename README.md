@@ -226,11 +226,10 @@ ia.run_rotation(input_folder, input_mask, center_row_input=center_row_input, cen
 ```
 
 <p align = "center">
-<img alt="tissue mask rotation 1" src="tutorials/figs/tissue_mask_rot.png" width="35%" />
+<img alt="rotation direction" src="tutorials/figs/rotation direction.png" width="90%" />
 &nbsp
 &nbsp
-<img alt="tissue mask rotation 2" src="tutorials/figs/tissue_mask.png" width="35%" />
-</p>
+
 
 To visualize the rotated results, run the ``run_rotation_visualization`` function. For example: 
 
@@ -249,8 +248,8 @@ Note: We also provide a function ``run_scale_and_center_coordinates()`` to trans
 The tracking results are returned at the automatically identified fiducial marker points. However, it may be useful to know displacements at other locations (e.g., on a grid). After tracking and rotation, we can interpolate the displacement field to specified sampling points. For example one can do:
 
 ```bash
-row_vec = np.linspace(215, 305, 12)
-col_vec = np.linspace(120, 400, 30)
+row_vec = np.linspace(230, 320, 12)
+col_vec = np.linspace(105, 375, 26)
 row_grid, col_grid = np.meshgrid(row_vec, col_vec)
 row_sample = row_grid.reshape((-1, 1))
 col_sample = col_grid.reshape((-1, 1))
@@ -260,7 +259,7 @@ ia.run_interpolate(input_folder, row_col_sample, fname, is_rotated=True)
 ```
 
 <p align = "center">
-<img alt="tracking visualization with interpolation" src="tutorials/figs/rotated_abs_disp_with_interp_short.gif" width="50%" />
+<img alt="tracking visualization with interpolation" src="tutorials/figs/rotated_abs_disp_with_interp.gif" width="60%" />
 </p>
 
 ## Validation <a name="validation"></a>
