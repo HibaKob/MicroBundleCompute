@@ -157,23 +157,48 @@ For the code to work properly, we provide below an example of the initial folder
 
 ```
 ### Current core functionalities
-In the current version of the code, there are 5 core functionalities available for tissue tracking and 2 core functionalities for pillar tracking. As a brief note, it is: (1) not necessary to use all functionalities (e.g., you can consider displacement results but ignore strain calculations for tissue tracking or skip the visualization steps), and (2) for the code snippets in this section the variable ``input_folder`` is a [``PosixPath``](https://docs.python.org/3/library/pathlib.html) that specifies the relative path between where the code is being run (for example the provided ``tutorials`` folder) and the ``example_folder`` defined [above](#data_prep) that the user wishes to analyze.
+In the current version of the code, there are 5 core functionalities available for tissue tracking (automatic mask generation, tracking, displacement results visualization, strain computation, and strain results visualization) and 2 core functionalities for pillar tracking (tracking, displacement and pillar force results visualization). As a brief note, it is not necessary to use all functionalities (e.g., you can consider displacement results but ignore strain calculations for tissue tracking or skip the visualization steps).
 
+ To be able to run the code, we stress that for the code snippets in this section, the variable ``input_folder`` is a [``PosixPath``](https://docs.python.org/3/library/pathlib.html) that specifies the relative path between where the code is being run (for example the provided ``tutorials`` folder) and the ``example_folder`` defined [above](#data_prep) that the user wishes to analyze.
 #### Tissue tracking
 ##### Automatic mask generation
 
-The function ``run_create_tissue_mask`` will use a specified segmentation function (e.g., ``seg_fcn_num = 1`` ) and movie frame number (e.g., ``frame_num = 0``) to create a tissue mask text file with the name specified by the variable ``fname``. The subsequent steps of the code will require a file called ``tissue_mask.txt`` that should either be created with this function or manually. At present, there are two segmentation function types available: (1) a straightforward threshold based mask, and (2) a threshold based mask that is applied after a Sobel filter.
+The function ``run_create_tissue_mask`` will use a specified segmentation function (e.g., ``seg_fcn_num = 1``), a movie frame number (e.g., ``frame_num = 0``), and a method (e.g., ``method = "minimum"``) to create a tissue mask text file with the name specified by the variable ``fname``. The subsequent steps of the code will require a file called ``tissue_mask.txt`` that should either be created with this function or manually. At present, there are three segmentation function types available: ``1)`` a straightforward threshold base
+d mask, ``2)`` a threshold based mask that is applied after a Sobel filter, and ``3)`` a straightforward threshold based mask that is applied to either the ``minimum`` or the ``maximum`` (specified by the ``method`` input) of all movie frames. 
 
 ```bash
-from microbundlecomputelite import create_tissue_mask as ctm
+from microbundlecompute import create_tissue_mask as ctm
 from pathlib import Path
 
-input_folder = Path(folder_path)
-seg_fcn_num = 1
+seg_fcn_num = 3
 fname = "tissue_mask"
 frame_num = 0
-ctm.run_create_tissue_mask(input_folder, seg_fcn_num, fname, frame_num)
+method = "minimum"
+ctm.run_create_tissue_mask(input_folder, seg_fcn_num, fname, frame_num, method)
 ```
+##### Fiducial marker identification, tracking, and visualization
+
+The function ``run_tracking`` will automatically read the data specified by the input folder (tiff files and mask file), run tracking, segment individual beats in time, and save the results as text files.
+
+It is essential to provide the ``run_tracking`` function with two movie parameters: ``1)`` the frames per second (fps) and ``2)`` length scale (ls) in units of micrometers/pixel.
+
+```bash
+from microbundlecompute import image_analysis as ia
+import matplotlib.pyplot as plt
+from pathlib import Path
+
+fps = 1 
+ls = 1
+
+input_folder = Path(folder_path)
+ia.run_tracking(input_folder,fps,ls)
+
+col_max = 3
+col_map = plt.cm.viridis
+ia.run_visualization(input_folder, col_max, col_map)
+```
+
+The function ``run_visualization`` is for visualizing the tracking results. The input ``col_max`` is the maximum displacement in pixels and the input ``col_map`` is the [matplotlib colormap](https://matplotlib.org/stable/tutorials/colors/colormaps.html) selected for visualization.
 ## Validation <a name="validation"></a>
 
 
