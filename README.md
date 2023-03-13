@@ -107,8 +107,56 @@ Type "help", "copyright", "credits" or "license" for more information.
 ```
 
 ## Tutorial <a name="tutorial"></a>
+This GitHub repository contains a folder called ``tutorials`` that contains an example dataset and a python script for running the code. To run the tutorials, change your curent working directory to the ``tutorials`` folder.
+
+The data (frames to be tracked) will be contained in the ``movie`` folder. Critically:
+1. The files must have a ``.TIF`` extension.
+2. The files can have any name, but in order for the code to work properly they must be *in order*. For reference, we use ``sort`` to order file names. By default, this function sorts strings (such as file names) alphabetically and numbers numerically. We provide below examples of good and bad file naming practices. 
+
+```bash
+(microbundle-compute-env) hibakobeissi@Hibas-MacBook-Pro MicroBundleCompute-master % python
+Python 3.9.13 (main, Oct 13 2022, 16:12:19) 
+[Clang 12.0.0 ] :: Anaconda, Inc. on darwin
+Type "help", "copyright", "credits" or "license" for more information.
+>>> bad_example = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"]
+>>> bad_example.sort()
+>>> print(bad_example)
+['1', '10', '11', '12', '13', '14', '15', '2', '3', '4', '5', '6', '7', '8', '9']
+>>> 
+>>> good_example = ["01","02","03","04","05","06","07","08","09","10","11","12","13","14","15"]
+>>> good_example.sort()
+>>> print(good_example)
+['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15']
+>>>
+>>> another_good_example = ["test_001","test_002","test_003","test_004","test_005","test_006","test_007","test_008","test_009","test_010","test_011","test_012","test_013","test_014","test_015"]
+>>> another_good_example.sort()
+>>> print(another_good_example)
+['test_001', 'test_002', 'test_003', 'test_004', 'test_005', 'test_006', 'test_007', 'test_008', 'test_009', 'test_010', 'test_011', 'test_012', 'test_013', 'test_014', 'test_015']
+```
+
+3. If it is necessary to read other file types or formats (e.g., a single 3D TIFF array), that would be easy to implement -- single images are implemented now so that we don't exceed maximum file sizes allowable on GitHub.
 
 
+All masks, whether for the tissue or the pillars, will be contained in the ``masks`` folder. Critically:
+1. The current version of the code can use externally generated masks titled ``tissue_mask.txt`` for the tissue and ``pillar_mask_1.txt`` and ``pillar_mask_2.txt`` for the pillars. We note here that if the user wishes to track one pillar only, it is enough to provide either ``pillar_mask_1.txt`` or ``pillar_mask_2.txt``.
+3. Future functionality for new mask generation functions is possible.
+4. In our examples, ``tissue_mask.png``, ``pillar_mask_1.png``, and ``pillar_mask_1=2.png`` are simply visualizations of the corresponding mask text files. They are not necessary to run the code.
+
+For the code to work properly, we provide below an example of the initial folder structure if both tissue and pillar tracking are to be run. Alternatively, if only one option is chosen, the corresponding mask(s) only is(are) required to be contained in the ``masks`` folder.
+```bash
+|___ example_folder
+|        |___ movie
+|                |___"*.TIF"
+|        |___ masks    (this folder can be omitted if automated mask generation will be run as a first step and tissue tracking is run only. It is crucial to have this folder if pillar tracking is chosen)
+|                |___"tissue_mask.txt"
+|                |___"tissue_mask.png"        (optional)
+|                |___"pillar_mask_1.txt"      
+|                |___"pillar_mask_1.png"      (optional)
+|                |___"pillar_mask_2.txt"
+|                |___"pillar_mask_2.png"      (optional)
+
+### Current core functionalities
+In the tutorial provided, there are 5 core functionalities available. As a brief note, it is: (1) not necessary to use all functionality (e.g., you can consider displacement but ignore strain or skip the visualization steps), (2) additional functionality is currently under development, and (3) for the code snippets in this section the variable ``folder_path`` is a [``PosixPath``](https://docs.python.org/3/library/pathlib.html) that specifies the relative path between where the code is being run and the ``example_folder`` defined [above](#data_prep).
 ## Validation <a name="validation"></a>
 
 
