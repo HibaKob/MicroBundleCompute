@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 from skimage import io
 from skimage.transform import estimate_transform, warp
+from scipy import signal
 import warnings
 
 
@@ -406,18 +407,24 @@ def test_compute_beat_frequency():
 
 
 def test_compute_beat_amplitude():
-    x = np.linspace(0, 500 * np.pi * 2.0, 500)
-    timeseries = np.sin(x / (np.pi * 2.0) / 20 - np.pi / 2.0)
     length_scale = 1
-    info = ia.compute_valleys(timeseries)
-    amplitude = ia.compute_beat_amplitude(timeseries, info, length_scale)
-    assert np.isclose(amplitude, length_scale * 2, atol=.01)
-    li = 10 * [-0.99] + list(timeseries) + 10 * [-0.99]
-    timeseries = np.asarray(li)
-    length_scale = 1
-    info = ia.compute_valleys(timeseries)
-    amplitude = ia.compute_beat_amplitude(timeseries, info, length_scale)
-    assert np.isclose(amplitude, length_scale * 2, atol=.01)
+    info = [[0, 30, 60], [1, 60, 90], [2, 90, 120]]
+    info = np.asarray(info)
+    num_beat_frames = 30
+    num_pts = 10
+    t = np.linspace(0, 1, num_beat_frames)
+
+    tracker_0_beat = np.ones((num_pts, num_beat_frames)) + 2.5*signal.sawtooth(2 * np.pi * t, 0.5)+1
+    tracker_0_all = np.hstack((tracker_0_beat,tracker_0_beat,tracker_0_beat,tracker_0_beat,tracker_0_beat))
+    tracker_0 = [tracker_0_beat,tracker_0_beat,tracker_0_beat,tracker_0_beat]
+
+    tracker_1_beat = 0.1 * np.ones((num_pts, num_beat_frames)) + np.random.random((num_pts, num_beat_frames))
+    tracker_1_all = np.hstack((tracker_1_beat,tracker_1_beat,tracker_1_beat,tracker_1_beat,tracker_1_beat))
+    tracker_1 = [tracker_1_beat,tracker_1_beat,tracker_1_beat,tracker_1_beat]
+    timeseries, _, _, _ = ia.compute_abs_position_timeseries(tracker_0_all, tracker_1_all)
+    amplitude = ia.compute_beat_amplitude(timeseries, tracker_0, tracker_1, info, length_scale)
+    known_amplitude = np.max(timeseries) - np.min(timeseries)
+    assert np.isclose(amplitude, known_amplitude, atol=.01)
 
 
 def test_save_beat_info():
@@ -587,23 +594,20 @@ def test_get_title_fname():
 
 
 def test_compute_min_max_disp ():
-    info = [[0, 5, 35], [1, 35, 65], [2, 65, 95]]
+    info = [[0, 30, 60], [1, 60, 90], [2, 90, 120]]
     info = np.asarray(info)
-    num_beats = len(info)
-    num_pts = 10
-    num_frames = 100
     num_beat_frames = 30
-    tracker_0_beat = 100 * np.ones((num_pts, num_beat_frames)) + np.random.random((num_pts, num_beat_frames))
-    tracker_1_beat = 50 * np.ones((num_pts, num_beat_frames)) + np.random.random((num_pts, num_beat_frames))
-    tracker_0 = np.zeros((num_beats,num_pts,num_frames))
-    tracker_1 = np.zeros((num_beats,num_pts,num_frames))
-    tracker_0 [0,:,5:35] = tracker_0_beat
-    tracker_0 [1,:,35:65] = tracker_0_beat
-    tracker_0 [2,:,65:95] = tracker_0_beat
-    tracker_1 [0,:,5:35] = tracker_1_beat
-    tracker_1 [1,:,35:65] = tracker_1_beat
-    tracker_1 [2,:,65:95] = tracker_1_beat
-    _, disp_abs_all, disp_0_all, disp_1_all = ia.compute_abs_position_timeseries(tracker_0[0,:,:], tracker_1[0,:,:])
+    num_pts = 10
+    t = np.linspace(0, 1, num_beat_frames)
+
+    tracker_0_beat = np.ones((num_pts, num_beat_frames)) + 2.5*signal.sawtooth(2 * np.pi * t, 0.5)+1
+    tracker_0_all = np.hstack((tracker_0_beat,tracker_0_beat,tracker_0_beat,tracker_0_beat,tracker_0_beat))
+    tracker_0 = [tracker_0_beat,tracker_0_beat,tracker_0_beat,tracker_0_beat]
+
+    tracker_1_beat = 0.1 * np.ones((num_pts, num_beat_frames)) + np.random.random((num_pts, num_beat_frames))
+    tracker_1_all = np.hstack((tracker_1_beat,tracker_1_beat,tracker_1_beat,tracker_1_beat,tracker_1_beat))
+    tracker_1 = [tracker_1_beat,tracker_1_beat,tracker_1_beat,tracker_1_beat]
+    _, disp_abs_all, disp_0_all, disp_1_all = ia.compute_abs_position_timeseries(tracker_0_all, tracker_1_all)
     min_abs = np.min(disp_abs_all)
     max_abs = np.max(disp_abs_all)
     min_row = np.min(disp_0_all)
