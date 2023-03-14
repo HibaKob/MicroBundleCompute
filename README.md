@@ -357,11 +357,11 @@ We provide ``run_image_filtering`` function that allows the user to apply a user
 from microbundlecompute import optional_preprocessing as op
 
 kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
- op.run_image_filtering(input_folder, kernel)
+op.run_image_filtering(input_folder, kernel)
 ```
 
-##### Start at a contracted frame
-The tissue tracking code would output a warning if it detects that the movie does not start from a relaxed tissue configuration. In this case, we provide ``adjust_first_valley`` function which allows the user to specify the frame number where the first relaxed tissue position occurs. This frame is made the first frame for the tissue tracking analysis. We note that we do not implement this adjustment automatically because we are aware of some cases were the tissue is is actuated in forms that do not resemble the natural beating action. To specify a custom intial frame:
+##### Adjust first frame
+The tissue tracking code would output a warning if it detects that the movie does not start from a relaxed tissue configuration. In this case, we provide ``adjust_first_valley`` function which allows the user to specify the frame number where the first relaxed tissue position occurs. This frame is made the first frame for the tissue tracking analysis. We note that we do not implement this adjustment automatically because we are aware of some cases were the tissue is is actuated in forms that do not resemble the natural beating action. To specify a custom first frame:
 
 ```bash
 first_valley = 16
@@ -373,10 +373,23 @@ kernel = None
 first_valley = 0
 ```
 ## Validation <a name="validation"></a>
+As mentioned above, we have validated the tissue tracking mode of our code against [synthetic data](https://github.com/HibaKob/SyntheticMicroBundle) and manual tracking. We include here one set of results corresponding to each validation approach. More information can be found in the [main paper](add link) and the [supplementary document](add link).
+
+<p align = "center">
+<img alt="sub-domain visualization" src="tutorials/figs/Mean_Abs_Disp_Error.png" width="90%" />
+
+<p align = "center">
+<img alt="sub-domain visualization" src="tutorials/figs/MAE_Approx_Ecc_Error.png" width="50%" />
+&nbsp
+&nbsp
+<img alt="sub-domain strains" src="tutorials/figs/Sub0.png" width="43%" />
+</p>
+
 
 
 ## To-Do List <a name="todo"></a>
 - [ ] Expand the test example dataset
+- [ ] Generalize the pillar tracking functionality
 - [ ] Compare pillar tracking functionality to tools available in the literature
 - [ ] Extend the software capabilities to include tracking of calcium images
 - [ ] Explore options for additional analysis/visualization
