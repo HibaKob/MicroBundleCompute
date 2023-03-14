@@ -349,6 +349,29 @@ The function ``visualize_pillar_tracking`` is for visualizing the pillar trackin
 <img alt="sub-domain strains" src="tutorials/figs/pillar_force_absolute.png" width="44%" />
 </p>
 
+#### Optional preprocessing functions
+When testing our code on different real examples, we have encountered two main cases that decreased the fidelity of the code's output: ``1)`` blurred movie frames and ``2)`` movies that start from a contracted tissue position. To remedy this, we have provided two optional functions for frame preprocessing. 
+##### Image filtering
+We provide ``run_image_filtering`` function that allows the user to apply a user-defined filter to all movie frames contained in the ``movie`` folder. For example, a high-pass sharpening filter can be applied:
+```bash
+from microbundlecompute import optional_preprocessing as op
+
+kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
+ op.run_image_filtering(input_folder, kernel)
+```
+
+##### Start at a contracted frame
+The tissue tracking code would output a warning if it detects that the movie does not start from a relaxed tissue configuration. In this case, we provide ``adjust_first_valley`` function which allows the user to specify the frame number where the first relaxed tissue position occurs. This frame is made the first frame for the tissue tracking analysis. We note that we do not implement this adjustment automatically because we are aware of some cases were the tissue is is actuated in forms that do not resemble the natural beating action. To specify a custom intial frame:
+
+```bash
+first_valley = 16
+op.adjust_first_valley(input_folder, first_valley)
+```
+By default, these two functions are skipped by having the following input predefined:
+``` bash
+kernel = None 
+first_valley = 0
+```
 ## Validation <a name="validation"></a>
 
 
