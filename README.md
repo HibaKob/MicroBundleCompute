@@ -321,9 +321,33 @@ If the user wishes to use the ``run_code.py`` file to run the software, the ``tr
 track_mode = "pillar" # "pillar" or "tissue"
 ```
  Alternatively, the user can run the pillar tracking functions directly in a ``microbundle-compute-env`` python terminal as we show below.
-
+As aforementioned, the user should provide at least one pillar mask in the masks folder saved according to the following format (``pillar_mask_*.txt``)
 ##### Fiducial marker identification, tracking, and visualization
+The function ``run_pillar_tracking`` will automatically read the data specified by the input folder (tiff files and mask file), run tracking, and save the results as text files.
 
+It is essential to provide the ``run_pillar_tracking`` function with five pillar parameters: ``1)`` pillar stiffness (pdms_E) in $MPa$, ``2)`` pillar width in $\mu m$, ``3)`` pillar thickness in $\mu m$, ``4)`` pillar length in $\mu m$, ``5)``force application location in $\mu m$, and one movie parameter ``1)`` the frames per second (fps). We currently output all displacement results in units of pixels and force results in units of $\mu N$. We note that for calculating the pillar forces, we follow the approach detailed in [this paper](https://www.pnas.org/doi/full/10.1073/pnas.0900174106)[1], where the pillar is modeled as a cantilever. We are aware that different setups may have different pillar geometries and we plan to accomodate for this variation in future iterations of the pillar tracking functionality. 
+ 
+```bash
+pdms_E = 1.61 # Provide this value in MPa
+pillar_width = 163 # Provide this value in micrometer (um)
+pillar_thickness = 33.2 # Provide this value in micrometer (um)
+pillar_length = 199.3 # Provide this value in micrometer (um)
+force_location = 163 # Provide this value in micrometer (um)
+ls = 1
+
+# run pillar tracking
+ia.run_pillar_tracking(input_folder, pdms_E, pillar_width, pillar_thickness, pillar_length, force_location, ls)
+ia.visualize_pillar_tracking(input_folder)
+```
+
+The function ``visualize_pillar_tracking`` is for visualizing the pillar tracking results consisting of timeseries plots of mean absolute pillar displacement and force.
+
+<p align = "center">
+<img alt="sub-domain visualization" src="tutorials/figs/pillar_mean_absolute_displacement.png" width="44%" />
+&nbsp
+&nbsp
+<img alt="sub-domain strains" src="tutorials/figs/pillar_force_absolute.png" width="44%" />
+</p>
 
 ## Validation <a name="validation"></a>
 
@@ -336,6 +360,8 @@ track_mode = "pillar" # "pillar" or "tissue"
 
 
 ## References to Related Work <a name="references"></a>
+[1] Legant, W. R., Pathak, A., Yang, M. T., Deshpande, V. S., McMeeking, R. M., & Chen, C. S. (2009). Microfabricated tissue gauges to measure and manipulate forces from 3D microtissues. Proceedings of the National Academy of Sciences, 106(25), 10097-10102.
+
 Related work can be found here:
 * Das, S. L., Sutherland, B. P., Lejeune, E., Eyckmans, J., & Chen, C. S. (2022). Mechanical response of cardiac microtissues to acute localized injury. American Journal of Physiology-Heart and Circulatory Physiology, 323(4), H738-H748.
 
