@@ -451,11 +451,11 @@ And it will automatically run the example specified by the ``files/tutorial_exam
 |                |___"sub_domain_strain_Err.gif"
 |        |___ pillar_results
 |                |___"info.txt"
-|                |___"pillar*_row.txt"
-|                |___"pillar*_col.txt"
-|                |___"pillar*_pillar_force_abs.txt"
-|                |___"pillar*_pillar_force_row.txt"
-|                |___"pillar*_pillar_force_col.txt"
+|                |___"pillar%i_row.txt"
+|                |___"pillar%i_col.txt"
+|                |___"pillar%i_pillar_force_abs.txt"
+|                |___"pillar%i_pillar_force_row.txt"
+|                |___"pillar%i_pillar_force_col.txt"
 |        |___ pillar_visualizations
 |                |___"pillar_directional_displacement.pdf"
 |                |___"pillar_mean_absolute_displacement.pdf"
@@ -471,29 +471,48 @@ The ``info.txt`` file stores information pertaining to beat segmentaion. It has 
 1 25 49
 2 49 72
 ```
-and mean that beat 0 starts at frame 3 and ends at frame 25, beat 1 starts at frame 25 and ends at frame 49, and beat 2 starts at frame 49 and ends at frame 72. Note that if full beats cannot be segmented from the timeseries data there may be issues with running the code. Often, the visually apparent first and last beats will be excluded from this segmentation because we cannot identify clear start and end points.
+This means that beat 0 starts at frame 3 and ends at frame 25, beat 1 starts at frame 25 and ends at frame 49, and beat 2 starts at frame 49 and ends at frame 72. Note that if full beats cannot be segmented from the timeseries data there may be issues with running the code. Often, the visually apparent first and last beats will be excluded from this segmentation because we cannot identify clear start and end points.
 
-Then, there will be one row-position file and one col-position file for each beat. The ``row`` and ``col`` positions match the original image provided. Specifically:
-* ``beat%i_row_pos.txt`` will contain the image row positions of each marker for the beat specified by ``%i``
-* ``beat%i_col_pos.txt`` will contain the image column positions of each marker for the beat specified by ``%i``
-
-In these text files, the rows correspond to individual markers, while the columns correspond to the frames of the beat. For example, if a file has dimension ``AA x BB``, there will be ``AA`` markers and ``BB`` frames.
+The ``beat_info.txt`` file stores information regarding the beat frequency and mean amplitude. The frequency is displayed on the first row and the mean amplitude is shown on the second row. For example, the ``beat_info.txt` file could contain:
+```bash
+4.12e-02
+2.43
+```
 
 The file ``rot_info.txt`` will contain information to reconstruct the rotation if needed. The first row contains the rotation row center position and the column center position. The second row contains the rotation unit vector with the row in the first position and the column in the second position. For example, ``rot_info.txt`` could contain:
 ```bash
 266.5   255
 0       1
 ```
-The rotated row and column positions of the tracked points are then stored in ``rotated_beat%i_row_pos.txt`` and ``rotated_beat%i_col_pos.txt``. The interpolated row and column positions (starting from the sample points in frame 0 of each beat) are stored in ``interpolated_rotated_beat%i_row_pos.txt`` and ``interpolated_rotated_beat%i_col_pos.txt``.
 
-The file ``strain__sub_domain_info.txt`` will contain information about the strain subdomains. The first row contains the number of row sub divisions and the number of column sub divisions. The second row contains the number of pixels in the sub-domain sides. The third row contains the row center position and the column center position. The fourth row contains the rotation unit vector with the row in the first position and the column in the second position. For example, ``strain__sub_domain_info.txt`` could contain:
+The file ``strain__sub_domain_info.txt`` will contain information about the strain subdomains. The first row contains the number of row sub divisions and the number of column sub divisions. The second row contains the number of pixels in the subdomain sides. The third row contains the row center position and the column center position. The fourth row contains the rotation unit vector with the row in the first position and the column in the second position. For example, ``strain__sub_domain_info.txt`` could contain:
 ```bash
 3       5
 40      40
 266.5   255
 0       1
 ```
-which would correspond to a 3x5 array of sub-domains with a 40 pixel side length with rotation center (266.5, 255) and rotation vector [0, 1]. Note that in all saved results the rotation is already applied, this information is saved here to ensure that these results can be reproduced in the future.
+This corresponds to a 3x5 array of subdomains with a 40 pixel side length, rotation center (266.5, 255), and rotation vector [0, 1]. Note that in all saved results, the rotation is already applied; this information is saved here to ensure that these results can be reproduced in the future.
+
+The final text file is ``tissue_info.txt`` and contains a single value correspoding to the tissue width (in the row direction)measured at the center of the tissue mask.  
+
+The ``"row"`` and ``"col"`` files contain information regarding the row and column positions of the tracked marker (fudicial) points. For tissue tracking, there will be one row-position file and one col-position file for each beat. The ``row`` and ``col`` positions match the original image provided. Specifically:
+* ``beat%i_row.txt`` will contain the image row positions of each marker for the beat specified by ``%i``
+* ``beat%i_col.txt`` will contain the image column positions of each marker for the beat specified by ``%i``
+
+For pillar tracking, we do not perform time segmentation and hence, there will be one row-position file and one col-position file for the entire movie for each tracked pillar.Specifically:
+* ``pillar%i_row.txt`` will contain the image row positions of each marker for the pillar specified by ``%i``
+* ``pillar%i_col.txt`` will contain the image column positions of each marker for the pillar specified by ``%i``
+
+In these text files, the rows correspond to individual markers, while the columns correspond to the frames. For example, if a file has dimension ``AA x BB``, there will be ``AA`` markers and ``BB`` frames. For tissue tracking, the number of frames will be the number of frames per beat. For pillar tracking, the number of frames will correspond to the total number of frames tracked.
+
+When ``run_rotation`` function is implemented, the rotated row and column positions of the tracked points are then stored in ``rotated_beat%i_row.txt`` and ``rotated_beat%i_col.txt``. When interpolation is run, the interpolated row and column positions (starting from the sample points in frame 0 of each beat) are stored in ``interpolated_rotated_beat%i_row.txt`` and ``interpolated_rotated_beat%i_col.txt``.
+
+The files ``strain__beat%i_row.txt`` and ``strain__beat%i_col.txt`` contain the row and column positions of the center of each subdomain per beat. For example, if a file has dimension ``AA x BB``, there will be ``AA`` subdomains and ``BB`` frames per beat.
+
+Similarly, the files ``strain__beat%i_Fcc.txt``, ``strain__beat%i_Fcr.txt``, ``strain__beat%i_Frc.txt``, and ``strain__beat%i_Frr.txt`` will have the corresponding component of the deformation gradient stored for each subdomain per beat. Again, if a file has dimension ``AA x BB``, this corresponds to ``AA`` subdomains and ``BB`` frames per beat. 
+
+Finally, the ``pillar%i_pillar_force_abs.txt``, ``pillar%i_pillar_force_row.txt``, and ``pillar%i_pillar_force_col.txt`` files will store results corresponding to the mean absolute pillar force, mean pillar force in the row direction, and mean pillar force in the column direction respectively for each pillar. The files store timeseries results and have lengths equal to the number of input movie frames.
 
 ### Understanding the visualization results
 
