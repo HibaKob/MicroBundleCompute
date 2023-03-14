@@ -95,7 +95,7 @@ elif track_mode == "tissue":
     # run the strain analysis (will automatically rotate based on the mask)
     pillar_clip_fraction = 0.5
     clip_columns = True
-    clip_rows = True
+    clip_rows = False
     shrink_row = 0.1
     shrink_col = 0.1
     tile_dim_pix = 40
