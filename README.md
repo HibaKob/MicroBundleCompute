@@ -520,15 +520,15 @@ For tissue tracking, the outputs of running the visualization codes will be stor
 For the displacement tracking results, we plot absolute displacement of the identified markers as well as the displacements in the row and column directions. There is an optional argument in the visualization script that can be used to set the displacement bounds and the colormap. By default, the bounds are calculated automatically, and the default colormap is [``viridis``](https://matplotlib.org/stable/tutorials/colors/colormaps.html).
 
 <p align = "center">
-<img alt="tracking visualization with interpolation" src="tutorials/figs/visualizations/rotated_abs_disp_with_interp.gif" width="100%" />
-<img alt="column tracking visualization" src="tutorials/figs/visualizations/column_disp.gif" width="100%" />
+<img alt="tracking visualization with interpolation" src="tutorials/figs/Visualizations/rotated_abs_disp_with_interp.gif" width="100%" />
+<img alt="column tracking visualization" src="tutorials/figs/Visualizations/column_disp.gif" width="100%" />
 </p>
 
 For the strain tracking results, we plot $E_{cc}$, $E_{cr}$, and $E_{rrr}$ for each subdomain. Specifically, we visualize these strains organized in space in ``sub_domain_strain_E**.gif`` and ``%04d_strain.png``, and organized in time (i.e. as a timeseries vs. frame number) in ``strain_timeseries_E**_beat%i.pdf``. The legend in the timeseries plots corresponds to the subdomain labels in ``strain_sub_domain_key.pdf``.
 
 <p align = "center">
-<img alt="strain visualization" src="tutorials/figs/visualizations/sub_domain_strain_Err.gif" width="100%" />
-<img alt="strain timeseries visualization" src="tutorials/figs/visualizations/strain_timeseries_Err_beat0.png" width="100%" />
+<img alt="strain visualization" src="tutorials/figs/Visualizations/sub_domain_strain_Err.gif" width="100%" />
+<img alt="strain timeseries visualization" src="tutorials/figs/Visualizations/strain_timeseries_Err_beat0.png" width="100%" />
 </p>
 
 In all cases, the output visualizations are stored as ``.png`` and ``.gif`` files, except for plots which are stored as ``.pdf`` files for higher resolution.
@@ -536,8 +536,8 @@ In all cases, the output visualizations are stored as ``.png`` and ``.gif`` file
 For pillar tracking, the outputs of running the visualization codes will be stored in the ``pillar_visualizations`` folder. Three timeseries plots should be contained here: ``pillar_directional_displacement.pdf``, ``pillar_mean_absolute_displacement.pdf``, and ``pillar_force_absolute.pdf`` and correspond to the varition of the pillar mean row and column displacements, pillar mean absolute displacement, and pillar absolute force with respect to frame number. We note here that if 2 pillars are tracked, the results will be visualized on the same plots.
 
 <p align = "center">
-<img alt="pillar directional displacement visualization" src="tutorials/figs/visualizations/pillar_directional_displacement.png" width="100%" />
-<img alt="strain visualization" src="tutorials/figs/visualizations/pillar_force_absolute.png" width="100%" />
+<img alt="pillar directional displacement visualization" src="tutorials/figs/Visualizations/pillar_directional_displacement.png" width="100%" />
+<img alt="strain visualization" src="tutorials/figs/Visualizations/pillar_force_absolute.png" width="100%" />
 </p>
 
 ## Validation <a name="validation"></a>
