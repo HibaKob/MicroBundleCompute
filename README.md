@@ -515,23 +515,24 @@ Similarly, the files ``strain__beat%i_Fcc.txt``, ``strain__beat%i_Fcr.txt``, ``s
 Finally, the ``pillar%i_pillar_force_abs.txt``, ``pillar%i_pillar_force_row.txt``, and ``pillar%i_pillar_force_col.txt`` files will store results corresponding to the mean absolute pillar force, mean pillar force in the row direction, and mean pillar force in the column direction respectively for each pillar. The files store timeseries results and have lengths equal to the number of input movie frames.
 
 ### Understanding the visualization results
+For tissue tracking, the outputs of running the visualization codes will be stored in the ``visualizations`` folder.
 
-The outputs of running the visualization code will be stored in the ``visualizations`` folder.
-
-For the displacement tracking results, we plot absolute displacement of the identified markers. There is an optional argument in the visualization script that can be used to set the displacement bounds and the colormap. The default is absolute displacement ranging from 0-10 pixels, and the default colormap is [``viridis``](https://matplotlib.org/stable/tutorials/colors/colormaps.html).
+For the displacement tracking results, we plot absolute displacement of the identified markers as well as the displacements in the row and column directions. There is an optional argument in the visualization script that can be used to set the displacement bounds and the colormap. By default, the bounds are calculated automatically, and the default colormap is [``viridis``](https://matplotlib.org/stable/tutorials/colors/colormaps.html).
 
 <p align = "center">
 <img alt="tracking visualization" src="tutorials/figs/abs_disp_long.gif" width="100%" />
 <img alt="tracking visualization with interpolation" src="tutorials/figs/abs_disp_long_with_interp.gif" width="100%" />
 </p>
 
-For the strain tracking results, we plot $E_{cc}$ for each sub-domain. Specifically, we visualize $E_{cc}$ organized in space in ``sub_domain_strain.gif`` and ``%04d_strain.png``, and we visualize $E_{cc}$ in time (i.e., vs. frame number) in ``strain_timeseries_Ecc_beat%i.png``. The legend in the timeseries plots corresponds to the sub-domain labels in ``strain_sub_domain_key.png``.
+For the strain tracking results, we plot $E_{cc}$, $E_{cr}$, and $E_{rrr}$ for each subdomain. Specifically, we visualize these strains organized in space in ``sub_domain_strain_E**.gif`` and ``%04d_strain.png``, and organized in time (i.e. as a timeseries vs. frame number) in ``strain_timeseries_E**_beat%i.pdf``. The legend in the timeseries plots corresponds to the subdomain labels in ``strain_sub_domain_key.pdf``.
 
 <p align = "center">
 <img alt="strain visualization" src="tutorials/figs/sub_domain_strain_long.gif" width="100%" />
 </p>
 
-In all cases, the output visualizations are stored as ``.pngs`` and as a ``.gif`` -- ``.mp4`` functionality was removed due to issues with ffmpeg on some machines.
+In all cases, the output visualizations are stored as ``.png`` and ``.gif`` files, except for plots which are stored as ``.pdf`` files for higher resolution.
+
+For pillar tracking, the outputs of running the visualization codes will be stored in the ``pillar_visualizations`` folder. Three timeseries plots should be contained here: ``pillar_directional_displacement.pdf``, ``pillar_mean_absolute_displacement.pdf``, and ``pillar_force_absolute.pdf`` and correspond to the varition of the pillar mean row and column displacements, pillar mean absolute displacement, and pillar absolute force with respect to frame number. We note here that if 2 pillars are tracked, the results will be visualized on the same plots.
 
 ## Validation <a name="validation"></a>
 As mentioned above, we have validated the tissue tracking mode of our code against [synthetic data](https://github.com/HibaKob/SyntheticMicroBundle) and manual tracking. We include here one set of results corresponding to each validation approach. More information can be found in the [main paper](add link) and the [supplementary document](add link).
