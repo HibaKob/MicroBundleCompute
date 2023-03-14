@@ -238,20 +238,25 @@ def compute_beat_frequency(info: np.ndarray, fps: int) -> float:
     return freq
 
 
-def compute_beat_amplitude(timeseries: np.ndarray, info: np.ndarray, length_scale: float) -> float:
-    """#Given a timeseries and split tracking results. Will compute the amplitude of the beats."""#
+def compute_beat_amplitude(timeseries: np.ndarray, tracker_row_all: List, tracker_col_all: List, info: np.ndarray, length_scale: float) -> float:
+    """Given a timeseries and split tracking results. Will compute the amplitude of the beats."""
+    all_beat_ampl = []
     num_beats = info.shape[0]
     peaks = compute_peaks(timeseries)
-    valley_pairs = info.T[1:]
-    actual_valleys = np.unique(valley_pairs)[1:-1]
-    actual_peaks = peaks[1:-2]
-    beat_peak_ampl = timeseries[actual_peaks]
-    beat_valley_ampl = timeseries[actual_valleys]
-    all_beat_ampl = beat_peak_ampl - beat_valley_ampl
+    actual_peaks = peaks[1:-1]
+    for beat in range(0, num_beats):
+        tracker_row = tracker_row_all[beat]
+        tracker_col = tracker_col_all[beat]
+        mean_disp_all, _, _, _ = compute_abs_position_timeseries(tracker_row, tracker_col)
+        idx_start = info[beat, 1]
+        beat_peak = int(actual_peaks[beat]) - idx_start
+        beat_ampl = mean_disp_all[beat_peak]
+        all_beat_ampl.append(beat_ampl)   
     if num_beats > 2:
         ampl_px = np.mean(all_beat_ampl[1:-1])
     else:
         ampl_px = np.mean(all_beat_ampl)
+    
     ampl = ampl_px*length_scale
     return ampl
 
@@ -364,7 +369,7 @@ def run_tracking(folder_path: Path, fps: int, length_scale: float) -> List:
     tracker_0_all, tracker_1_all = split_tracking(tracker_0, tracker_1, info)
     # compute beat frequency and amplitude
     frequency = compute_beat_frequency(info, fps)
-    amplitude = compute_beat_amplitude(timeseries, info, length_scale)
+    amplitude = compute_beat_amplitude(timeseries, tracker_0_all, tracker_1_all, info, length_scale)
     # save tracking results
     saved_paths = save_tracking(folder_path=folder_path, tracker_col_all=tracker_0_all, tracker_row_all=tracker_1_all, info=info)
     # save beat info
