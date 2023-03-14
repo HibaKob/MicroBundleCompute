@@ -244,7 +244,7 @@ def compute_beat_amplitude(timeseries: np.ndarray, info: np.ndarray, length_scal
     peaks = compute_peaks(timeseries)
     valley_pairs = info.T[1:]
     actual_valleys = np.unique(valley_pairs)[1:-1]
-    actual_peaks = peaks[1:-1]
+    actual_peaks = peaks[1:-2]
     beat_peak_ampl = timeseries[actual_peaks]
     beat_valley_ampl = timeseries[actual_valleys]
     all_beat_ampl = beat_peak_ampl - beat_valley_ampl
