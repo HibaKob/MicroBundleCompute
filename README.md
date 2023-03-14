@@ -212,7 +212,7 @@ The function ``run_visualization`` is for visualizing the tracking results. The 
 <p align = "center">
 <img alt="absolute displacement" src="tutorials/figs/abs_disp.gif" width="60%" />
 
-The entire tracking process is fully automated and requires very little input from the user. However, in some cases, the user might notice that the identified fudicial markers are too condensed or too sparse. This can be enhanced by tuning a single parameter (``minDistance``) in the ``image_analysis.py`` source code file, ``get_tracking_param_dicts`` function for better coverage of the tissue domain. The default value for ``minDistance`` is 4. We recommend either increasing or decreasing its default value by 1 (``minDistance = 5`` or ``minDistance = 3``). 
+The entire tracking process is fully automated and requires very little input from the user. However, in some cases, the user might notice that the identified fudicial markers are too condensed or too sparse. This can be enhanced by tuning a single parameter (``minDistance``) in the ``image_analysis.py`` source code file, ``get_tracking_param_dicts`` function for better coverage of the tissue domain. The default value for ``minDistance`` is 4. We recommend either increasing or decreasing its default value by 1 (``minDistance=5`` or ``minDistance=3``). 
 ##### Post-tracking rotation
 It is possible that the images may not be aligned with the desired global coordinate system, being in the horizontal and vertical directions for this code. After tracking, it is possible to rotate both the images and the tracking results based on a specified center of rotation and desired horizontal axis vector. Note that rotation must be run after tracking. This was an intentional ordering as rotating the images involves interpolation which will potential lead to loss of information. To automatically rotate based on the mask, run the code with the following inputs:
 
@@ -372,6 +372,10 @@ By default, these two functions are skipped by having the following input predef
 kernel = None 
 first_valley = 0
 ```
+
+### Running the code
+
+### Understanding the output files
 ## Validation <a name="validation"></a>
 As mentioned above, we have validated the tissue tracking mode of our code against [synthetic data](https://github.com/HibaKob/SyntheticMicroBundle) and manual tracking. We include here one set of results corresponding to each validation approach. More information can be found in the [main paper](add link) and the [supplementary document](add link).
 
