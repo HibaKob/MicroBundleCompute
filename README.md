@@ -23,16 +23,13 @@ We will configure these once we make the repository public:
 ## Project Summary <a name="summary"></a>
 The MicroBundleCompute software is developed as a multi-purpose tool for analyzing heterogeneous cardiac microtissue deformation and strain from brightfield movies of beating microtissue. In this repository, we share the source code, steps to download and install the software, tutorials on how to run the different main and optional functionalities of the software, and details about code validation. **For more information, please refer to the main [manuscript](add link).**
 
-Briefly, the software requires two main inputs: `1)` a binary mask of the tissue and `2)` consecutive movie frames of the beating microtissue. The mask can be either generated manually or externally, or automatically using one of the software’s built-in functionalities. Tracking points identified as Shi-Tomasi corner points are then computed on the first frame of the movie and tracked
-across all frames. From this preliminary tracking, we can identify individual beats. This allows us to perform the analysis per beat by tracking the
-marker points identified at the first frame of each beat across the beat frames. From these tracked points, we are able to compute full-field displacements,
-and subdomain-averaged strains. We also include post-processing functionalities to rotate the images and tracking results as well as interpolate
-the results at query points. To visualize the results, the software outputs timeseries plots per beat and movies of full-field results. Finally, we validate our software against synthetically generated beating microtissue data with a known ground truth.
+Briefly, the software requires two main inputs: `1)` a binary mask of the tissue and `2)` consecutive movie frames of the beating microtissue. The mask can be either generated manually or externally, or automatically using one of the software’s built-in functionalities. Tracking points identified as Shi-Tomasi corner points are then computed on the first frame of the movie and tracked across all frames. From this preliminary tracking, we can identify individual beats. This allows us to perform the analysis per beat by tracking the marker points identified at the first frame of each beat across the beat frames. From these tracked points, we are able to compute full-field displacements,
+and subdomain-averaged strains. We also include post-processing functionalities to rotate the images and tracking results as well as interpolate the results at query points. To visualize the results, the software outputs timeseries plots per beat and movies of full-field and subdomain-averaged results. Finally, we validate our software against synthetically generated beating microtissue data with a known ground truth and against basic manual tracking.
 
 <p align = "center">
 <img alt="code pipeline" src="tutorials/figs/code_pipeline.png" width="95%" />
 
-Additionally, the user can also specify to track the pillars or posts to which the microtissue is attached. In this case, a mask for the pillars (posts) should be provided. The outputs for this tracking option are timeseries plots of the pillars' mean absolute displacement and force results. We note that this additional functionality has not been vigorously validated at the moment.
+Additionally, the user can specify to track the pillars or posts to which the microtissue is attached. In this case, a mask for the pillars (posts) should be provided. The outputs for this tracking option are timeseries plots of the pillars' mean absolute displacement and force results. We note that this additional functionality has not been vigorously validated at the moment.
 
 We are also adding new functionalities to the code as well as enhancing the software based on user feedback. Please check our [to-do list]((#todo)).
 
@@ -156,6 +153,8 @@ For the code to work properly, we provide below an example of the initial folder
 |                |___"pillar_mask_2.png"      (optional)
 
 ```
+Aside from the folder structure, the code requires that the frames in the ``movie`` folder span at least 3 beats. We mandate this requirement for better result outputs. 
+
 ### Current core functionalities
 In the current version of the code, there are 5 core functionalities available for tissue tracking (automatic mask generation, tracking, displacement results visualization, strain computation, and strain results visualization) and 2 core functionalities for pillar tracking (tracking, displacement and pillar force results visualization). As a brief note, it is not necessary to use all functionalities (e.g., you can consider displacement results but ignore strain calculations for tissue tracking or skip the visualization steps).
 
@@ -213,6 +212,7 @@ The function ``run_visualization`` is for visualizing the tracking results. The 
 <p align = "center">
 <img alt="absolute displacement" src="tutorials/figs/abs_disp.gif" width="60%" />
 
+The entire tracking process is fully automated and requires very little input from the user. However, in some cases, the user might notice that the identified fudicial markers are too condensed or too sparse. This can be enhanced by tuning a single parameter (``minDistance``) in the ``image_analysis.py`` source code file, ``get_tracking_param_dicts`` function for better coverage of the tissue domain. The default value for ``minDistance`` is 4. We recommend either increasing or decreasing its default value by 1 (``minDistance = 5`` or ``minDistance = 3``). 
 ##### Post-tracking rotation
 It is possible that the images may not be aligned with the desired global coordinate system, being in the horizontal and vertical directions for this code. After tracking, it is possible to rotate both the images and the tracking results based on a specified center of rotation and desired horizontal axis vector. Note that rotation must be run after tracking. This was an intentional ordering as rotating the images involves interpolation which will potential lead to loss of information. To automatically rotate based on the mask, run the code with the following inputs:
 
@@ -375,6 +375,7 @@ first_valley = 0
 ## Validation <a name="validation"></a>
 As mentioned above, we have validated the tissue tracking mode of our code against [synthetic data](https://github.com/HibaKob/SyntheticMicroBundle) and manual tracking. We include here one set of results corresponding to each validation approach. More information can be found in the [main paper](add link) and the [supplementary document](add link).
 
+### Against synthetic data
 <p align = "center">
 <img alt="sub-domain visualization" src="tutorials/figs/Mean_Abs_Disp_Error.png" width="90%" />
 
@@ -385,7 +386,10 @@ As mentioned above, we have validated the tissue tracking mode of our code again
 <img alt="sub-domain strains" src="tutorials/figs/Sub0.png" width="43%" />
 </p>
 
-
+### Against manual tracking
+For this validation approach, we compare the displacements in x (horizontal or column) and the displacements in y (vertical or row) at "n" points (in this example 30 points) that are automatically tracked by the code (Optical Flow) and those tracked manually by two different evaluators (P1 and P2).
+<p align = "center">
+<img alt="sub-domain visualization" src="tutorials/figs/point_displacement_xy.png" width="80%" />
 
 ## To-Do List <a name="todo"></a>
 - [ ] Expand the test example dataset
@@ -393,7 +397,6 @@ As mentioned above, we have validated the tissue tracking mode of our code again
 - [ ] Compare pillar tracking functionality to tools available in the literature
 - [ ] Extend the software capabilities to include tracking of calcium images
 - [ ] Explore options for additional analysis/visualization
-
 
 ## References to Related Work <a name="references"></a>
 [1] Legant, W. R., Pathak, A., Yang, M. T., Deshpande, V. S., McMeeking, R. M., & Chen, C. S. (2009). Microfabricated tissue gauges to measure and manipulate forces from 3D microtissues. Proceedings of the National Academy of Sciences, 106(25), 10097-10102.
