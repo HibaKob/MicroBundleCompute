@@ -42,8 +42,6 @@ else:
 track_mode = "tissue" # "pillar" or "tissue"
 
 if track_mode == "pillar":
-    pillars_to_track = 2 # If 2 pillars are to be tracked, the code expects two pillar masks, one for each
-    # pillar masks are to be generated manually and saved as: "pillar_mask_1.txt" and/or "pillar_mask_2.txt"
     pdms_E = 1.61 # Provide this value in MPa
     pillar_width = 163 # Provide this value in micrometer (um)
     pillar_thickness = 33.2 # Provide this value in micrometer (um)
