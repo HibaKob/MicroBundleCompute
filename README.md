@@ -394,14 +394,15 @@ And it will automatically run the example specified by the ``files/tutorial_exam
 |                |___"pillar_mask_2.txt"
 |                |___"pillar_mask_2.png"      (optional)
 |        |___ results
-|                |___"info.txt"
+|                |___"beat_info.txt"
 |                |___"beat%i_row.txt"
 |                |___"beat%i_col.txt"
+|                |___"info.txt"
+|                |___"interpolated_rotated_beat%i_row.txt"
+|                |___"interpolated_rotated_beat%i_col.txt"
 |                |___"rot_info.txt"
 |                |___"rotated_beat%i_row.txt"
 |                |___"rotated_beat%i_col.txt"
-|                |___"interpolated_rotated_beat%i_row.txt"
-|                |___"interpolated_rotated_beat%i_col.txt"
 |                |___"strain__sub_domain_info.txt"
 |                |___"strain__beat%i_row.txt"
 |                |___"strain__beat%i_col.txt"
@@ -409,17 +410,45 @@ And it will automatically run the example specified by the ``files/tutorial_exam
 |                |___"strain__beat%i_Fcr.txt"
 |                |___"strain__beat%i_Frc.txt"
 |                |___"strain__beat%i_Frr.txt"
+|                |___"tissue_info.txt"
 |        |___ visualizations
 |                |___pngs
-|                   |___"%04d_disp.png"
-|                   |___"%rotated_%04d_disp_with_interp.png"
+|                   |___pngs_abs
+|                       |___"%04d_disp.png"
+|                       |___"%rotated_%04d_disp.png"
+|                       |___"%rotated_%04d_disp_with_interp.png"
+|                   |___pngs_col
+|                       |___"%04d_disp.png"
+|                       |___"%rotated_%04d_disp.png"
+|                       |___"%rotated_%04d_disp_with_interp.png"
+|                   |___pngs_col
+|                       |___"%04d_disp.png"
+|                       |___"%rotated_%04d_disp.png"
+|                       |___"%rotated_%04d_disp_with_interp.png"
 |                |___"abs_disp.gif"
+|                |___"column_disp.gif"
+|                |___"row_disp.gif"
+|                |___"rotated_abs_disp.gif"
+|                |___"rotated_column_disp.gif"
+|                |___"rotated_row_disp.gif"
 |                |___"rotated_abs_disp_with_interp.gif"
+|                |___"rotated_column_disp_with_interp.gif"
+|                |___"rotated_row_disp_with_interp.gif"
+|                |___"rotation direction.pdf"
 |                |___strain_pngs
-|                   |___"%04d_strain.png"
-|                   |___"strain_sub_domain_key.png"
-|                   |___"strain_timeseries_Ecc_beat%i.png"
-|                |___"sub_domain_strain.gif"
+|                   |___Ecc
+|                       |___"%04d_strain.png"
+|                       |___"strain_timeseries_Ecc_beat%i.pdf"
+|                   |___Ecr
+|                       |___"%04d_strain.png"
+|                       |___"strain_timeseries_Ecr_beat%i.pdf"
+|                   |___Err
+|                       |___"%04d_strain.png"
+|                       |___"strain_timeseries_Err_beat%i.pdf"
+|                   |___"strain_sub_domain_key.pdf"
+|                |___"sub_domain_strain_Ecc.gif"
+|                |___"sub_domain_strain_Ecr.gif"
+|                |___"sub_domain_strain_Err.gif"
 |        |___ pillar_results
 |                |___"info.txt"
 |                |___"pillar*_row.txt"
@@ -431,9 +460,7 @@ And it will automatically run the example specified by the ``files/tutorial_exam
 |                |___"pillar_directional_displacement.pdf"
 |                |___"pillar_mean_absolute_displacement.pdf"
 |                |___"pillar_force_absolute.pdf"
-
 ```
-
 ### Understanding the output files
 ## Validation <a name="validation"></a>
 As mentioned above, we have validated the tissue tracking mode of our code against [synthetic data](https://github.com/HibaKob/SyntheticMicroBundle) and manual tracking. We include here one set of results corresponding to each validation approach. More information can be found in the [main paper](add link) and the [supplementary document](add link).
