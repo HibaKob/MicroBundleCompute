@@ -374,6 +374,65 @@ first_valley = 0
 ```
 
 ### Running the code
+Once the code is [installed](#install) and the data is set up according to the [instructions](#data_prep), running the code is actually quite straightforward. To run the tutorial example, navigate in the Terminal so that your current working directory is in the ``tutorials`` folder. To run the code on the provided single example, type:
+
+```bash
+python run_code.py files/tutorial_example
+```
+
+And it will automatically run the example specified by the ``files/tutorial_example`` folder and the associated visualization function. You can use the ``run_code.py`` to run your own code, you just need to specify a relative path between your current working directory (i.e., the directory that your ``Terminal`` is in) and the data that you want to analyze. Alternatively, you can modify ``run_code.py`` to make running code more conveneint (i.e., remove command line arguments, skip some steps). Here is how the outputs of the code will be structured (in the same folder as inputs ``movie`` and ``masks``) when both tracking modes (pillar and tissue) are run on the same example:
+
+```bash
+|___ example_data
+|        |___ movie
+|                |___"*.TIF"
+|        |___ masks
+|                |___"tissue_mask.txt"
+|                |___"tissue_mask.png"      (optional)
+|                |___"pillar_mask_1.txt"      
+|                |___"pillar_mask_1.png"      (optional)
+|                |___"pillar_mask_2.txt"
+|                |___"pillar_mask_2.png"      (optional)
+|        |___ results
+|                |___"info.txt"
+|                |___"beat%i_row.txt"
+|                |___"beat%i_col.txt"
+|                |___"rot_info.txt"
+|                |___"rotated_beat%i_row.txt"
+|                |___"rotated_beat%i_col.txt"
+|                |___"interpolated_rotated_beat%i_row.txt"
+|                |___"interpolated_rotated_beat%i_col.txt"
+|                |___"strain__sub_domain_info.txt"
+|                |___"strain__beat%i_row.txt"
+|                |___"strain__beat%i_col.txt"
+|                |___"strain__beat%i_Fcc.txt"
+|                |___"strain__beat%i_Fcr.txt"
+|                |___"strain__beat%i_Frc.txt"
+|                |___"strain__beat%i_Frr.txt"
+|        |___ visualizations
+|                |___pngs
+|                   |___"%04d_disp.png"
+|                   |___"%rotated_%04d_disp_with_interp.png"
+|                |___"abs_disp.gif"
+|                |___"rotated_abs_disp_with_interp.gif"
+|                |___strain_pngs
+|                   |___"%04d_strain.png"
+|                   |___"strain_sub_domain_key.png"
+|                   |___"strain_timeseries_Ecc_beat%i.png"
+|                |___"sub_domain_strain.gif"
+|        |___ pillar_results
+|                |___"info.txt"
+|                |___"pillar*_row.txt"
+|                |___"pillar*_col.txt"
+|                |___"pillar*_pillar_force_abs.txt"
+|                |___"pillar*_pillar_force_row.txt"
+|                |___"pillar*_pillar_force_col.txt"
+|        |___ pillar_visualizations
+|                |___"pillar_directional_displacement.pdf"
+|                |___"pillar_mean_absolute_displacement.pdf"
+|                |___"pillar_force_absolute.pdf"
+
+```
 
 ### Understanding the output files
 ## Validation <a name="validation"></a>
