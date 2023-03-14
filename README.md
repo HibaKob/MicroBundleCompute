@@ -462,6 +462,58 @@ And it will automatically run the example specified by the ``files/tutorial_exam
 |                |___"pillar_force_absolute.pdf"
 ```
 ### Understanding the output files
+The outputs of running this code will be stored in the ``results`` folder for tissue tracking and ``pillar_results`` for pillar tracking as text files. The ``results`` folder contains 5 ``"info"`` text files: ``beat_info.txt``, ``info.txt``, ``rot_info.txt``, ``strain__sub_domain_info.txt``, and ``tissue_info.txt``, while the folder ``pillar_results`` contains a single ``info.txt`` file.
+
+
+The ``info.txt`` file stores information pertaining to beat segmentaion. It has three columns. Column 0 refers to the ``beat_number`` (e.g., beat 0 is the first beat, beat 1 is the second beat etc.). Column 1 refers to the ``first_frame`` of each beat. Column 2 refers to the ``last_frame`` of each beat. These will be the frame numbers in the original movie 0 indexed. For example, ``info.txt`` could contain:
+```bash
+0 3 25
+1 25 49
+2 49 72
+```
+and mean that beat 0 starts at frame 3 and ends at frame 25, beat 1 starts at frame 25 and ends at frame 49, and beat 2 starts at frame 49 and ends at frame 72. Note that if full beats cannot be segmented from the timeseries data there may be issues with running the code. Often, the visually apparent first and last beats will be excluded from this segmentation because we cannot identify clear start and end points.
+
+Then, there will be one row-position file and one col-position file for each beat. The ``row`` and ``col`` positions match the original image provided. Specifically:
+* ``beat%i_row_pos.txt`` will contain the image row positions of each marker for the beat specified by ``%i``
+* ``beat%i_col_pos.txt`` will contain the image column positions of each marker for the beat specified by ``%i``
+
+In these text files, the rows correspond to individual markers, while the columns correspond to the frames of the beat. For example, if a file has dimension ``AA x BB``, there will be ``AA`` markers and ``BB`` frames.
+
+The file ``rot_info.txt`` will contain information to reconstruct the rotation if needed. The first row contains the rotation row center position and the column center position. The second row contains the rotation unit vector with the row in the first position and the column in the second position. For example, ``rot_info.txt`` could contain:
+```bash
+266.5   255
+0       1
+```
+The rotated row and column positions of the tracked points are then stored in ``rotated_beat%i_row_pos.txt`` and ``rotated_beat%i_col_pos.txt``. The interpolated row and column positions (starting from the sample points in frame 0 of each beat) are stored in ``interpolated_rotated_beat%i_row_pos.txt`` and ``interpolated_rotated_beat%i_col_pos.txt``.
+
+The file ``strain__sub_domain_info.txt`` will contain information about the strain subdomains. The first row contains the number of row sub divisions and the number of column sub divisions. The second row contains the number of pixels in the sub-domain sides. The third row contains the row center position and the column center position. The fourth row contains the rotation unit vector with the row in the first position and the column in the second position. For example, ``strain__sub_domain_info.txt`` could contain:
+```bash
+3       5
+40      40
+266.5   255
+0       1
+```
+which would correspond to a 3x5 array of sub-domains with a 40 pixel side length with rotation center (266.5, 255) and rotation vector [0, 1]. Note that in all saved results the rotation is already applied, this information is saved here to ensure that these results can be reproduced in the future.
+
+### Understanding the visualization results
+
+The outputs of running the visualization code will be stored in the ``visualizations`` folder.
+
+For the displacement tracking results, we plot absolute displacement of the identified markers. There is an optional argument in the visualization script that can be used to set the displacement bounds and the colormap. The default is absolute displacement ranging from 0-10 pixels, and the default colormap is [``viridis``](https://matplotlib.org/stable/tutorials/colors/colormaps.html).
+
+<p align = "center">
+<img alt="tracking visualization" src="tutorials/figs/abs_disp_long.gif" width="100%" />
+<img alt="tracking visualization with interpolation" src="tutorials/figs/abs_disp_long_with_interp.gif" width="100%" />
+</p>
+
+For the strain tracking results, we plot $E_{cc}$ for each sub-domain. Specifically, we visualize $E_{cc}$ organized in space in ``sub_domain_strain.gif`` and ``%04d_strain.png``, and we visualize $E_{cc}$ in time (i.e., vs. frame number) in ``strain_timeseries_Ecc_beat%i.png``. The legend in the timeseries plots corresponds to the sub-domain labels in ``strain_sub_domain_key.png``.
+
+<p align = "center">
+<img alt="strain visualization" src="tutorials/figs/sub_domain_strain_long.gif" width="100%" />
+</p>
+
+In all cases, the output visualizations are stored as ``.pngs`` and as a ``.gif`` -- ``.mp4`` functionality was removed due to issues with ffmpeg on some machines.
+
 ## Validation <a name="validation"></a>
 As mentioned above, we have validated the tissue tracking mode of our code against [synthetic data](https://github.com/HibaKob/SyntheticMicroBundle) and manual tracking. We include here one set of results corresponding to each validation approach. More information can be found in the [main paper](add link) and the [supplementary document](add link).
 
