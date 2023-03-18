@@ -250,7 +250,7 @@ ia.run_rotation_visualization(input_folder, automatic_color_constraint=automatic
 Note: We also provide a function ``run_scale_and_center_coordinates()`` to transform the tracking results (rescale and center). If needed, this should be used as a final step.
 
 ##### Post-tracking interpolation and visualization
-The tracking results are returned at the automatically identified fiducial marker points. However, it may be useful to know displacements at other locations (e.g., on a grid). After tracking and rotation, we can interpolate the displacement field to specified sampling points. For example one can do:
+The tracking results are returned at the automatically identified fudicial marker points. However, it may be useful to know displacements at other locations (e.g., on a grid). After tracking and rotation, we can interpolate the displacement field to specified sampling points. For example one can do:
 
 ```bash
 row_vec = np.linspace(230, 320, 12)
