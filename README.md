@@ -185,7 +185,7 @@ ctm.run_create_tissue_mask(input_folder, seg_fcn_num, fname, frame_num, method)
 
 The function ``run_tracking`` will automatically read the data specified by the input folder (tiff files and mask file), run tracking, segment individual beats in time, and save the results as text files.
 
-It is essential to provide the ``run_tracking`` function with two movie parameters: ``1)`` the frames per second (fps) and ``2)`` the length scale (ls) in units of $\mu m/pixel$. We currently output all displacement results in units of pixels but the movie parameters are implemented to calculate tissue beating frequency in $Hz$ ($1/s$), and tissue beating amplitude, and tissue thickness in $\mu m$. If both parameters are inputted as $1$ like in the example below, tissue beating frequency would be outputted in units of $1/frames$ and tissue beating amplitude and tissue thickness would be outputted in units of $pixels$.
+It is essential to provide the ``run_tracking`` function with two movie parameters: ``1)`` the frames per second (fps) and ``2)`` the length scale (ls) in units of $\mu m/pixel$. We currently output all displacement results in units of $pixels$ but the movie parameters are implemented to calculate tissue beating frequency in $Hz$ ($1/s$), and tissue beating amplitude, and tissue thickness in $\mu m$. If both parameters are inputted as $1$ like in the example below, tissue beating frequency would be outputted in units of $1/frames$ and tissue beating amplitude and tissue thickness would be outputted in units of $pixels$.
 
 ```bash
 from microbundlecompute import image_analysis as ia
