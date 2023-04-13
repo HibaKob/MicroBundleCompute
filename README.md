@@ -212,7 +212,7 @@ The function ``run_visualization`` is for visualizing the tracking results. The 
 <p align = "center">
 <img alt="absolute displacement" src="tutorials/figs/abs_disp.gif" width="60%" />
 
-The entire tracking process is fully automated and requires very little input from the user. However, in some cases, the user might notice that the identified fudicial markers are too condensed or too sparse. This can be enhanced by tuning a single parameter (``minDistance``) in the ``image_analysis.py`` source code file, ``get_tracking_param_dicts`` function for better coverage of the tissue domain. The default value for ``minDistance`` is 4. We recommend either increasing or decreasing its default value by 1 (``minDistance=5`` or ``minDistance=3``). 
+The entire tracking process is fully automated and requires very little input from the user. However, in some cases, the user might notice that the identified fiducial markers are too condensed or too sparse. This can be enhanced by tuning a single parameter (``minDistance``) in the ``image_analysis.py`` source code file, ``get_tracking_param_dicts`` function for better coverage of the tissue domain. The default value for ``minDistance`` is 4. We recommend either increasing or decreasing its default value by 1 (``minDistance=5`` or ``minDistance=3``). 
 ##### Post-tracking rotation
 It is possible that the images may not be aligned with the desired global coordinate system, being in the horizontal and vertical directions for this code. After tracking, it is possible to rotate both the images and the tracking results based on a specified center of rotation and desired horizontal axis vector. Note that rotation must be run after tracking. This was an intentional ordering as rotating the images involves interpolation which will potentially lead to loss of information. To automatically rotate based on the mask, run the code with the following inputs:
 
@@ -250,7 +250,7 @@ ia.run_rotation_visualization(input_folder, automatic_color_constraint=automatic
 Note: We also provide a function ``run_scale_and_center_coordinates()`` to transform the tracking results (rescale and center). If needed, this should be used as a final step.
 
 ##### Post-tracking interpolation and visualization
-The tracking results are returned at the automatically identified fudicial marker points. However, it may be useful to know displacements at other locations (e.g., on a grid). After tracking and rotation, we can interpolate the displacement field to specified sampling points. For example one can do:
+The tracking results are returned at the automatically identified fiducial marker points. However, it may be useful to know displacements at other locations (e.g., on a grid). After tracking and rotation, we can interpolate the displacement field to specified sampling points. For example one can do:
 
 ```bash
 row_vec = np.linspace(230, 320, 12)
@@ -496,7 +496,7 @@ This corresponds to a 3x5 array of subdomains with a 40 pixel side length, rotat
 
 The final text file is ``tissue_info.txt`` and contains a single value correspoding to the tissue width (in the row direction)measured at the center of the tissue mask.  
 
-The ``"row"`` and ``"col"`` files contain information regarding the row and column positions of the tracked marker (fudicial) points. For tissue tracking, there will be one row-position file and one col-position file for each beat. The ``row`` and ``col`` positions match the original image provided. Specifically:
+The ``"row"`` and ``"col"`` files contain information regarding the row and column positions of the tracked marker (fiducial) points. For tissue tracking, there will be one row-position file and one col-position file for each beat. The ``row`` and ``col`` positions match the original image provided. Specifically:
 * ``beat%i_row.txt`` will contain the image row positions of each marker for the beat specified by ``%i``
 * ``beat%i_col.txt`` will contain the image column positions of each marker for the beat specified by ``%i``
 
