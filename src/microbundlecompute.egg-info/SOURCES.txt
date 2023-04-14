@@ -12,4 +12,5 @@ src/microbundlecompute.egg-info/requires.txt
 src/microbundlecompute.egg-info/top_level.txt
 tests/test_create_tissue_mask.py
 tests/test_image_analysis.py
+tests/test_optional_preprocessing.py
 tests/test_strain_analysis.py
