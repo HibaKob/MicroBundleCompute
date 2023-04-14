@@ -39,49 +39,6 @@ def test_box_to_mask():
     assert new_mask[35, 55] == 1
 
 
-def test_corners_to_mask():
-    img = np.zeros((100, 100))
-    r0 = 20
-    r1 = 50
-    c0 = 40
-    c1 = 80
-    new_mask = sa.corners_to_mask(img, r0, r1, c0, c1)
-    assert new_mask[30, 60] == 1
-    assert new_mask[10, 10] == 0
-
-
-def test_box_to_bound():
-    r0 = 20
-    r1 = 50
-    c0 = 40
-    c1 = 80
-    box = np.asarray([[r0, c0], [r0, c1], [r1, c1], [r1, c0]])
-    r0_found, r1_found, c0_found, c1_found = sa.box_to_bound(box)
-    assert r0 == r0_found
-    assert r1 == r1_found
-    assert c0 == c0_found
-    assert c1 == c1_found
-
-
-def test_bound_to_box():
-    r0 = 20
-    r1 = 50
-    c0 = 40
-    c1 = 80
-    box_known = np.asarray([[r0, c0], [r0, c1], [r1, c1], [r1, c0]])
-    box_found = sa.bound_to_box(r0, r1, c0, c1)
-    assert np.allclose(box_known, box_found)
-
-
-def test_shrink_pair():
-    v0 = 100
-    v1 = 200
-    sf = 0.1
-    new_v0, new_v1 = sa.shrink_pair(v0, v1, sf)
-    diff = new_v1 - new_v0
-    assert diff == 90
-
-
 def test_shrink_box():
     r0 = 100
     r1 = 200
@@ -91,30 +48,9 @@ def test_shrink_box():
     shrink_row = 0.1
     shrink_col = 0.2
     box_shrink = sa.shrink_box(box, shrink_row, shrink_col)
-    r0_found, r1_found, c0_found, c1_found = sa.box_to_bound(box_shrink)
+    r0_found, r1_found, c0_found, c1_found = ia.box_to_bound(box_shrink)
     assert r1_found - r0_found == 90
     assert c1_found - c0_found == 160
-
-
-def test_remove_pillar_region():
-    file_path = tissue_mask_path("real_example_super_short")
-    mask = ia.read_txt_as_mask(file_path)
-    new_mask = sa.remove_pillar_region(mask, clip_columns = True, clip_rows = False )
-    assert np.sum(mask) > np.sum(new_mask)
-    box = ia.mask_to_box(mask)
-    _, _, c0, c1 = sa.box_to_bound(box)
-    new_box = ia.mask_to_box(new_mask)
-    _, _, c0_new, c1_new = sa.box_to_bound(new_box)
-    assert c0_new > c0
-    assert c1_new < c1
-    new_mask = sa.remove_pillar_region(mask, clip_columns = False, clip_rows = True )
-    assert np.sum(mask) > np.sum(new_mask)
-    box = ia.mask_to_box(mask)
-    r0, r1, _, _ = sa.box_to_bound(box)
-    new_box = ia.mask_to_box(new_mask)
-    r0_new, r1_new, _, _ = sa.box_to_bound(new_box)
-    assert r0_new > r0
-    assert r1_new < r1
 
 
 def test_create_sub_domains():
@@ -136,14 +72,6 @@ def test_create_sub_domains():
     assert tile_dim_pix == 40
 
 
-def test_is_in_box():
-    box = sa.bound_to_box(10, 100, 30, 900)
-    assert sa.is_in_box(box, 1000, 300) is False
-    assert sa.is_in_box(box, 50, 400) is True
-    assert sa.is_in_box(box, 50, 1000) is False
-    assert sa.is_in_box(box, 3, 500) is False
-
-
 def test_isolate_sub_domain_markers():
     file_path = tissue_mask_path("real_example_super_short")
     mask = ia.read_txt_as_mask(file_path)
@@ -159,7 +87,7 @@ def test_isolate_sub_domain_markers():
     tracker_col_all = [tracker_col]
     tracker_row_all = [tracker_row]
     for sd_box in tile_box_list:
-        r0, r1, c0, c1 = sa.box_to_bound(sd_box)
+        r0, r1, c0, c1 = ia.box_to_bound(sd_box)
         sd_tracker_row_all, sd_tracker_col_all = sa.isolate_sub_domain_markers(tracker_row_all, tracker_col_all, sd_box)
         assert len(sd_tracker_row_all) == 1
         assert len(sd_tracker_col_all) == 1

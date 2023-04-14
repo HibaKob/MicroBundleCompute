@@ -107,6 +107,94 @@ def test_read_txt_as_mask():
     assert arr.dtype is np.dtype("uint8")
 
 
+def test_shrink_pair():
+    v0 = 100
+    v1 = 200
+    sf = 0.1
+    new_v0, new_v1 = ia.shrink_pair(v0, v1, sf)
+    diff = new_v1 - new_v0
+    assert diff == 90
+
+
+def test_remove_pillar_region():
+    file_path = tissue_mask_path("real_example_super_short")
+    mask = ia.read_txt_as_mask(file_path)
+    new_mask = ia.remove_pillar_region(mask, clip_columns = True, clip_rows = False )
+    assert np.sum(mask) > np.sum(new_mask)
+    box = ia.mask_to_box(mask)
+    _, _, c0, c1 = ia.box_to_bound(box)
+    new_box = ia.mask_to_box(new_mask)
+    _, _, c0_new, c1_new = ia.box_to_bound(new_box)
+    assert c0_new > c0
+    assert c1_new < c1
+    new_mask = ia.remove_pillar_region(mask, clip_columns = False, clip_rows = True )
+    assert np.sum(mask) > np.sum(new_mask)
+    box = ia.mask_to_box(mask)
+    r0, r1, _, _ = ia.box_to_bound(box)
+    new_box = ia.mask_to_box(new_mask)
+    r0_new, r1_new, _, _ = ia.box_to_bound(new_box)
+    assert r0_new > r0
+    assert r1_new < r1
+
+
+def test_box_to_bound():
+    r0 = 20
+    r1 = 50
+    c0 = 40
+    c1 = 80
+    box = np.asarray([[r0, c0], [r0, c1], [r1, c1], [r1, c0]])
+    r0_found, r1_found, c0_found, c1_found = ia.box_to_bound(box)
+    assert r0 == r0_found
+    assert r1 == r1_found
+    assert c0 == c0_found
+    assert c1 == c1_found
+
+
+def test_bound_to_box():
+    r0 = 20
+    r1 = 50
+    c0 = 40
+    c1 = 80
+    box_known = np.asarray([[r0, c0], [r0, c1], [r1, c1], [r1, c0]])
+    box_found = ia.bound_to_box(r0, r1, c0, c1)
+    assert np.allclose(box_known, box_found)
+
+
+def test_is_in_box():
+    box = ia.bound_to_box(10, 100, 30, 900)
+    assert ia.is_in_box(box, 1000, 300) is False
+    assert ia.is_in_box(box, 50, 400) is True
+    assert ia.is_in_box(box, 50, 1000) is False
+    assert ia.is_in_box(box, 3, 500) is False
+
+
+def test_sub_division_markers():
+    file_path = tissue_mask_path("real_example_super_short")
+    mask = ia.read_txt_as_mask(file_path)
+    tile_style = 1
+    tile_box_list, _, _, _ = sa.create_sub_domains(mask, pillar_clip_fraction=0.5, shrink_row=0.1, shrink_col=0.1, tile_dim_pix=40, num_tile_row=5, num_tile_col=3, tile_style=tile_style)
+    folder_path = movie_path("real_example_super_short")
+    name_list_path = ia.image_folder_to_path_list(folder_path)
+    tiff_list = ia.read_all_tiff(name_list_path)
+    img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
+    file_path = tissue_mask_path("real_example_super_short")
+    mask = ia.read_txt_as_mask(file_path)
+    tracker_col, tracker_row = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
+    tracker_col_all = [tracker_col]
+    tracker_row_all = [tracker_row]
+    for sd_box in tile_box_list:
+        r0, r1, c0, c1 = sa.box_to_bound(sd_box)
+        sd_tracker_row_all, sd_tracker_col_all = sa.isolate_sub_domain_markers(tracker_row_all, tracker_col_all, sd_box)
+        assert len(sd_tracker_row_all) == 1
+        assert len(sd_tracker_col_all) == 1
+        assert np.max(sd_tracker_row_all[0][:, 0]) < r1
+        assert np.min(sd_tracker_row_all[0][:, 0]) > r0
+        assert np.max(sd_tracker_col_all[0][:, 0]) < c1
+        assert np.min(sd_tracker_col_all[0][:, 0]) > c0
+
+def test_sub_division_mask():
+
+
 def test_get_tracking_param_dicts():
     feature_params, lk_params = ia.get_tracking_param_dicts()
     assert feature_params["maxCorners"] == 10000
@@ -118,6 +206,12 @@ def test_get_tracking_param_dicts():
     assert lk_params["maxLevel"] == 5
     assert lk_params["criteria"][1] == 10
     assert lk_params["criteria"][2] == 0.03
+
+
+def test_compute_local_coverage():
+
+
+def test_adjust_qualityLevel():
 
 
 def test_adjust_feature_param_dicts():
@@ -784,6 +878,17 @@ def test_mask_to_box():
     assert np.isclose(np.max(box[:, 1]), 54, atol=3)
     mask[39, 60] = 1
     box = ia.mask_to_box(mask)
+
+
+def test_corners_to_mask():
+    img = np.zeros((100, 100))
+    r0 = 20
+    r1 = 50
+    c0 = 40
+    c1 = 80
+    new_mask = ia.corners_to_mask(img, r0, r1, c0, c1)
+    assert new_mask[30, 60] == 1
+    assert new_mask[10, 10] == 0
 
 
 def test_box_to_unit_vec():

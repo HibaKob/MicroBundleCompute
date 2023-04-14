@@ -228,6 +228,7 @@ def adjust_qualityLevel(feature_params: dict, img_uint8: np.ndarray, mask: np.nd
         iter +=1
     return qualityLevel, coverage
 
+
 def adjust_feature_param_dicts(feature_params: dict, img_uint8: np.ndarray, mask: np.ndarray, min_coverage: Union[float, int] = 40, min_local_coverage: Union[float, int] = 50) -> dict:
     """Given feature parameters, an image, and a mask. Will automatically update the feature quality and minimum distance to ensure sufficient coverage.
     (min_coverage refers to the number of pixels that should be attributed to 1 tracking point)"""
@@ -398,14 +399,17 @@ def save_beat_info(folder_path: Path,frequency: float, amplitude: float) -> Path
 
 
 def test_frame_0_valley(timeseries: np.ndarray, info: np.ndarray):
+    """Given full tracked mean absolute displacement and info. Will check if the movie does not start from a valley position."""
     valley_pairs = info.T[1:]
     valleys = np.unique(valley_pairs.ravel())
     valleys = np.asarray(valleys, dtype=int)
     min_valley_mean_abs_disp = np.min(timeseries[valleys])
     tracked_timeseries = timeseries[valleys[0]:]
     min_nonzero_mean_abs_disp = np.min(tracked_timeseries[tracked_timeseries!=0])
-    
-    if np.isclose(min_valley_mean_abs_disp,min_nonzero_mean_abs_disp, atol=0.01):
+    print('min_valley_mean_abs_disp',min_valley_mean_abs_disp)
+    print('min_nonzero_mean_abs_disp',min_nonzero_mean_abs_disp)
+    valley_error = (min_valley_mean_abs_disp - min_nonzero_mean_abs_disp)/min_nonzero_mean_abs_disp*100
+    if valley_error <= 20:
         pass
     else:
         warnings.warn('Input video does not start from a valley position. Consider adjusting the video using the preprocessing function "adjust_first_valley".')
@@ -863,11 +867,13 @@ def mask_to_box(mask: np.ndarray) -> np.ndarray:
     box = np.int0(cv2.boxPoints(rect))
     return box
 
+
 def corners_to_mask(img: np.ndarray, r0: int, r1: int, c0: int, c1: int) -> np.ndarray:
     """Given a mask (for dimensions) and a unrotated corners. Will return a mask of the inside of the corners."""
     new_mask = np.zeros(img.shape)
     new_mask[r0:r1, c0:c1] = 1
     return new_mask
+
 
 def axis_from_mask(mask: np.ndarray) -> np.ndarray:
     """Given a folder path. Will import the mask and determine its long axis."""
