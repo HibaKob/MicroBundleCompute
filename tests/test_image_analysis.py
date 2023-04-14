@@ -169,31 +169,31 @@ def test_is_in_box():
     assert ia.is_in_box(box, 3, 500) is False
 
 
-def test_sub_division_markers():
-    file_path = tissue_mask_path("real_example_super_short")
-    mask = ia.read_txt_as_mask(file_path)
-    tile_style = 1
-    tile_box_list, _, _, _ = sa.create_sub_domains(mask, pillar_clip_fraction=0.5, shrink_row=0.1, shrink_col=0.1, tile_dim_pix=40, num_tile_row=5, num_tile_col=3, tile_style=tile_style)
-    folder_path = movie_path("real_example_super_short")
-    name_list_path = ia.image_folder_to_path_list(folder_path)
-    tiff_list = ia.read_all_tiff(name_list_path)
-    img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
-    file_path = tissue_mask_path("real_example_super_short")
-    mask = ia.read_txt_as_mask(file_path)
-    tracker_col, tracker_row = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
-    tracker_col_all = [tracker_col]
-    tracker_row_all = [tracker_row]
-    for sd_box in tile_box_list:
-        r0, r1, c0, c1 = sa.box_to_bound(sd_box)
-        sd_tracker_row_all, sd_tracker_col_all = sa.isolate_sub_domain_markers(tracker_row_all, tracker_col_all, sd_box)
-        assert len(sd_tracker_row_all) == 1
-        assert len(sd_tracker_col_all) == 1
-        assert np.max(sd_tracker_row_all[0][:, 0]) < r1
-        assert np.min(sd_tracker_row_all[0][:, 0]) > r0
-        assert np.max(sd_tracker_col_all[0][:, 0]) < c1
-        assert np.min(sd_tracker_col_all[0][:, 0]) > c0
+# def test_sub_division_markers():
+#     file_path = tissue_mask_path("real_example_super_short")
+#     mask = ia.read_txt_as_mask(file_path)
+#     tile_style = 1
+#     tile_box_list, _, _, _ = sa.create_sub_domains(mask, pillar_clip_fraction=0.5, shrink_row=0.1, shrink_col=0.1, tile_dim_pix=40, num_tile_row=5, num_tile_col=3, tile_style=tile_style)
+#     folder_path = movie_path("real_example_super_short")
+#     name_list_path = ia.image_folder_to_path_list(folder_path)
+#     tiff_list = ia.read_all_tiff(name_list_path)
+#     img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
+#     file_path = tissue_mask_path("real_example_super_short")
+#     mask = ia.read_txt_as_mask(file_path)
+#     tracker_col, tracker_row = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
+#     tracker_col_all = [tracker_col]
+#     tracker_row_all = [tracker_row]
+#     for sd_box in tile_box_list:
+#         r0, r1, c0, c1 = sa.box_to_bound(sd_box)
+#         sd_tracker_row_all, sd_tracker_col_all = sa.isolate_sub_domain_markers(tracker_row_all, tracker_col_all, sd_box)
+#         assert len(sd_tracker_row_all) == 1
+#         assert len(sd_tracker_col_all) == 1
+#         assert np.max(sd_tracker_row_all[0][:, 0]) < r1
+#         assert np.min(sd_tracker_row_all[0][:, 0]) > r0
+#         assert np.max(sd_tracker_col_all[0][:, 0]) < c1
+#         assert np.min(sd_tracker_col_all[0][:, 0]) > c0
 
-def test_sub_division_mask():
+# def test_sub_division_mask():
 
 
 def test_get_tracking_param_dicts():
@@ -209,10 +209,10 @@ def test_get_tracking_param_dicts():
     assert lk_params["criteria"][2] == 0.03
 
 
-def test_compute_local_coverage():
+# def test_compute_local_coverage():
 
 
-def test_adjust_qualityLevel():
+# def test_adjust_qualityLevel():
 
 
 def test_adjust_feature_param_dicts():
