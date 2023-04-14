@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from microbundlecompute import image_analysis as ia
+from microbundlecompute import image_analysis as ia
 import numpy as np
 import os
 from pathlib import Path
