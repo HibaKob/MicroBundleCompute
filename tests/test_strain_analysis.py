@@ -88,13 +88,13 @@ def test_isolate_sub_domain_markers():
     tracker_row_all = [tracker_row]
     for sd_box in tile_box_list:
         r0, r1, c0, c1 = ia.box_to_bound(sd_box)
-        sd_tracker_row_all,_ = sa.isolate_sub_domain_markers(tracker_row_all, tracker_col_all, sd_box)
-        # assert len(sd_tracker_row_all) == 1
-        # assert len(sd_tracker_col_all) == 1
-        # assert np.max(sd_tracker_row_all[0][:, 0]) < r1
-        # assert np.min(sd_tracker_row_all[0][:, 0]) > r0
-        # assert np.max(sd_tracker_col_all[0][:, 0]) < c1
-        # assert np.min(sd_tracker_col_all[0][:, 0]) > c0
+        sd_tracker_row_all, sd_tracker_col_all = sa.isolate_sub_domain_markers(tracker_row_all, tracker_col_all, sd_box)
+        assert len(sd_tracker_row_all) == 1
+        assert len(sd_tracker_col_all) == 1
+        assert np.max(sd_tracker_row_all[0][:, 0]) < r1
+        assert np.min(sd_tracker_row_all[0][:, 0]) > r0
+        assert np.max(sd_tracker_col_all[0][:, 0]) < c1
+        assert np.min(sd_tracker_col_all[0][:, 0]) > c0
 
 
 def test_compute_F_from_Lambda_mat():
