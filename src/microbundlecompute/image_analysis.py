@@ -90,7 +90,7 @@ def read_txt_as_mask(file_path: Path) -> np.ndarray:
 def get_tracking_param_dicts() -> dict:
     """Will return dictionaries specifying the feature parameters and tracking parameters.
     In future, these may vary based on version."""
-    feature_params = dict(maxCorners=10000, qualityLevel=0.1, minDistance=4, blockSize=3)
+    feature_params = dict(maxCorners=10000, qualityLevel=0.1, minDistance=3, blockSize=3)
     window = 5
     
     lk_params = dict(winSize=(window, window), maxLevel=5, criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
@@ -105,18 +105,145 @@ def mask_to_track_points(img_uint8: np.ndarray, mask: np.ndarray, feature_params
     return track_points_0
 
 
-def adjust_feature_param_dicts(feature_params: dict, img_uint8: np.ndarray, mask: np.ndarray, min_coverage: Union[float, int] = 40) -> dict:
-    """Given feature parameters, an image, and a mask. Will automatically update the feature quality to ensure sufficient coverage.
-    (min_coverage refers to the number of pixels that should be attributed to 1 tracking point)"""
+def shrink_pair(v0: int, v1: int, sf: float) -> int:
+    """Given two values and an amount to shrink their difference by. Will return the new values."""
+    dist = v1 - v0
+    new_v0 = v0 + int(dist * sf * 0.5)
+    new_v1 = v1 - int(dist * sf * 0.5)
+    return new_v0, new_v1
+
+
+def remove_pillar_region(mask: np.ndarray, clip_fraction: float = 0.5, clip_columns: bool = True, clip_rows: bool = False ) -> np.ndarray:
+    """Given a mask. Will approximately remove the pillar region."""
+    box_mask = mask_to_box(mask)
+    r0, r1, c0, c1 = box_to_bound(box_mask)
+    new_r0, new_r1, new_c0, new_c1 = r0, r1, c0, c1
+    # because we only accept oriented masks, we can perform this operation by clipping columns and rows
+    if clip_columns:
+        new_c0, new_c1 = shrink_pair(c0, c1, clip_fraction)
+    if clip_rows:
+        new_r0, new_r1 = shrink_pair(r0,r1, clip_fraction)
+    clip_mask = corners_to_mask(mask, new_r0, new_r1, new_c0, new_c1)
+    # perform clipping
+    new_mask = (mask * clip_mask > 0).astype("uint8")
+    return new_mask
+
+
+def box_to_bound(box: np.ndarray) -> int:
+    """Given a grid aligned box. Will convert it to bounds format."""
+    r0 = int(np.min(box[:, 0]))
+    r1 = int(np.max(box[:, 0]))
+    c0 = int(np.min(box[:, 1]))
+    c1 = int(np.max(box[:, 1]))
+    return r0, r1, c0, c1
+
+
+def bound_to_box(r0: int, r1: int, c0: int, c1: int) -> np.ndarray:
+    """Given some bounds. Will return them formatted as a box"""
+    box = np.asarray([[r0, c0], [r0, c1], [r1, c1], [r1, c0]])
+    return box
+
+
+def is_in_box(box: np.ndarray, rr: int, cc: int) -> bool:
+    """Given a box and a point. Will return True if the point is inside the box, False otherwise."""
+    r0, r1, c0, c1 = box_to_bound(box)
+    if rr > r0 and rr < r1 and cc > c0 and cc < c1:
+        return True
+    else:
+        return False
+
+
+def sub_division_markers(tracker_row: np.ndarray, tracker_col: np.ndarray, sd_box: np.ndarray) -> List:
+    """Given tracker row and column arrays and sub-domain box. """
+    div_tracker_row = []
+    for kk in range(0, len(tracker_row)):
+        rr = tracker_row[kk]
+        cc = tracker_col[kk]
+        if is_in_box(sd_box, rr, cc):
+            div_tracker_row.append(rr)
+    div_tracker_row = np.asarray(div_tracker_row)
+    num_sub_pts = len(div_tracker_row)
+
+    return num_sub_pts
+
+
+def sub_division_mask(mask: np.ndarray, box: np.ndarray) -> float:
+    r0, r1, c0, c1 = box_to_bound(box)
+    mask_in_div = np.sum(mask[r0:r1,c0:c1])
+    return mask_in_div
+
+
+def compute_local_coverage(mask: np.ndarray, track_0_pts: np.ndarray, sub_division_dim_pix: int = 20) -> List:
+    """Given a mask and tracker points. Will compute the local marker coverage within each mask subdivision."""
+    center_row, center_col,rot_mat, ang,_ = get_rotation_info(center_row_input=None, center_col_input=None, vec_input=None, mask=mask)
+    rot_mask = rot_image(mask, center_row, center_col,ang)
+    new_mask = remove_pillar_region(rot_mask, clip_fraction = 0.3, clip_columns = True, clip_rows = True)
+
+    box_mask = mask_to_box(new_mask)
+    r0, r1, c0, c1 = box_to_bound(box_mask)
+    
+    num_tile_row = int(np.floor((r1 - r0) / sub_division_dim_pix))
+    num_tile_col = int(np.floor((c1 - c0) / sub_division_dim_pix))
+
+    marker_row_orig = track_0_pts[:, 0, 1]
+    marker_col_orig = track_0_pts[:, 0, 0]
+    
+    marker_row, marker_col = rotate_points(marker_row_orig, marker_col_orig, rot_mat, center_row, center_col)
+    
+    all_local_coverage = []
+    
+    for rr in range(0, num_tile_row):
+        for cc in range(0, num_tile_col):
+            tile_box = bound_to_box(r0 + rr * sub_division_dim_pix, r0 + (rr + 1) * sub_division_dim_pix, c0 + cc * sub_division_dim_pix, c0 + (cc + 1) * sub_division_dim_pix)
+            div_mask = sub_division_mask(new_mask,tile_box)
+                
+            if div_mask==0:
+                pass
+            else:
+                num_div_markers = sub_division_markers(marker_row,marker_col,tile_box)
+                
+                if num_div_markers == 0:
+                    local_coverage = 0
+                else: 
+                    local_coverage = div_mask/num_div_markers
+               
+                all_local_coverage.append(local_coverage)
+    return all_local_coverage
+
+
+def adjust_qualityLevel(feature_params: dict, img_uint8: np.ndarray, mask: np.ndarray, min_coverage: Union[float, int]):
     track_points_0 = mask_to_track_points(img_uint8, mask, feature_params)
+    qualityLevel = feature_params["qualityLevel"]
     coverage = np.sum(mask) / track_points_0.shape[0]
     iter = 0
-    qualityLevel = feature_params["qualityLevel"]
+    
     while coverage > min_coverage and iter < 15:
+        
         qualityLevel = qualityLevel * 10 ** (np.log10(0.1) / 10)  # this value raised to 10 is 0.1, so it will lower quality by an order of magnitude in 10 iterations
         feature_params["qualityLevel"] = qualityLevel
+        
         track_points_0 = mask_to_track_points(img_uint8, mask, feature_params)
+        
         coverage = np.sum(mask) / track_points_0.shape[0]
+        iter +=1
+    return qualityLevel, coverage
+
+def adjust_feature_param_dicts(feature_params: dict, img_uint8: np.ndarray, mask: np.ndarray, min_coverage: Union[float, int] = 40, min_local_coverage: Union[float, int] = 50) -> dict:
+    """Given feature parameters, an image, and a mask. Will automatically update the feature quality and minimum distance to ensure sufficient coverage.
+    (min_coverage refers to the number of pixels that should be attributed to 1 tracking point)"""
+    _,_ = adjust_qualityLevel(feature_params, img_uint8, mask, min_coverage)
+    track_points_0 = mask_to_track_points(img_uint8, mask, feature_params)
+    local_coverage = compute_local_coverage(mask,track_points_0)
+    local_coverage = sorted(local_coverage, reverse=True)
+    minDist = feature_params["minDistance"]  
+    iter = 0
+    while np.min(local_coverage[:3]) > min_local_coverage and iter < 2:
+        minDist+=1
+        feature_params["minDistance"] = minDist
+        _,_ = adjust_qualityLevel(feature_params, img_uint8, mask, min_coverage)
+        track_points_0 = mask_to_track_points(img_uint8, mask, feature_params)
+        local_coverage = compute_local_coverage(mask,track_points_0)
+        local_coverage = sorted(local_coverage, reverse=True)
         iter += 1
     return feature_params
   
@@ -599,6 +726,7 @@ def create_gif(folder_path: Path, png_path_list: List, output: str, is_rotated: 
 #     clip.write_videofile(str(mp4_path))
 #     return mp4_path
 
+# ==================================================================================================
 
 def run_visualization(folder_path: Path, automatic_color_constraint: bool = True, col_min: Union[int, float] = 0, col_max: Union[int, float] = 10, col_map: object = plt.cm.viridis) -> List:
     """Given a folder path where tracking has already been run. Will save visualizations."""
@@ -735,6 +863,11 @@ def mask_to_box(mask: np.ndarray) -> np.ndarray:
     box = np.int0(cv2.boxPoints(rect))
     return box
 
+def corners_to_mask(img: np.ndarray, r0: int, r1: int, c0: int, c1: int) -> np.ndarray:
+    """Given a mask (for dimensions) and a unrotated corners. Will return a mask of the inside of the corners."""
+    new_mask = np.zeros(img.shape)
+    new_mask[r0:r1, c0:c1] = 1
+    return new_mask
 
 def axis_from_mask(mask: np.ndarray) -> np.ndarray:
     """Given a folder path. Will import the mask and determine its long axis."""
@@ -1318,7 +1451,6 @@ def run_pillar_tracking(folder_path: Path, pillar_modulus: float, pillar_width: 
         saved_paths.extend(saved_paths_2)
     else:
         # load pillar mask
-        #mask_file_path = mask_folder_path.joinpath('pillar_mask_*.txt').resolve()
         mask_file_path =  glob.glob(str(mask_folder_path) + '/*pillar_mask_*.txt')[0]
         mask = read_txt_as_mask(mask_file_path)
         # perform tracking

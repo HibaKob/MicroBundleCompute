@@ -21,58 +21,12 @@ def box_to_mask(mask: np.ndarray, box: np.ndarray) -> np.ndarray:
     return new_mask
 
 
-def corners_to_mask(img: np.ndarray, r0: int, r1: int, c0: int, c1: int) -> np.ndarray:
-    """Given a mask (for dimensions) and a unrotated corners. Will return a mask of the inside of the corners."""
-    new_mask = np.zeros(img.shape)
-    new_mask[r0:r1, c0:c1] = 1
-    return new_mask
-
-
-def box_to_bound(box: np.ndarray) -> int:
-    """Given a grid aligned box. Will convert it to bounds format."""
-    r0 = int(np.min(box[:, 0]))
-    r1 = int(np.max(box[:, 0]))
-    c0 = int(np.min(box[:, 1]))
-    c1 = int(np.max(box[:, 1]))
-    return r0, r1, c0, c1
-
-
-def bound_to_box(r0: int, r1: int, c0: int, c1: int) -> np.ndarray:
-    """Given some bounds. Will return them formatted as a box"""
-    box = np.asarray([[r0, c0], [r0, c1], [r1, c1], [r1, c0]])
-    return box
-
-
-def shrink_pair(v0: int, v1: int, sf: float) -> int:
-    """Given two values and an amount to shrink their difference by. Will return the new values."""
-    dist = v1 - v0
-    new_v0 = v0 + int(dist * sf * 0.5)
-    new_v1 = v1 - int(dist * sf * 0.5)
-    return new_v0, new_v1
-
-
-def remove_pillar_region(mask: np.ndarray, clip_fraction: float = 0.5, clip_columns: bool = True, clip_rows: bool = False ) -> np.ndarray:
-    """Given a mask. Will approximately remove the pillar region."""
-    box_mask = ia.mask_to_box(mask)
-    r0, r1, c0, c1 = box_to_bound(box_mask)
-    new_r0, new_r1, new_c0, new_c1 = r0, r1, c0, c1
-    # because we only accept oriented masks, we can perform this operation by clipping columns and rows
-    if clip_columns:
-        new_c0, new_c1 = shrink_pair(c0, c1, clip_fraction)
-    if clip_rows:
-        new_r0, new_r1 = shrink_pair(r0,r1, clip_fraction)
-    clip_mask = corners_to_mask(mask, new_r0, new_r1, new_c0, new_c1)
-    # perform clipping
-    new_mask = (mask * clip_mask > 0).astype("uint8")
-    return new_mask
-
-
 def shrink_box(box: np.ndarray, shrink_row: float = 0.1, shrink_col: float = 0.1) -> np.ndarray:
     """Given a box and shrink factors. Will make the box smaller by the given fraction."""
-    r0, r1, c0, c1 = box_to_bound(box)
-    r0_new, r1_new = shrink_pair(r0, r1, shrink_row)
-    c0_new, c1_new = shrink_pair(c0, c1, shrink_col)
-    box = bound_to_box(r0_new, r1_new, c0_new, c1_new)
+    r0, r1, c0, c1 = ia.box_to_bound(box)
+    r0_new, r1_new = ia.shrink_pair(r0, r1, shrink_row)
+    c0_new, c1_new = ia.shrink_pair(c0, c1, shrink_col)
+    box = ia.bound_to_box(r0_new, r1_new, c0_new, c1_new)
     return box
 
 
@@ -96,11 +50,11 @@ def create_sub_domains(
     tyle_style = 2 will create a num_tile_row x num_tile_col sized grid and adjust the tile_dim_pix as need
     """
     # clip pillars from the mask
-    mask_removed_pillars = remove_pillar_region(mask, pillar_clip_fraction,clip_columns, clip_rows)
+    mask_removed_pillars = ia.remove_pillar_region(mask, pillar_clip_fraction,clip_columns, clip_rows)
 
     if manual_sub:
         r0_user, r1_user, c0_user, c1_user = sub_extents
-        user_box = bound_to_box(r0_user, r1_user, c0_user, c1_user)
+        user_box = ia.bound_to_box(r0_user, r1_user, c0_user, c1_user)
         first_mask = box_to_mask(mask_removed_pillars, user_box)
         first_box_mask = ia.mask_to_box(first_mask)
         box_mask = shrink_box(first_box_mask, shrink_row, shrink_col)
@@ -109,7 +63,7 @@ def create_sub_domains(
         first_box_mask = ia.mask_to_box(mask_removed_pillars)
         box_mask = shrink_box(first_box_mask, shrink_row, shrink_col)
     # tile sub-domains
-    r0, r1, c0, c1 = box_to_bound(box_mask)
+    r0, r1, c0, c1 = ia.box_to_bound(box_mask)
     if tile_style == 1:
         num_tile_row = int(np.floor((r1 - r0) / tile_dim_pix))
         num_tile_col = int(np.floor((c1 - c0) / tile_dim_pix))
@@ -119,22 +73,13 @@ def create_sub_domains(
     shrink_row = 1.0 - num_tile_row * tile_dim_pix / (r1 - r0)
     shrink_col = 1.0 - num_tile_col * tile_dim_pix / (c1 - c0)
     box_mask_grid = shrink_box(box_mask, shrink_row, shrink_col)
-    r0_box, _, c0_box, _ = box_to_bound(box_mask_grid)
+    r0_box, _, c0_box, _ = ia.box_to_bound(box_mask_grid)
     tile_box_list = []
     for rr in range(0, num_tile_row):
         for cc in range(0, num_tile_col):
-            tile_box = bound_to_box(r0_box + rr * tile_dim_pix, r0_box + (rr + 1) * tile_dim_pix, c0_box + cc * tile_dim_pix, c0_box + (cc + 1) * tile_dim_pix)
+            tile_box = ia.bound_to_box(r0_box + rr * tile_dim_pix, r0_box + (rr + 1) * tile_dim_pix, c0_box + cc * tile_dim_pix, c0_box + (cc + 1) * tile_dim_pix)
             tile_box_list.append(tile_box)
     return tile_box_list, tile_dim_pix, num_tile_row, num_tile_col
-
-
-def is_in_box(box: np.ndarray, rr: int, cc: int) -> bool:
-    """Given a box and a point. Will return True if the point is inside the box, False otherwise."""
-    r0, r1, c0, c1 = box_to_bound(box)
-    if rr > r0 and rr < r1 and cc > c0 and cc < c1:
-        return True
-    else:
-        return False
 
 
 def isolate_sub_domain_markers(tracker_row_all: List, tracker_col_all: List, sd_box: np.ndarray) -> List:
@@ -149,7 +94,7 @@ def isolate_sub_domain_markers(tracker_row_all: List, tracker_col_all: List, sd_
         for jj in range(0, tracker_row.shape[0]):
             rr = tracker_row[jj, 0]
             cc = tracker_col[jj, 0]
-            if is_in_box(sd_box, rr, cc):
+            if ia.is_in_box(sd_box, rr, cc):
                 sd_tracker_row.append(tracker_row[jj, :])
                 sd_tracker_col.append(tracker_col[jj, :])
         sd_tracker_row = np.asarray(sd_tracker_row)
