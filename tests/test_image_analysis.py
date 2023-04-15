@@ -200,7 +200,7 @@ def test_get_tracking_param_dicts():
     feature_params, lk_params = ia.get_tracking_param_dicts()
     assert feature_params["maxCorners"] == 10000
     assert feature_params["qualityLevel"] == 0.1  # 0.005
-    assert feature_params["minDistance"] == 4
+    assert feature_params["minDistance"] == 3
     assert feature_params["blockSize"] == 3
     assert lk_params["winSize"][0] == 5
     assert lk_params["winSize"][1] == 5

@@ -82,27 +82,6 @@ def create_sub_domains(
     return tile_box_list, tile_dim_pix, num_tile_row, num_tile_col
 
 
-# def isolate_sub_domain_markers(tracker_row_all: List, tracker_col_all: List, sd_box: np.ndarray) -> Tuple[List, List]:
-#     """Given tracker row and column arrays and sub-domain box. Will isolate markers per subdomain. """
-#     sd_tracker_row_all = []
-#     sd_tracker_col_all = []
-#     for kk in range(0, len(tracker_row_all)):
-#         tracker_row = tracker_row_all[kk]
-#         tracker_col = tracker_col_all[kk]
-#         sd_tracker_row = []
-#         sd_tracker_col = []
-#         for jj in range(0, tracker_row.shape[0]):
-#             rr = tracker_row[jj, 0]
-#             cc = tracker_col[jj, 0]
-#             if ia.is_in_box(sd_box, rr, cc):
-#                 sd_tracker_row.append(tracker_row[jj, :])
-#                 sd_tracker_col.append(tracker_col[jj, :])
-#         sd_tracker_row = np.asarray(sd_tracker_row)
-#         sd_tracker_col = np.asarray(sd_tracker_col)
-#         sd_tracker_row_all.append(sd_tracker_row)
-#         sd_tracker_col_all.append(sd_tracker_col)
-#     return sd_tracker_row_all, sd_tracker_col_all
-
 def isolate_sub_domain_markers(tracker_row_all: List, tracker_col_all: List, sd_box: np.ndarray) -> List:
     """Given tracker row and column arrays and sub-domain box. Will return markers inside sub-domain."""
     sd_tracker_row_all = []
@@ -418,7 +397,6 @@ def png_sub_domain_strain_timeseries_all(
             for rr in range(0, num_sd_row):
                 lab = get_text_str(rr, cc)
                 idx = rr * num_sd_col + cc
-                lab = get_text_str(rr, cc)
                 ax.plot(sub_domain_strain[idx, :], label=lab, color=col_map(idx/(num_sd_col * num_sd_row)))
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
