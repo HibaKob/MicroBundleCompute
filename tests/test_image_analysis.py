@@ -169,31 +169,49 @@ def test_is_in_box():
     assert ia.is_in_box(box, 3, 500) is False
 
 
-# def test_sub_division_markers():
-#     file_path = tissue_mask_path("real_example_super_short")
-#     mask = ia.read_txt_as_mask(file_path)
-#     tile_style = 1
-#     tile_box_list, _, _, _ = sa.create_sub_domains(mask, pillar_clip_fraction=0.5, shrink_row=0.1, shrink_col=0.1, tile_dim_pix=40, num_tile_row=5, num_tile_col=3, tile_style=tile_style)
-#     folder_path = movie_path("real_example_super_short")
-#     name_list_path = ia.image_folder_to_path_list(folder_path)
-#     tiff_list = ia.read_all_tiff(name_list_path)
-#     img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
-#     file_path = tissue_mask_path("real_example_super_short")
-#     mask = ia.read_txt_as_mask(file_path)
-#     tracker_col, tracker_row = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
-#     tracker_col_all = [tracker_col]
-#     tracker_row_all = [tracker_row]
-#     for sd_box in tile_box_list:
-#         r0, r1, c0, c1 = sa.box_to_bound(sd_box)
-#         sd_tracker_row_all, sd_tracker_col_all = sa.isolate_sub_domain_markers(tracker_row_all, tracker_col_all, sd_box)
-#         assert len(sd_tracker_row_all) == 1
-#         assert len(sd_tracker_col_all) == 1
-#         assert np.max(sd_tracker_row_all[0][:, 0]) < r1
-#         assert np.min(sd_tracker_row_all[0][:, 0]) > r0
-#         assert np.max(sd_tracker_col_all[0][:, 0]) < c1
-#         assert np.min(sd_tracker_col_all[0][:, 0]) > c0
+def test_sub_division_markers():
+    folder_path = movie_path("real_example_super_short")
+    name_list_path = ia.image_folder_to_path_list(folder_path)
+    tiff_list = ia.read_all_tiff(name_list_path)
+    img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
+    img_uint8 = img_list_uint8[0]
 
-# def test_sub_division_mask():
+    file_path = tissue_mask_path("real_example_super_short")
+    mask = ia.read_txt_as_mask(file_path)
+    box_mask = ia.mask_to_box(mask)
+    r0, r1, c0, c1 = ia.box_to_bound(box_mask)
+
+    sub_division_dim_pix = 20
+    num_tile_row = int(np.floor((r1 - r0) / sub_division_dim_pix))
+    num_tile_col = int(np.floor((c1 - c0) / sub_division_dim_pix))
+    
+    feature_params, _ = ia.get_tracking_param_dicts()
+    track_points_0 = ia.mask_to_track_points(img_uint8, mask, feature_params)
+    tracker_row = track_points_0[:, 0, 1]
+    tracker_col = track_points_0[:, 0, 0]
+    
+    for rr in range(0, num_tile_row):
+        for cc in range(0, num_tile_col):
+            tile_box = ia.bound_to_box(r0 + rr * sub_division_dim_pix, r0 + (rr + 1) * sub_division_dim_pix, c0 + cc * sub_division_dim_pix, c0 + (cc + 1) * sub_division_dim_pix)
+            num_sub_pts = ia.sub_division_markers(tracker_row, tracker_col, tile_box) 
+            assert num_sub_pts < len(tracker_col)
+
+
+def test_sub_division_mask():
+    mask = np.zeros((60,60))
+    mask[::2,::2] = 1
+
+    r0, r1, c0, c1 = 0 , 59, 0, 59
+
+    sub_division_dim_pix = 20
+    num_tile_row = int(np.floor((r1 - r0) / sub_division_dim_pix))
+    num_tile_col = int(np.floor((c1 - c0) / sub_division_dim_pix))
+
+    for rr in range(0, num_tile_row):
+        for cc in range(0, num_tile_col):
+            tile_box = ia.bound_to_box(r0 + rr * sub_division_dim_pix, r0 + (rr + 1) * sub_division_dim_pix, c0 + cc * sub_division_dim_pix, c0 + (cc + 1) * sub_division_dim_pix)
+            mask_in_div = ia.sub_division_mask(mask, tile_box) 
+            assert mask_in_div < sub_division_dim_pix**2
 
 
 def test_get_tracking_param_dicts():
@@ -209,11 +227,40 @@ def test_get_tracking_param_dicts():
     assert lk_params["criteria"][2] == 0.03
 
 
-# def test_compute_local_coverage():
+def test_compute_local_coverage():
+    folder_path = movie_path("real_example_super_short")
+    name_list_path = ia.image_folder_to_path_list(folder_path)
+    tiff_list = ia.read_all_tiff(name_list_path)
+    img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
+    img_uint8 = img_list_uint8[0]
+
+    file_path = tissue_mask_path("real_example_super_short")
+    mask = ia.read_txt_as_mask(file_path)
+    
+    feature_params, _ = ia.get_tracking_param_dicts()
+    track_points_0 = ia.mask_to_track_points(img_uint8, mask, feature_params)
+    sub_division_dim_pix = 20
+    all_local_coverage = ia.compute_local_coverage(mask, track_points_0, sub_division_dim_pix)
+    assert np.max(all_local_coverage) <= sub_division_dim_pix**2
 
 
-# def test_adjust_qualityLevel():
+def test_adjust_qualityLevel():
+    folder_path = movie_path("real_example_super_short")
+    name_list_path = ia.image_folder_to_path_list(folder_path)
+    tiff_list = ia.read_all_tiff(name_list_path)
+    img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
+    img_uint8 = img_list_uint8[0]
 
+    file_path = tissue_mask_path("real_example_super_short")
+    mask = ia.read_txt_as_mask(file_path)
+    feature_params_init, _ = ia.get_tracking_param_dicts()
+    track_points_0 = ia.mask_to_track_points(img_uint8, mask, feature_params_init)
+    min_coverage = 40
+    coverage_init = np.sum(mask) / track_points_0.shape[0]
+    qL_init = feature_params_init["qualityLevel"]
+    qualityLevel, coverage = ia.adjust_qualityLevel(feature_params_init, img_uint8, mask, min_coverage)
+    assert qL_init >= qualityLevel
+    assert coverage <= coverage_init
 
 def test_adjust_feature_param_dicts():
     mov_path = movie_path("real_example_super_short")
@@ -224,8 +271,10 @@ def test_adjust_feature_param_dicts():
     mask = ia.read_txt_as_mask(file_path)
     feature_params_init, _ = ia.get_tracking_param_dicts()
     qL_init = feature_params_init["qualityLevel"]
+    minDist_init = feature_params_init["minDistance"]
     feature_params_new = ia.adjust_feature_param_dicts(feature_params_init, img_uint8, mask)
     assert qL_init >= feature_params_new["qualityLevel"]
+    assert minDist_init <= feature_params_new["minDistance"]
 
 
 def test_mask_to_track_points():
@@ -276,9 +325,7 @@ def test_track_one_step():
     assert track_points_1.shape[1] == 1
     assert track_points_1.shape[2] == 2
     assert track_points_1.shape[0] == track_points_0.shape[0]
-    #compare = np.abs(track_points_1 - track_points_0)
-    #assert np.max(compare[:, 0, 0]) < lk_params["winSize"][0]
-    #assert np.max(compare[:, 0, 1]) < lk_params["winSize"][1] 
+
 
 def test_track_one_step_synthetic():
     img_0 = np.zeros((100, 100))
@@ -308,9 +355,7 @@ def test_track_all_steps():
     tracker_0, tracker_1 = ia.track_all_steps(img_list_uint8, mask, feature_params, lk_params)
     assert tracker_0.shape[1] == len(tiff_list)
     assert tracker_1.shape[1] == len(tiff_list)
-    # _, lk_params = ia.get_tracking_param_dicts()
-    #assert np.max(diff_0) < lk_params["winSize"][0]
-    #assert np.max(diff_1) < lk_params["winSize"][1]
+
 
 def test_track_all_steps_with_adjust_param_dicts():
     folder_path = movie_path("real_example_super_short")
