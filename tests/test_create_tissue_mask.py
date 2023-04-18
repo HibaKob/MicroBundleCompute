@@ -220,7 +220,10 @@ def test_run_create_tissue_mask():
     file_path, img_path = ctm.run_create_tissue_mask(folder_path, seg_fcn_num, fname, frame_num, "minimum")
     assert file_path.is_file()
     assert img_path.is_file()
-    folder_path = example_path("real_example_masks")
-    file_path, img_path = ctm.run_create_tissue_mask(folder_path)
+    folder_path = example_path("real_example_masks/movie/0003")
+    seg_fcn_num = 3
+    fname = "example_3_max"
+    frame_num = 0
+    file_path, img_path = ctm.run_create_tissue_mask(folder_path, seg_fcn_num, fname, frame_num, "maximum")
     assert file_path.is_file()
     assert img_path.is_file()
