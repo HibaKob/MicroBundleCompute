@@ -720,6 +720,7 @@ def create_gif(folder_path: Path, png_path_list: List, output: str, is_rotated: 
         gif_path = folder_path.joinpath("visualizations").resolve().joinpath(fn_col_gif).resolve()
     ani = animation.ArtistAnimation(fig, img_list,interval=100)
     ani.save(gif_path,dpi=100)
+    plt.close()
     return gif_path
 # ==================================================================================================
 
