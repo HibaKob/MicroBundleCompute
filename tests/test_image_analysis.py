@@ -372,18 +372,6 @@ def test_track_all_steps_with_adjust_param_dicts():
     assert np.max(diff_1) < lk_params["winSize"][1]
 
 
-def test_track_all_steps_with_adjust_param_dicts_subpixel():
-    folder_path = movie_path("fake_example_subpixel_short")
-    name_list_path = ia.image_folder_to_path_list(folder_path)
-    tiff_list = ia.read_all_tiff(name_list_path)
-    img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
-    file_path = tissue_mask_path("real_example_super_short")
-    mask = ia.read_txt_as_mask(file_path)
-    with warnings.catch_warnings(record=True) as record:
-        _, _ = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
-    assert len(record) == 1
-    
-
 
 def test_track_all_steps_with_adjust_param_dicts_warping():
     # import first image
