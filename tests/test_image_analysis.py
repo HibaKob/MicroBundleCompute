@@ -1228,7 +1228,7 @@ def test_rotate_non_square_test_img():
     assert file_path.is_file()
 
 def test_rotate_small_angle_test_img():
-    folder_path = example_path("real_example_short_rotated")
+    folder_path = example_path("real_example_short_small_angle_rotated")
     movie_folder_path = folder_path.joinpath("movie").resolve()
     name_list_path = ia.image_folder_to_path_list(movie_folder_path)
     tiff_list = ia.read_all_tiff(name_list_path)
