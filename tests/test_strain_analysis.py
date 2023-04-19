@@ -365,6 +365,10 @@ def test_run_sub_domain_strain_analysis():
     saved_paths = sa.run_sub_domain_strain_analysis(input_path)
     for sap in saved_paths:
         assert sap.is_file()
+    saved_paths = sa.run_sub_domain_strain_analysis(input_path, is_rotated=False)
+    for sap in saved_paths:
+        assert sap.is_file()
+        
 
 
 def test_get_text_str():
@@ -450,7 +454,7 @@ def test_pngs_sub_domain_strain_and_gif():
     sub_domain_F_rr_all, sub_domain_F_rc_all, sub_domain_F_cr_all, sub_domain_F_cc_all, sub_domain_row_all, sub_domain_col_all, info, strain_info = sa.load_sub_domain_strain(folder_path)
     sub_domain_side = strain_info[1, 0]
     sub_domain_Ecc_all, _, _ = sa.F_to_E_all(sub_domain_F_rr_all, sub_domain_F_rc_all, sub_domain_F_cr_all, sub_domain_F_cc_all)
-    saved_paths = sa.pngs_sub_domain_strain(folder_path, tiff_list, sub_domain_row_all, sub_domain_col_all, sub_domain_Ecc_all, sub_domain_side, info, "Ecc")
+    saved_paths = sa.pngs_sub_domain_strain(folder_path, tiff_list, sub_domain_row_all, sub_domain_col_all, sub_domain_Ecc_all, sub_domain_side, info, "Ecc", save_eps=True)
     for sap in saved_paths:
         assert sap.is_file()
     gif_path = sa.create_gif(folder_path, saved_paths)

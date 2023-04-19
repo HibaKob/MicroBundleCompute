@@ -544,7 +544,7 @@ def test_compute_beat_frequency():
     fps = 2
     freq = ia.compute_beat_frequency(info, fps)
     assert np.isclose(freq, fps * 1 / (np.pi * 2.0) / 20, atol=.01)
-    x = np.linspace(0, 400 * np.pi * 2.0, 400)
+    x = np.linspace(0, 800 * np.pi * 2.0, 800)
     timeseries = np.sin(x / (np.pi * 2.0) / 20 - np.pi / 2.0)
     fps = 1
     info = ia.compute_valleys(timeseries)
@@ -1220,13 +1220,24 @@ def test_rotate_non_square_test_img():
     movie_folder_path = folder_path.joinpath("movie").resolve()
     name_list_path = ia.image_folder_to_path_list(movie_folder_path)
     tiff_list = ia.read_all_tiff(name_list_path)
-    vec = [1,0]
+    vec = [1,1]
     rot_mat, ang = ia.rot_vec_to_rot_mat_and_angle(vec)
     center_row = (tiff_list[0].shape[0])/2
     center_col = (tiff_list[0].shape[1])/2
     file_path = ia.rotate_test_img(folder_path, tiff_list, ang, center_row, center_col, rot_mat)
     assert file_path.is_file()
 
+def test_rotate_small_angle_test_img():
+    folder_path = example_path("real_example_short_rotated")
+    movie_folder_path = folder_path.joinpath("movie").resolve()
+    name_list_path = ia.image_folder_to_path_list(movie_folder_path)
+    tiff_list = ia.read_all_tiff(name_list_path)
+    vec = [0,-1]
+    rot_mat, ang = ia.rot_vec_to_rot_mat_and_angle(vec)
+    center_row = (tiff_list[0].shape[0])/2
+    center_col = (tiff_list[0].shape[1])/2
+    file_path = ia.rotate_test_img(folder_path, tiff_list, ang, center_row, center_col, rot_mat)
+    assert file_path.is_file()
 
 def test_run_rotation_visualization():
     folder_path = example_path("real_example_short_rotated")
@@ -1245,7 +1256,7 @@ def test_run_rotation_visualization():
     for pa in col_png_path_list:
         assert pa.is_file()
     assert col_gif_path.is_file()
-
+    
 
 def test_run_rotation_visualization_non_square():
     folder_path = example_path("real_non_square_example_short_rotated")
@@ -1541,27 +1552,11 @@ def test_load_pillar_tracking_results():
     length_scale = 1
     _ = ia.run_pillar_tracking(folder_path, pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale)
     _, _, _, _, _ = ia.load_pillar_tracking_results(folder_path=folder_path)
-    folder_path = example_path("io_testing_examples")
-    folder_path_0 = folder_path.joinpath("fake_example_0").resolve()
-    with pytest.raises(FileNotFoundError) as error:
-        ia.load_tracking_results(folder_path=folder_path_0)
-    assert error.typename == "FileNotFoundError"
-    folder_path_1 = folder_path.joinpath("fake_example_1").resolve()
-    with pytest.raises(FileNotFoundError) as error:
-        ia.load_tracking_results(folder_path=folder_path_1, is_rotated=True)
-    assert error.typename == "FileNotFoundError"
-
-
-def test_load_one_pillar_tracking_results():
+    
     folder_path = example_path("real_example_one_pillar_short")
-    pillar_modulus = 1.61
-    pillar_width = 163
-    pillar_thickness = 33.2    
-    pillar_length = 199
-    force_location = 163
-    length_scale = 1
     _ = ia.run_pillar_tracking(folder_path, pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale)
     _, _, _, _, _ = ia.load_pillar_tracking_results(folder_path=folder_path)
+
     folder_path = example_path("io_testing_examples")
     folder_path_0 = folder_path.joinpath("fake_example_0").resolve()
     with pytest.raises(FileNotFoundError) as error:
@@ -1571,6 +1566,27 @@ def test_load_one_pillar_tracking_results():
     with pytest.raises(FileNotFoundError) as error:
         ia.load_tracking_results(folder_path=folder_path_1, is_rotated=True)
     assert error.typename == "FileNotFoundError"
+
+
+# def test_load_one_pillar_tracking_results():
+#     folder_path = example_path("real_example_one_pillar_short")
+#     pillar_modulus = 1.61
+#     pillar_width = 163
+#     pillar_thickness = 33.2    
+#     pillar_length = 199
+#     force_location = 163
+#     length_scale = 1
+#     _ = ia.run_pillar_tracking(folder_path, pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale)
+#     _, _, _, _, _ = ia.load_pillar_tracking_results(folder_path=folder_path)
+#     folder_path = example_path("io_testing_examples")
+#     folder_path_0 = folder_path.joinpath("fake_example_0").resolve()
+#     with pytest.raises(FileNotFoundError) as error:
+#         ia.load_tracking_results(folder_path=folder_path_0)
+#     assert error.typename == "FileNotFoundError"
+#     folder_path_1 = folder_path.joinpath("fake_example_1").resolve()
+#     with pytest.raises(FileNotFoundError) as error:
+#         ia.load_tracking_results(folder_path=folder_path_1, is_rotated=True)
+#     assert error.typename == "FileNotFoundError"
 
 
 def test_visualize_pillar_tracking():
