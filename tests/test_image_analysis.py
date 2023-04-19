@@ -988,7 +988,7 @@ def test_check_square_image_true():
 
 
 def test_check_square_image_false():
-    img = np.zeros((320,512))
+    img = np.zeros((512,482))
     square = ia.check_square_image(img)
     assert square == False
 

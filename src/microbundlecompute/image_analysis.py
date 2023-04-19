@@ -1069,7 +1069,7 @@ def rotate_test_img(
         # rotate direction vectors
         rot_rr, rot_cr = rotate_points(rr, cr, rot_mat, center_row, center_col)
         rot_rc, rot_cc = rotate_points(rc, cc, rot_mat, center_row, center_col)
-        if square is not True:
+        if square == False:
             # pad image
             padded_img, translate_r, translate_c = pad_img_to_square(img)
             # translate center of rotation and direction vectors
@@ -1080,7 +1080,7 @@ def rotate_test_img(
             rot_img = rot_image(padded_img, trans_center_row, trans_center_col,ang)
 
         else:
-            rot_img = rot_image(tiff_list, center_row, center_col, ang) 
+            rot_img = rot_image(img, center_row, center_col, ang) 
     else:
         rot_img = img
         rot_rr, rot_cr = rr, cr
@@ -1187,7 +1187,7 @@ def run_rotation_visualization(folder_path: Path, automatic_color_constraint: bo
     if abs(ang) < 0.96*np.pi:
         # check if images in list are square shape and perform appropriate rotation
         square = check_square_image(tiff_list[0])
-        if square is not True:
+        if square == False:
             # pad image list
             padded_tiff_list, translate_r, translate_c = pad_all_imgs_to_square(tiff_list)
             # translate center of rotation
@@ -1291,7 +1291,7 @@ def visualize_interpolate(
         if abs(ang) < 0.96*np.pi:
             # check if images in list are square shape and perform appropriate rotation
             square = check_square_image(tiff_list[0])
-            if square is not True:
+            if square == False:
                 # pad image list
                 padded_tiff_list, translate_r, translate_c = pad_all_imgs_to_square(tiff_list)
                 # translate center of rotation

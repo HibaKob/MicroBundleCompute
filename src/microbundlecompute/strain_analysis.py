@@ -541,7 +541,7 @@ def run_sub_domain_strain_analysis(
         rot_tracker_row_all, rot_tracker_col_all = ia.rotate_pts_all(tracker_row_all, tracker_col_all, rot_mat, center_row, center_col)
         if abs(ang) < 0.96*np.pi:
             square = ia.check_square_image(mask)
-            if square is not True:
+            if square == False:
                 # pad mask
                 padded_mask, translate_r, translate_c = ia.pad_img_to_square(mask)
                 # translate center of rotation 
@@ -606,7 +606,7 @@ def visualize_sub_domain_strain(
         (_, ang) = ia.rot_vec_to_rot_mat_and_angle(vec)
         if abs(ang) < 0.96*np.pi:
             square = ia.check_square_image(tiff_list[0])
-            if square is not True:
+            if square == False:
                 # pad image list
                 padded_tiff_list, translate_r, translate_c = ia.pad_all_imgs_to_square(tiff_list)
                 # translate center of rotation
