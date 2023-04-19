@@ -544,6 +544,12 @@ def test_compute_beat_frequency():
     fps = 2
     freq = ia.compute_beat_frequency(info, fps)
     assert np.isclose(freq, fps * 1 / (np.pi * 2.0) / 20, atol=.01)
+    x = np.linspace(0, 500 * np.pi * 2.0, 500)
+    timeseries = np.sin(x / (np.pi * 2.0) / 20 - np.pi / 2.0)
+    fps = 1
+    info = ia.compute_valleys(timeseries)
+    freq = ia.compute_beat_frequency(info, fps)
+    assert np.isclose(freq, fps *1 / (np.pi * 2.0) / 20, atol=.01)
 
 
 def test_compute_beat_amplitude():
@@ -774,7 +780,7 @@ def test_create_pngs_gif():
     col_max = 3
     col_min = 0
     col_map = plt.cm.viridis
-    path_list = ia.create_pngs(folder_path, tiff_list, tracker_row_all, tracker_col_all, info, "abs", col_min, col_max, col_map)
+    path_list = ia.create_pngs(folder_path, tiff_list, tracker_row_all, tracker_col_all, info, "abs", col_min, col_max, col_map, save_eps = True)
     for pa in path_list:
         assert pa.is_file()
     gif_path = ia.create_gif(folder_path, path_list, "abs")
