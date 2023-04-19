@@ -1633,11 +1633,11 @@ def test_load_pillar_tracking_results():
     folder_path = example_path("io_testing_examples")
     folder_path_0 = folder_path.joinpath("fake_example_0").resolve()
     with pytest.raises(FileNotFoundError) as error:
-        ia.load_tracking_results(folder_path=folder_path_0)
+        ia.load_pillar_tracking_results(folder_path=folder_path_0)
     assert error.typename == "FileNotFoundError"
     folder_path_1 = folder_path.joinpath("fake_example_1").resolve()
     with pytest.raises(FileNotFoundError) as error:
-        ia.load_tracking_results(folder_path=folder_path_1, is_rotated=True)
+        ia.load_pillar_tracking_results(folder_path=folder_path_1)
     assert error.typename == "FileNotFoundError"
 
 
