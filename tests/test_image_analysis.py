@@ -1635,7 +1635,7 @@ def test_load_pillar_tracking_results():
     with pytest.raises(FileNotFoundError) as error:
         ia.load_pillar_tracking_results(folder_path=folder_path_0)
     assert error.typename == "FileNotFoundError"
-    folder_path_1 = folder_path.joinpath("fake_example_1").resolve()
+    folder_path_1 = folder_path.joinpath("fake_example_3").resolve()
     with pytest.raises(FileNotFoundError) as error:
         ia.load_pillar_tracking_results(folder_path=folder_path_1)
     assert error.typename == "FileNotFoundError"
