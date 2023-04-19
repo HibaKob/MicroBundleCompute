@@ -544,7 +544,7 @@ def test_compute_beat_frequency():
     fps = 2
     freq = ia.compute_beat_frequency(info, fps)
     assert np.isclose(freq, fps * 1 / (np.pi * 2.0) / 20, atol=.01)
-    x = np.linspace(0, 500 * np.pi * 2.0, 500)
+    x = np.linspace(0, 400 * np.pi * 2.0, 400)
     timeseries = np.sin(x / (np.pi * 2.0) / 20 - np.pi / 2.0)
     fps = 1
     info = ia.compute_valleys(timeseries)
@@ -1245,7 +1245,7 @@ def test_run_rotation_visualization():
     for pa in col_png_path_list:
         assert pa.is_file()
     assert col_gif_path.is_file()
-    
+
 
 def test_run_rotation_visualization_non_square():
     folder_path = example_path("real_non_square_example_short_rotated")
