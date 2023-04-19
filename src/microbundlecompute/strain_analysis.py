@@ -256,7 +256,6 @@ def save_sub_domain_strain(folder_path: Path, sub_domain_F_all: List, sub_domain
         saved_paths.append(file_path)
         np.savetxt(str(file_path), sub_domain_F_cc_all[kk])
     # save the information about the sub domains (specifically: num_row_tile, num_col_tile, tile_pix_dim)
-    # maybe also save information about rotation?
     file_path = new_path.joinpath("strain_" + fname + "_sub_domain_info.txt").resolve()
     np.savetxt(str(file_path), strain_sub_domain_info)
     saved_paths.append(file_path)

@@ -1257,6 +1257,24 @@ def test_run_rotation_visualization():
     for pa in col_png_path_list:
         assert pa.is_file()
     assert col_gif_path.is_file()
+
+def test_run_rotation_visualization_manual_limits():
+    folder_path = example_path("real_example_short_rotated")
+    fps = 1
+    length_scale = 1
+    _ = ia.run_tracking(folder_path, fps, length_scale)
+    input_mask = True
+    _ = ia.run_rotation(folder_path, input_mask)
+    abs_png_path_list, row_png_path_list, col_png_path_list, abs_gif_path, row_gif_path, col_gif_path = ia.run_rotation_visualization(folder_path,  automatic_color_constraint = False, col_min = -3, col_max = 3)
+    for pa in abs_png_path_list:
+        assert pa.is_file()
+    assert abs_gif_path.is_file()
+    for pa in row_png_path_list:
+        assert pa.is_file()
+    assert row_gif_path.is_file()
+    for pa in col_png_path_list:
+        assert pa.is_file()
+    assert col_gif_path.is_file()
     
 
 def test_run_rotation_visualization_non_square():
