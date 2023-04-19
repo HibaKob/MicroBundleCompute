@@ -1215,6 +1215,18 @@ def test_rotate_test_img():
     file_path = ia.rotate_test_img(folder_path, tiff_list, ang, center_row, center_col, rot_mat)
     assert file_path.is_file()
 
+def test_rotate_non_square_test_img():
+    folder_path = example_path("real_example_short_rotated")
+    movie_folder_path = folder_path.joinpath("movie").resolve()
+    name_list_path = ia.image_folder_to_path_list(movie_folder_path)
+    tiff_list = ia.read_all_tiff(name_list_path)
+    vec = [1,0]
+    rot_mat, ang = ia.rot_vec_to_rot_mat_and_angle(vec)
+    center_row = (tiff_list[0].shape[0])/2
+    center_col = (tiff_list[0].shape[1])/2
+    file_path = ia.rotate_test_img(folder_path, tiff_list, ang, center_row, center_col, rot_mat)
+    assert file_path.is_file()
+
 
 def test_run_rotation_visualization():
     folder_path = example_path("real_example_short_rotated")
