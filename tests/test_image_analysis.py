@@ -444,7 +444,7 @@ def test_subpixel_abs_position_timeseries():
     # perform tracking
     tiff_list = [img_0, img_1]
     img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings(record=True) as record:
         tracker_0, tracker_1 = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
         _, disp_abs_all, _, _ = ia.compute_abs_position_timeseries(tracker_0, tracker_1)
     assert np.max(disp_abs_all) < 1
@@ -473,7 +473,7 @@ def test_superpixel_abs_position_timeseries():
     # perform tracking
     tiff_list = [img_0, img_1]
     img_list_uint8 = ia.uint16_to_uint8_all(tiff_list)
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings(record=True) as record:
         tracker_0, tracker_1 = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
         _, disp_abs_all, _, _ = ia.compute_abs_position_timeseries(tracker_0, tracker_1)
     assert np.max(disp_abs_all) > 1
@@ -591,7 +591,7 @@ def test_test_frame_0_valley():
     tracker_0, tracker_1 = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
     timeseries, _, _, _  = ia. compute_abs_position_timeseries(tracker_0, tracker_1)
     info = ia.compute_valleys(timeseries)
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings(record=True) as record:
         ia.test_frame_0_valley (timeseries, info)
     assert len(record) == 1
 
@@ -606,7 +606,7 @@ def test_test_frame_0_true_valley():
     tracker_0, tracker_1 = ia.track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
     timeseries, _, _, _  = ia. compute_abs_position_timeseries(tracker_0, tracker_1)
     info = ia.compute_valleys(timeseries)
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings(record=True) as record:
         ia.test_frame_0_valley (timeseries, info)
     assert len(record) == 0
 
