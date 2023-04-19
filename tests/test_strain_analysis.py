@@ -362,12 +362,13 @@ def test_run_sub_domain_strain_analysis():
     fps = 1
     length_scale = 1
     _ = ia.run_tracking(input_path, fps, length_scale)
-    saved_paths = sa.run_sub_domain_strain_analysis(input_path)
-    for sap in saved_paths:
-        assert sap.is_file()
     saved_paths = sa.run_sub_domain_strain_analysis(input_path, is_rotated=False)
     for sap in saved_paths:
         assert sap.is_file()
+    saved_paths = sa.run_sub_domain_strain_analysis(input_path)
+    for sap in saved_paths:
+        assert sap.is_file()
+
         
 
 def test_run_sub_domain_strain_analysis_non_square():
