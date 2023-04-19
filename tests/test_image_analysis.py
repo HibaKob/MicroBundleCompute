@@ -1276,6 +1276,7 @@ def test_run_rotation_visualization_non_square():
         assert pa.is_file()
     assert col_gif_path.is_file()
 
+
 def test_run_rotation_visualization_small_angle():
     folder_path = example_path("real_example_short_small_angle_rotated")
     fps = 1
@@ -1293,6 +1294,7 @@ def test_run_rotation_visualization_small_angle():
     for pa in col_png_path_list:
         assert pa.is_file()
     assert col_gif_path.is_file()
+    
 
 def test_scale_scale_array_in_list():
     arr1 = np.random.random((20, 20))
