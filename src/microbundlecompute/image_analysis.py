@@ -745,8 +745,12 @@ def run_visualization(folder_path: Path, automatic_color_constraint: bool = True
         # find limits of colormap
         clim_abs_min, clim_abs_max, clim_row_min, clim_row_max, clim_col_min, clim_col_max = compute_min_max_disp(tracker_row_all,tracker_col_all,info)
     else:
-        clim_abs_min, clim_row_min, clim_col_min = col_min, col_min, col_min
-        clim_abs_max, clim_row_max, clim_col_max = col_max, col_max, col_max
+        clim_abs_min = col_min
+        clim_row_min = col_min
+        clim_col_min = col_min
+        clim_abs_max = col_max
+        clim_row_max = col_max
+        clim_col_max = col_max
     # create pngs
     abs_png_path_list = create_pngs(folder_path, tiff_list, tracker_row_all, tracker_col_all, info, "abs", clim_abs_min, clim_abs_max, col_map,save_eps = False)
     row_png_path_list = create_pngs(folder_path, tiff_list, tracker_row_all, tracker_col_all, info, "row", clim_row_min, clim_row_max, col_map,save_eps = False)
@@ -1207,8 +1211,12 @@ def run_rotation_visualization(folder_path: Path, automatic_color_constraint: bo
         # find limits of colormap
         clim_abs_min, clim_abs_max, clim_row_min, clim_row_max, clim_col_min, clim_col_max = compute_min_max_disp(rot_tracker_row_all,rot_tracker_col_all,info)
     else:
-        clim_abs_min, clim_row_min, clim_col_min = col_min, col_min, col_min
-        clim_abs_max, clim_row_max, clim_col_max = col_max, col_max, col_max
+        clim_abs_min = col_min
+        clim_row_min = col_min 
+        clim_col_min = col_min
+        clim_abs_max = col_max
+        clim_row_max = col_max 
+        clim_col_max = col_max
     # create rotated test image
     rotate_test_img(vis_folder_path, tiff_list, ang, center_row, center_col, rot_mat)
     # create pngs
