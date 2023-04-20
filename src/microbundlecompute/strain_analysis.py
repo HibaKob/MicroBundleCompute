@@ -549,11 +549,9 @@ def run_sub_domain_strain_analysis(
                 rot_mask  = ia.rot_image(padded_mask, trans_center_row, trans_center_col, ang)
                 # translate rotated results 
                 rot_tracker_row_all_pad, rot_tracker_col_all_pad = ia.translate_pts_all(rot_tracker_row_all,rot_tracker_col_all,translate_r,translate_c)
-            
             else:
                 rot_mask  = ia.rot_image(mask, center_row, center_col, ang)
-                rot_tracker_row_all_pad, rot_tracker_col_all_pad = rot_tracker_row_all, rot_tracker_col_all
-                
+                rot_tracker_row_all_pad, rot_tracker_col_all_pad = rot_tracker_row_all, rot_tracker_col_all        
         else:
             rot_mask = mask
             rot_tracker_row_all_pad, rot_tracker_col_all_pad = tracker_row_all, tracker_col_all
@@ -614,7 +612,6 @@ def visualize_sub_domain_strain(
                 tiff_list = ia.rotate_imgs_all(padded_tiff_list, ang, trans_center_row, trans_center_col)
             else:
                 tiff_list = ia.rotate_imgs_all(tiff_list, ang, center_row, center_col)
-
         else:
             tiff_list = tiff_list
 
