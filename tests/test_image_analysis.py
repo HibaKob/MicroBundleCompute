@@ -1194,7 +1194,7 @@ def test_get_rotation_info_2():
     (rot_mat_known, ang_known) = ia.rot_vec_to_rot_mat_and_angle(vec_known)
     (center_row_found, center_col_found, rot_mat_found, ang_found, vec_found) = ia.get_rotation_info(mask=mask)
     assert np.isclose(ang_known, ang_found)
-    assert np.isclose(ang_known, 0)
+    assert np.isclose(ang_found, 1)
 
 def test_run_rotation():
     folder_path = example_path("real_example_short_rotated")
