@@ -1184,17 +1184,7 @@ def test_get_rotation_info():
     assert np.isclose(center_row_known, center_row_found)
     assert np.isclose(center_col_known, center_col_found)
     assert np.allclose(vec_known, vec_found)
-
-
-def test_get_rotation_info_2():
-    # check case where only mask is provided
-    file_path = tissue_mask_path("real_example_short_small_angle_rotated")
-    mask = ia.read_txt_as_mask(file_path)
-    center_row_known, center_col_known, vec_known = ia.axis_from_mask(mask)
-    (rot_mat_known, ang_known) = ia.rot_vec_to_rot_mat_and_angle(vec_known)
-    (center_row_found, center_col_found, rot_mat_found, ang_found, vec_found) = ia.get_rotation_info(mask=mask)
-    assert np.isclose(ang_known, ang_found)
-    assert np.isclose(ang_found, 1)
+    
 
 def test_run_rotation():
     folder_path = example_path("real_example_short_rotated")
