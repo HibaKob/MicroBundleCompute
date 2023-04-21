@@ -743,14 +743,11 @@ def run_visualization(folder_path: Path, automatic_color_constraint: bool = True
     tracker_row_all, tracker_col_all, info, _ = load_tracking_results(folder_path=folder_path)
     if automatic_color_constraint:
         # find limits of colormap
-        clim_abs_min, clim_abs_max, clim_row_min, clim_row_max, clim_col_min, clim_col_max = compute_min_max_disp(tracker_row_all,tracker_col_all,info)
-    else:
-        clim_abs_min, clim_row_min, clim_col_min = col_min_abs, col_min_row, col_min_col
-        clim_abs_max, clim_row_max, clim_col_max = col_max_abs, col_max_row, col_max_col
+        col_min_abs, col_max_abs, col_min_row, col_max_row, col_min_col, col_max_col = compute_min_max_disp(tracker_row_all,tracker_col_all,info)
     # create pngs
-    abs_png_path_list = create_pngs(folder_path, tiff_list, tracker_row_all, tracker_col_all, info, "abs", clim_abs_min, clim_abs_max, col_map,save_eps = False)
-    row_png_path_list = create_pngs(folder_path, tiff_list, tracker_row_all, tracker_col_all, info, "row", clim_row_min, clim_row_max, col_map,save_eps = False)
-    col_png_path_list = create_pngs(folder_path, tiff_list, tracker_row_all, tracker_col_all, info, "col", clim_col_min, clim_col_max, col_map,save_eps = False)
+    abs_png_path_list = create_pngs(folder_path, tiff_list, tracker_row_all, tracker_col_all, info, "abs", col_min_abs, col_max_abs, col_map,save_eps = False)
+    row_png_path_list = create_pngs(folder_path, tiff_list, tracker_row_all, tracker_col_all, info, "row", col_min_row, col_max_row, col_map,save_eps = False)
+    col_png_path_list = create_pngs(folder_path, tiff_list, tracker_row_all, tracker_col_all, info, "col", col_min_col, col_max_col, col_map,save_eps = False)
     # create gif
     abs_gif_path = create_gif(folder_path, abs_png_path_list, "abs")
     row_gif_path = create_gif(folder_path, row_png_path_list, "row")
@@ -1171,7 +1168,7 @@ def run_rotation(
     return saved_paths
 
 
-def run_rotation_visualization(folder_path: Path, automatic_color_constraint: bool = True, col_min: Union[int, float] = 0, col_max: Union[int, float] = 10, col_map: object = plt.cm.viridis) -> List:
+def run_rotation_visualization(folder_path: Path, automatic_color_constraint: bool = True, col_min_abs: Union[int, float] = 0, col_max_abs: Union[int, float] = 8, col_min_row: Union[int, float] = -3, col_max_row: Union[int, float] = 4.5, col_min_col: Union[int, float] = -3, col_max_col: Union[int, float] = 4.5, col_map: object = plt.cm.viridis) -> List:
     """Given a folder path where rotated tracking has already been run. Will save visualizations."""
     # read image files
     movie_folder_path = folder_path.joinpath("movie").resolve()
@@ -1205,20 +1202,13 @@ def run_rotation_visualization(folder_path: Path, automatic_color_constraint: bo
         tracker_row_all_pad, tracker_col_all_pad = rot_tracker_row_all, rot_tracker_col_all   
     if automatic_color_constraint:
         # find limits of colormap
-        clim_abs_min, clim_abs_max, clim_row_min, clim_row_max, clim_col_min, clim_col_max = compute_min_max_disp(rot_tracker_row_all,rot_tracker_col_all,info)
-    else:
-        clim_abs_min = col_min
-        clim_row_min = col_min 
-        clim_col_min = col_min
-        clim_abs_max = col_max
-        clim_row_max = col_max 
-        clim_col_max = col_max
+        col_min_abs, col_max_abs, col_min_row, col_max_row, col_min_col, col_max_col = compute_min_max_disp(rot_tracker_row_all,rot_tracker_col_all,info)
     # create rotated test image
     rotate_test_img(vis_folder_path, tiff_list, ang, center_row, center_col, rot_mat)
     # create pngs
-    abs_png_path_list = create_pngs(folder_path, rot_tiff_list, tracker_row_all_pad, tracker_col_all_pad, info, "abs", clim_abs_min, clim_abs_max, col_map, is_rotated=True, save_eps = False)
-    row_png_path_list = create_pngs(folder_path, rot_tiff_list, tracker_row_all_pad, tracker_col_all_pad, info, "row", clim_row_min, clim_row_max, col_map, is_rotated=True, save_eps = False)
-    col_png_path_list = create_pngs(folder_path, rot_tiff_list, tracker_row_all_pad, tracker_col_all_pad, info, "col", clim_col_min, clim_col_max, col_map, is_rotated=True, save_eps = False)
+    abs_png_path_list = create_pngs(folder_path, rot_tiff_list, tracker_row_all_pad, tracker_col_all_pad, info, "abs", col_min_abs, col_max_abs, col_map, is_rotated=True, save_eps = False)
+    row_png_path_list = create_pngs(folder_path, rot_tiff_list, tracker_row_all_pad, tracker_col_all_pad, info, "row", col_min_row, col_max_row, col_map, is_rotated=True, save_eps = False)
+    col_png_path_list = create_pngs(folder_path, rot_tiff_list, tracker_row_all_pad, tracker_col_all_pad, info, "col", col_min_col, col_max_col, col_map, is_rotated=True, save_eps = False)
     # create gif
     abs_gif_path = create_gif(folder_path, abs_png_path_list, "abs", is_rotated=True)
     row_gif_path = create_gif(folder_path, row_png_path_list, "row", is_rotated=True)
