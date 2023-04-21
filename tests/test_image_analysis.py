@@ -1301,7 +1301,7 @@ def test_run_rotation_visualization_non_square():
 
 
 def test_run_rotation_visualization_small_angle():
-    folder_path = example_path("real_examplrun_visualizatione_short_small_angle_rotated")
+    folder_path = example_path("real_example_short_small_angle_rotated")
     fps = 1
     length_scale = 1
     _ = ia.run_tracking(folder_path, fps, length_scale)
