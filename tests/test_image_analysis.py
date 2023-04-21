@@ -806,10 +806,14 @@ def test_run_visualization():
     fps = 1
     length_scale = 1
     _ = ia.run_tracking(folder_path, fps, length_scale)
-    col_min = 0 
-    col_max = 3
+    col_min_abs = 0
+    col_max_abs = 8
+    col_min_row = -3
+    col_max_row = 4.5
+    col_min_col = -3
+    col_max_col = 4.5
     col_map = plt.cm.viridis
-    abs_png_path_list, row_png_path_list, col_png_path_list,  abs_gif_path, row_gif_path, col_gif_path = ia.run_visualization(folder_path, True, col_min, col_max, col_map)
+    abs_png_path_list, row_png_path_list, col_png_path_list,  abs_gif_path, row_gif_path, col_gif_path = ia.run_visualization(folder_path, True, col_min_abs, col_max_abs, col_min_row, col_max_row, col_min_col, col_max_col, col_map)
     for pa in abs_png_path_list:
         assert pa.is_file()
     for pa in row_png_path_list:
@@ -819,7 +823,7 @@ def test_run_visualization():
     assert abs_gif_path.is_file()
     assert row_gif_path.is_file()
     assert col_gif_path.is_file()
-    abs_png_path_list, row_png_path_list, col_png_path_list,  abs_gif_path, row_gif_path, col_gif_path = ia.run_visualization(folder_path, False, col_min, col_max, col_map)
+    abs_png_path_list, row_png_path_list, col_png_path_list,  abs_gif_path, row_gif_path, col_gif_path = ia.run_visualization(folder_path, False, col_min_abs, col_max_abs, col_min_row, col_max_row, col_min_col, col_max_col, col_map)
     for pa in abs_png_path_list:
         assert pa.is_file()
     for pa in row_png_path_list:
@@ -1184,7 +1188,7 @@ def test_get_rotation_info():
     assert np.isclose(center_row_known, center_row_found)
     assert np.isclose(center_col_known, center_col_found)
     assert np.allclose(vec_known, vec_found)
-    
+
 
 def test_run_rotation():
     folder_path = example_path("real_example_short_rotated")
@@ -1297,7 +1301,7 @@ def test_run_rotation_visualization_non_square():
 
 
 def test_run_rotation_visualization_small_angle():
-    folder_path = example_path("real_example_short_small_angle_rotated")
+    folder_path = example_path("real_examplrun_visualizatione_short_small_angle_rotated")
     fps = 1
     length_scale = 1
     _ = ia.run_tracking(folder_path, fps, length_scale)
