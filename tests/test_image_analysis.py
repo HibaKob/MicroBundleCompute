@@ -1269,7 +1269,7 @@ def test_run_rotation_visualization_manual_limits():
     _ = ia.run_tracking(folder_path, fps, length_scale)
     input_mask = True
     _ = ia.run_rotation(folder_path, input_mask)
-    abs_png_path_list, row_png_path_list, col_png_path_list, abs_gif_path, row_gif_path, col_gif_path = ia.run_rotation_visualization(folder_path,  automatic_color_constraint = False, col_min = -3, col_max = 3)
+    abs_png_path_list, row_png_path_list, col_png_path_list, abs_gif_path, row_gif_path, col_gif_path = ia.run_rotation_visualization(folder_path,  automatic_color_constraint = False, col_min_abs=0, col_max_abs=8, col_min_row=-3, col_max_row=4.5, col_min_col=-3, col_max_col=4.5)
     for pa in abs_png_path_list:
         assert pa.is_file()
     assert abs_gif_path.is_file()
