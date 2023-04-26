@@ -42,15 +42,21 @@ else:
 track_mode = "tissue" # "pillar" or "tissue"
 
 if track_mode == "pillar":
+    '''Pillar stiffness can be directly provided: replace `None` by a value'''
+    pillar_stiffnes = None # Provide this value in microNewton per micrometer (uN/um) 
+    
+    ''' Or calculated based on the specified pillar parameters (Change as suitable)'''
     pdms_E = 1.61 # Provide this value in MPa
     pillar_width = 163 # Provide this value in micrometer (um)
     pillar_thickness = 33.2 # Provide this value in micrometer (um)
     pillar_length = 199.3 # Provide this value in micrometer (um)
     force_location = 163 # Provide this value in micrometer (um)
-
+    
+    ''' Set to `True` to eliminate drift if observed in pillar results'''
+    split = True
     # run pillar tracking
-    ia.run_pillar_tracking(input_folder, pdms_E, pillar_width, pillar_thickness, pillar_length, force_location, ls)
-    ia.visualize_pillar_tracking(input_folder)
+    ia.run_pillar_tracking(input_folder, pillar_stiffnes, pdms_E, pillar_width, pillar_thickness, pillar_length, force_location, ls, split)
+    ia.visualize_pillar_tracking(input_folder, split)
 
 elif track_mode == "tissue":
     # automatically create a tissue mask

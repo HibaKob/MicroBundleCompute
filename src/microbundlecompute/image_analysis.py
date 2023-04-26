@@ -238,7 +238,7 @@ def adjust_feature_param_dicts(feature_params: dict, img_uint8: np.ndarray, mask
     local_coverage = sorted(local_coverage, reverse=True)
     minDist = feature_params["minDistance"]  
     iter = 0
-    while np.min(local_coverage[:3]) > min_local_coverage and iter < 2:
+    while np.min(local_coverage[:3]) >= min_local_coverage and iter < 2:
         minDist+=1
         feature_params["minDistance"] = minDist
         _,_ = adjust_qualityLevel(feature_params, img_uint8, mask, min_coverage)
@@ -1356,14 +1356,18 @@ def compute_pillar_position_timeseries(tracker_0: np.ndarray, tracker_1: np.ndar
     return disp_abs_mean, mean_disp_0_all, mean_disp_1_all
 
 
-def pillar_force_all_steps(pillar_modulus: float, pillar_width: float, pillar_thickness: float, 
-                           pillar_length: float, force_location: float, pillar_mean_abs_disp: np.ndarray, 
-                           pillar_mean_disp_row: np.ndarray, pillar_mean_disp_col: np.ndarray, 
-                           length_scale: float) -> List:
+def pillar_force_all_steps(pillar_mean_abs_disp: np.ndarray, pillar_mean_disp_row: np.ndarray, 
+                           pillar_mean_disp_col: np.ndarray, pillar_stiffnes: float = None, 
+                           pillar_modulus: float = 1.61, pillar_width: float = 163, pillar_thickness: float = 33.2, 
+                           pillar_length: float = 199.3, force_location: float = 163,length_scale: float = 1) -> List:
     """Given pillar material Elastic modulus (in MPa), width, thickness, length, force application location 
     in micrometers (um), pillar tracking results in pixels, and a length scale conversion from pixels to 
     micrometers (um). Will compute pillar force in microNewtons (uN) for all steps."""
-    pillar_k = compute_pillar_stiffnes(pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location)
+    
+    if pillar_stiffnes is not None:
+        pillar_k = pillar_stiffnes
+    else:
+        pillar_k = compute_pillar_stiffnes(pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location)
 
     pillar_F_row = compute_pillar_force(pillar_k,pillar_mean_disp_row,length_scale)
     pillar_F_col = compute_pillar_force(pillar_k,pillar_mean_disp_col,length_scale)
@@ -1372,21 +1376,59 @@ def pillar_force_all_steps(pillar_modulus: float, pillar_width: float, pillar_th
     return pillar_F_abs, pillar_F_row, pillar_F_col
     
 
-def save_pillar_tracking(*, folder_path: Path, tracker_row_all: List, tracker_col_all: List, 
-                         pillar_force_abs: np.ndarray, pillar_force_row: np.ndarray, 
-                         pillar_force_col: np.ndarray, info: np.ndarray = None, fname: str = None) -> List:
+def save_pillar_position(*, folder_path: Path, tracker_row_all: List, tracker_col_all: List, 
+                         info: np.ndarray = None, split_track: bool = False, fname: str = None) -> List:
     """Given pillar tracking results. Will save as text files."""
     new_path = create_folder(folder_path, "pillar_results")
 
     saved_paths = []
+    if split_track:
+        num_beats = len(tracker_row_all)
+        for kk in range(0, num_beats):
+            tracker_row = tracker_row_all[kk]
+            tracker_col = tracker_col_all[kk]
+            if fname is not None:
+                file_path = new_path.joinpath(fname + "beat%i_row.txt"%(kk)).resolve()
+                saved_paths.append(file_path)
+                np.savetxt(str(file_path), tracker_row)
+                file_path = new_path.joinpath(fname + "beat%i_col.txt"%(kk)).resolve()
+                saved_paths.append(file_path)
+                np.savetxt(str(file_path), tracker_col)
+            else:
+                file_path = new_path.joinpath("beat%i_row.txt"%(kk)).resolve()
+                saved_paths.append(file_path)
+                np.savetxt(str(file_path), tracker_row)
+                file_path = new_path.joinpath("beat%i_col.txt"%(kk)).resolve()
+                saved_paths.append(file_path)
+                np.savetxt(str(file_path), tracker_col)
+    else:
+        if fname is not None:
+            file_path = new_path.joinpath(fname + "row.txt").resolve()
+            saved_paths.append(file_path)
+            np.savetxt(str(file_path), tracker_row_all)
+            file_path = new_path.joinpath(fname + "col.txt").resolve()
+            saved_paths.append(file_path)
+            np.savetxt(str(file_path), tracker_col_all)
+        else:
+            file_path = new_path.joinpath("row.txt").resolve()
+            saved_paths.append(file_path)
+            np.savetxt(str(file_path), tracker_row_all)
+            file_path = new_path.joinpath("col.txt").resolve()
+            saved_paths.append(file_path)
+            np.savetxt(str(file_path), tracker_col_all)
+        if info is not None:
+            file_path = new_path.joinpath("info.txt").resolve()
+            np.savetxt(str(file_path), info)
+            saved_paths.append(file_path)
+    return saved_paths
 
+
+def save_pillar_force(*, folder_path: Path, pillar_force_abs: np.ndarray, pillar_force_row: np.ndarray, 
+                         pillar_force_col: np.ndarray, fname: str = None) -> List:
+    """Given pillar force results. Will save as text files."""
+    new_path = create_folder(folder_path, "pillar_results")
+    saved_paths = [] 
     if fname is not None:
-        file_path = new_path.joinpath(fname + "row.txt").resolve()
-        saved_paths.append(file_path)
-        np.savetxt(str(file_path), tracker_row_all)
-        file_path = new_path.joinpath(fname + "col.txt").resolve()
-        saved_paths.append(file_path)
-        np.savetxt(str(file_path), tracker_col_all)
         file_path = new_path.joinpath(fname + "pillar_force_abs.txt").resolve()
         saved_paths.append(file_path)
         np.savetxt(str(file_path), pillar_force_abs)   
@@ -1397,12 +1439,6 @@ def save_pillar_tracking(*, folder_path: Path, tracker_row_all: List, tracker_co
         saved_paths.append(file_path)
         np.savetxt(str(file_path), pillar_force_col)
     else:
-        file_path = new_path.joinpath("row.txt").resolve()
-        saved_paths.append(file_path)
-        np.savetxt(str(file_path), tracker_row_all)
-        file_path = new_path.joinpath("col.txt").resolve()
-        saved_paths.append(file_path)
-        np.savetxt(str(file_path), tracker_col_all)
         file_path = new_path.joinpath("pillar_force_abs.txt").resolve()
         saved_paths.append(file_path)
         np.savetxt(str(file_path), pillar_force_abs)
@@ -1412,16 +1448,12 @@ def save_pillar_tracking(*, folder_path: Path, tracker_row_all: List, tracker_co
         file_path = new_path.joinpath("pillar_force_col.txt").resolve()
         saved_paths.append(file_path)
         np.savetxt(str(file_path), pillar_force_col)
-    if info is not None:
-        file_path = new_path.joinpath("info.txt").resolve()
-        np.savetxt(str(file_path), info)
-    saved_paths.append(file_path)
     return saved_paths
 
 
-def run_pillar_tracking(folder_path: Path, pillar_modulus: float, pillar_width: float, 
-                        pillar_thickness: float, pillar_length: float, 
-                        force_location: float, length_scale: float) -> List:
+def run_pillar_tracking(folder_path: Path, pillar_stiffnes: float = None, pillar_modulus: float = 1.61, 
+                        pillar_width: float = 163, pillar_thickness: float = 33.2, pillar_length: float = 199.3, 
+                        force_location: float = 163, length_scale: float = 1, split_track: bool = False) -> List:
     """Given a folder path, pillar material Elastic modulus (in MPa), width, thickness, length, force application 
     location in micrometers (um), and a length scale conversion from pixels to micrometers (um).Will perform tracking, 
     compute pillar force in microNewtons (uN) and save results as text files."""
@@ -1432,44 +1464,50 @@ def run_pillar_tracking(folder_path: Path, pillar_modulus: float, pillar_width: 
     img_list_uint8 = uint16_to_uint8_all(tiff_list)
     mask_folder_path = folder_path.joinpath("masks").resolve()
     mask_file_list = glob.glob(str(mask_folder_path) + "/*pillar_mask*.txt")
-    if len(mask_file_list) == 2:  
+    
+    for ml in range(len(mask_file_list)): 
         # load pillar masks
-        mask_file_path_1 = mask_folder_path.joinpath("pillar_mask_1.txt").resolve()
-        mask_file_path_2 = mask_folder_path.joinpath("pillar_mask_2.txt").resolve()
-        mask_1 = read_txt_as_mask(mask_file_path_1)
-        mask_2 = read_txt_as_mask(mask_file_path_2)
-        # perform tracking
-        tracker_0_p1, tracker_1_p1 = track_all_steps_with_adjust_param_dicts(img_list_uint8, mask_1)
-        tracker_0_p2, tracker_1_p2 = track_all_steps_with_adjust_param_dicts(img_list_uint8, mask_2)
-        # perform timeseries analysis
-        mean_abs_disp_p1, mean_disp_all_0_p1, mean_disp_all_1_p1 = compute_pillar_position_timeseries(tracker_0_p1,tracker_1_p1)
-        mean_abs_disp_p2, mean_disp_all_0_p2, mean_disp_all_1_p2 = compute_pillar_position_timeseries(tracker_0_p2,tracker_1_p2)
-        info_p1 = compute_valleys(mean_abs_disp_p1)
-        info_p2 = compute_valleys(mean_abs_disp_p2)
-        # compute pillar force 
-        pillar_1_force_all, pillar_1_row_force_all, pillar_1_col_force_all = pillar_force_all_steps(pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, mean_abs_disp_p1, mean_disp_all_0_p1, mean_disp_all_1_p1, length_scale)
-        pillar_2_force_all, pillar_2_row_force_all, pillar_2_col_force_all = pillar_force_all_steps(pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, mean_abs_disp_p2, mean_disp_all_0_p2, mean_disp_all_1_p2, length_scale)
-        # save pillar tracking results
-        saved_paths = save_pillar_tracking(folder_path=folder_path, tracker_col_all=tracker_0_p1, tracker_row_all=tracker_1_p1, info=info_p1, pillar_force_abs=pillar_1_force_all, pillar_force_row=pillar_1_row_force_all, pillar_force_col=pillar_1_col_force_all, fname='pillar1_')
-        saved_paths_2 = save_pillar_tracking(folder_path=folder_path, tracker_col_all=tracker_0_p2, tracker_row_all=tracker_1_p2, info=info_p2, pillar_force_abs=pillar_2_force_all, pillar_force_row=pillar_2_row_force_all, pillar_force_col=pillar_2_col_force_all, fname='pillar2_')
-        saved_paths.extend(saved_paths_2)
-    else:
-        # load pillar mask
-        mask_file_path =  glob.glob(str(mask_folder_path) + '/*pillar_mask_*.txt')[0]
+        mask_file_path = mask_folder_path.joinpath("pillar_mask_%i.txt"%(ml+1)).resolve()
         mask = read_txt_as_mask(mask_file_path)
         # perform tracking
         tracker_0, tracker_1 = track_all_steps_with_adjust_param_dicts(img_list_uint8, mask)
         # perform timeseries analysis
         mean_abs_disp, mean_disp_all_0, mean_disp_all_1 = compute_pillar_position_timeseries(tracker_0,tracker_1)
         info = compute_valleys(mean_abs_disp)
+        
+        if split_track:
+            mean_abs_disp_all = []
+            mean_disp_all_0_all = []
+            mean_disp_all_1_all = []
+            tracker_0_all, tracker_1_all = split_tracking(tracker_0, tracker_1, info)
+            num_beats = len(tracker_0_all)
+            for nb in range(num_beats):
+                tracker_0_beat = tracker_0_all[nb]
+                tracker_1_beat = tracker_1_all[nb]
+                mean_abs_disp_beat, mean_disp_all_0_beat, mean_disp_all_1_beat = compute_pillar_position_timeseries(tracker_0_beat,tracker_1_beat)
+                mean_abs_disp_all.append(mean_abs_disp_beat)
+                mean_disp_all_0_all.append(mean_disp_all_0_beat)
+                mean_disp_all_1_all.append(mean_disp_all_1_beat)
+                # save pillar tracking results
+                saved_paths_pos = save_pillar_position(folder_path=folder_path, tracker_col_all=tracker_0_all, tracker_row_all=tracker_1_all, info=info, split_track = True, fname='pillar%i_'%(ml+1))
+            
+            mean_abs_disp = [disp for disp_lst in mean_abs_disp_all for disp in disp_lst]
+            mean_abs_disp = np.asarray(mean_abs_disp)
+            mean_disp_all_0 = [disp_0 for disp_0_lst in mean_disp_all_0_all for disp_0 in disp_0_lst]
+            mean_disp_all_0 = np.asarray(mean_disp_all_0)
+            mean_disp_all_1 = [disp_1 for disp_1_lst in mean_disp_all_1_all for disp_1 in disp_1_lst]
+            mean_disp_all_1 = np.asarray(mean_disp_all_1)
+        else:  
+            # save pillar tracking results
+            saved_paths_pos = save_pillar_position(folder_path=folder_path, tracker_col_all=tracker_0, tracker_row_all=tracker_1, info=info, split_track = False, fname='pillar%i_'%(ml+1))
         # compute pillar force 
-        pillar_force_all, pillar_row_force_all, pillar_col_force_all = pillar_force_all_steps(pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, mean_abs_disp, mean_disp_all_0, mean_disp_all_1, length_scale)
-        # save pillar tracking results
-        saved_paths = save_pillar_tracking(folder_path=folder_path, tracker_col_all=tracker_0, tracker_row_all=tracker_1, info=info, pillar_force_abs=pillar_force_all, pillar_force_row=pillar_row_force_all, pillar_force_col=pillar_col_force_all)
-    return saved_paths
+        pillar_force_all, pillar_row_force_all, pillar_col_force_all = pillar_force_all_steps(mean_abs_disp, mean_disp_all_0, mean_disp_all_1, pillar_stiffnes = pillar_stiffnes, pillar_modulus = pillar_modulus, pillar_width = pillar_width, pillar_thickness = pillar_thickness, pillar_length = pillar_length, force_location = force_location, length_scale = length_scale)
+        # save pillar force results
+        saved_paths_force = save_pillar_force(folder_path=folder_path, pillar_force_abs=pillar_force_all, pillar_force_row=pillar_row_force_all, pillar_force_col=pillar_col_force_all, fname='pillar%i_'%(ml+1))
+    return saved_paths_pos, saved_paths_force
 
 
-def load_pillar_tracking_results(folder_path: Path, fname="") -> np.ndarray:
+def load_pillar_tracking_results(folder_path: Path, split_track: bool = False, fname: str = "") -> np.ndarray:
     """Given folder path. Will load pillar force results. If there are none, will return an error."""
     res_folder_path = folder_path.joinpath("pillar_results").resolve()
     if res_folder_path.exists() is False:
@@ -1477,91 +1515,108 @@ def load_pillar_tracking_results(folder_path: Path, fname="") -> np.ndarray:
     file_list = glob.glob(str(res_folder_path) + "/*pillar_force*")
     if len(file_list) == 0:
         raise FileNotFoundError("pillar force results are not present")
-
-    pillar_row = np.loadtxt(str(res_folder_path) + "/" + fname + "row.txt")
-    pillar_col = np.loadtxt(str(res_folder_path) + "/" + fname + "col.txt")
+        
+    if split_track:  
+        num_files = len(glob.glob(str(res_folder_path) + "/" + fname + "beat*.txt"))
+        print('files' ,str(res_folder_path) + "/" + fname + "beat*.txt")
+        num_beats = int((num_files) / 2)
+        pillar_row_all = []
+        pillar_col_all = []
+        for kk in range(0, num_beats):
+            pillar_row = np.loadtxt(str(res_folder_path) + "/" + fname + "beat%i_row.txt" % (kk))
+            pillar_col = np.loadtxt(str(res_folder_path) + "/" + fname + "beat%i_col.txt" % (kk))
+            pillar_row_all.append(pillar_row)
+            pillar_col_all.append(pillar_col)
+    else:
+        pillar_row_all = np.loadtxt(str(res_folder_path) + "/" + fname + "row.txt")
+        pillar_col_all = np.loadtxt(str(res_folder_path) + "/" + fname + "col.txt")   
         
     pillar_abs_force_all = np.loadtxt(str(res_folder_path) + "/" + fname + "pillar_force_abs.txt")
     pillar_row_force_all = np.loadtxt(str(res_folder_path) + "/" + fname + "pillar_force_row.txt")
     pillar_col_force_all = np.loadtxt(str(res_folder_path) + "/" + fname + "pillar_force_col.txt")
-    return pillar_row, pillar_col, pillar_abs_force_all, pillar_row_force_all, pillar_col_force_all
+    return pillar_row_all, pillar_col_all, pillar_abs_force_all, pillar_row_force_all, pillar_col_force_all
 
 
-def visualize_pillar_tracking(folder_path: Path) -> Path:
+def visualize_pillar_tracking(folder_path: Path, split_track: bool = False) -> Path:
     """Given a folder path where tracking has already been run. Will save visualizations."""
     vis_folder_path = create_folder(folder_path, "pillar_visualizations")
     mask_folder_path = folder_path.joinpath("masks").resolve()
     mask_file_list = glob.glob(str(mask_folder_path) + "/*pillar_mask*.txt")
-    if len(mask_file_list) == 2:
-        # load pillar force results
-        pillar_1_tracker_row, pillar_1_tracker_col, all_pillar_1_force, _, _ = load_pillar_tracking_results(folder_path,fname='pillar1_')
-        mean_abs_disp_p1, mean_disp_all_row_p1, mean_disp_all_col_p1 = compute_pillar_position_timeseries(pillar_1_tracker_row,pillar_1_tracker_col)
-
-        pillar_2_tracker_row, pillar_2_tracker_col, all_pillar_2_force, _, _ = load_pillar_tracking_results(folder_path,fname='pillar2_')
-        mean_abs_disp_p2, mean_disp_all_row_p2, mean_disp_all_col_p2 = compute_pillar_position_timeseries(pillar_2_tracker_row,pillar_2_tracker_col)
-        
-        plt.figure()
-        plt.plot(mean_abs_disp_p1, color='dodgerblue', label='pillar 1')
-        plt.plot(mean_abs_disp_p2, color='firebrick', label='pillar 2')
-        plt.ylabel(r'pillar mean absolute displacement (pixels)')
-        plt.xlabel('frame')
-        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=2)
-        plt.tight_layout()
-        plt.savefig(str(vis_folder_path)+'/pillar_mean_absolute_displacement.pdf', format='pdf')
-        plt.close()
-        
-        plt.figure()
-        plt.plot(mean_disp_all_row_p1, color='lightskyblue', label='pillar 1 row (vertical)')
-        plt.plot(mean_disp_all_col_p1, color='dodgerblue', label='pillar 1 column (horizontal)')
-        plt.plot(mean_disp_all_row_p2, color='lightcoral', label='pillar 2 row (vertical)')
-        plt.plot(mean_disp_all_col_p2, color='firebrick', label='pillar 2 column (horizontal)')
-        plt.ylabel(r'pillar mean displacement (pixels)')
-        plt.xlabel('frame')
-        # plt.legend(loc='upper right')
-        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=2)
-        plt.tight_layout()
-        plt.savefig(str(vis_folder_path)+'/pillar_directional_displacement.pdf', format='pdf')
-        plt.close()
-
-        plt.figure()
-        plt.plot(all_pillar_1_force, color='dodgerblue', label='pillar 1')
-        plt.plot(all_pillar_2_force, color='firebrick', label='pillar 2')
-        plt.ylabel(r'pillar absolute force ($\mu$N)')
-        plt.xlabel('frame')
-        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=2)
-        plt.tight_layout()
-        plt.savefig(str(vis_folder_path)+'/pillar_force_absolute.pdf', format='pdf')
-        plt.close()
-        
-    else:
-        # load pillar force results
-        pillar_tracker_row, pillar_tracker_col, all_pillar_force, _, _ = load_pillar_tracking_results(folder_path)
-        mean_abs_disp, mean_disp_all_row, mean_disp_all_col = compute_pillar_position_timeseries(pillar_tracker_row,pillar_tracker_col)
-        
-        plt.figure()
-        plt.plot(mean_abs_disp)
-        plt.ylabel(r'pillar mean absolute displacement (pixels)')
-        plt.xlabel('frame')
-        plt.tight_layout()
-        plt.savefig(str(vis_folder_path)+'/pillar_mean_absolute_displacement.pdf', format='pdf')
-        plt.close()
-        
-        plt.figure()
-        plt.plot(mean_disp_all_row, label='row (vertical) displacement')
-        plt.plot(mean_disp_all_col, label='column (horizontal) displacement')
-        plt.ylabel(r'pillar mean displacement (pixels)')
-        plt.xlabel('frame')
-        plt.legend(loc='upper right')
-        plt.tight_layout()
-        plt.savefig(str(vis_folder_path)+'/pillar_directional_displacement.pdf', format='pdf')
-        plt.close()
     
-        plt.figure()
-        plt.plot(all_pillar_force)
-        plt.ylabel(r'pillar absolute force ($\mu$N)')
-        plt.xlabel('frame')
-        plt.tight_layout()
-        plt.savefig(str(vis_folder_path)+'/pillar_force_absolute.pdf', format='pdf')
-        plt.close()
+    color_lst = ['dodgerblue','firebrick','lightcoral','lightskyblue']
+    
+    plt.figure()
+    for ml in range(len(mask_file_list)): 
+        # load pillar force results
+        pillar_tracker_row, pillar_tracker_col, all_pillar_force, _, _ = load_pillar_tracking_results(folder_path,split_track,fname='pillar%i_'%(ml+1))
+        if split_track:
+            num_beats = len(pillar_tracker_row)
+            mean_abs_disp_all = []
+            for nb in range(num_beats):
+                tracker_0_beat = pillar_tracker_row[nb]
+                tracker_1_beat = pillar_tracker_col[nb]
+                mean_abs_disp_beat, mean_disp_all_0_beat, mean_disp_all_1_beat = compute_pillar_position_timeseries(tracker_0_beat,tracker_1_beat)
+                mean_abs_disp_all.append(mean_abs_disp_beat)
+
+            mean_abs_disp = [disp for disp_lst in mean_abs_disp_all for disp in disp_lst]
+            mean_abs_disp = np.asarray(mean_abs_disp)
+        else:
+            mean_abs_disp, _, _ = compute_pillar_position_timeseries(pillar_tracker_row,pillar_tracker_col)
+    
+        plt.plot(mean_abs_disp, color = color_lst[ml], label='pillar %i'%(ml+1))
+    plt.ylabel(r'pillar mean absolute displacement (pixels)')
+    plt.xlabel('frame')
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=2)
+    plt.tight_layout()
+    plt.savefig(str(vis_folder_path)+'/pillar_mean_absolute_displacement.pdf', format='pdf')
+    plt.close()
+        
+    plt.figure()
+    count = 1
+    for ml in range(len(mask_file_list)): 
+        pillar_tracker_row, pillar_tracker_col, _, _, _ = load_pillar_tracking_results(folder_path,split_track,fname='pillar%i_'%(ml+1))
+        
+        if split_track:
+            num_beats = len(pillar_tracker_row)
+            mean_disp_all_0_all = []
+            mean_disp_all_1_all = []
+            for nb in range(num_beats):
+                tracker_0_beat = pillar_tracker_row[nb]
+                tracker_1_beat = pillar_tracker_col[nb]
+                _, mean_disp_all_0_beat, mean_disp_all_1_beat = compute_pillar_position_timeseries(tracker_0_beat,tracker_1_beat)
+                mean_disp_all_0_all.append(mean_disp_all_0_beat)
+                mean_disp_all_1_all.append(mean_disp_all_1_beat)
+            
+            mean_disp_all_row = [disp_0 for disp_0_lst in mean_disp_all_0_all for disp_0 in disp_0_lst]
+            mean_disp_all_row = np.asarray(mean_disp_all_row)
+            mean_disp_all_col = [disp_1 for disp_1_lst in mean_disp_all_1_all for disp_1 in disp_1_lst]
+            mean_disp_all_col = np.asarray(mean_disp_all_col)
+        
+        else:
+            _, mean_disp_all_row, mean_disp_all_col = compute_pillar_position_timeseries(pillar_tracker_row,pillar_tracker_col)
+        
+        plt.plot(mean_disp_all_row, color = color_lst[-count], label='pillar %i row (vertical)'%(ml+1))
+        plt.plot(mean_disp_all_col, color = color_lst[ml], label='pillar %i column (horizontal)'%(ml+1))
+        count +=1
+        
+    plt.ylabel(r'pillar mean displacement (pixels)')
+    plt.xlabel('frame')
+    # plt.legend(loc='upper right')
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=2)
+    plt.tight_layout()
+    plt.savefig(str(vis_folder_path)+'/pillar_directional_displacement.pdf', format='pdf')
+    plt.close()
+
+    plt.figure()
+    for ml in range(len(mask_file_list)): 
+        _, _, all_pillar_force, _, _ = load_pillar_tracking_results(folder_path,split_track,fname='pillar%i_'%(ml+1))
+        plt.plot(all_pillar_force, color = color_lst[ml], label='pillar %i'%(ml+1))
+
+    plt.ylabel(r'pillar absolute force ($\mu$N)')
+    plt.xlabel('frame')
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=2)
+    plt.tight_layout()
+    plt.savefig(str(vis_folder_path)+'/pillar_force_absolute.pdf', format='pdf')
+    plt.close()
     
     return vis_folder_path
