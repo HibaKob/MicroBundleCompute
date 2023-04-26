@@ -1383,7 +1383,7 @@ def save_pillar_position(*, folder_path: Path, tracker_row_all: List, tracker_co
 
     saved_paths = []
     if split_track:
-        num_beats = len(tracker_row_all)
+        num_beats = info.shape[0]
         for kk in range(0, num_beats):
             tracker_row = tracker_row_all[kk]
             tracker_col = tracker_col_all[kk]
