@@ -1677,8 +1677,7 @@ def test_run_one_pillar_tracking_split():
     pillar_length = 199
     force_location = 163
     length_scale = 1
-    split_track = True
-    saved_paths_pos, saved_paths_force = ia.run_pillar_tracking(folder_path, pillar_stiffnes, pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale, split_track)
+    saved_paths_pos, saved_paths_force = ia.run_pillar_tracking(folder_path, pillar_stiffnes, pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale, split_track = True)
     for pa_p in saved_paths_pos:
         assert pa_p.is_file()
     for pa_f in saved_paths_force:
