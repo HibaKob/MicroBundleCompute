@@ -1604,6 +1604,7 @@ def test_save_pillar_position():
         assert pa.is_file()
     assert len(saved_paths) == 3
 
+
 def test_save_pillar_position_split():
     folder_path = example_path("real_example_pillar_short")
     tracker_row_all = np.zeros((10, 100))
@@ -1617,7 +1618,6 @@ def test_save_pillar_position_split():
     for pa in saved_paths:
         assert pa.is_file()
     assert len(saved_paths) == 6
-
 
 
 def test_save_pillar_tracking_fname():
