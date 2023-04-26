@@ -1545,6 +1545,7 @@ def test_compute_pillar_position_timeseries():
 
 
 def test_pillar_force_all_steps():
+    pillar_stiffnes = None
     pillar_modulus = 1.61
     pillar_width = 163
     pillar_thickness = 33.2    
@@ -1557,9 +1558,8 @@ def test_pillar_force_all_steps():
     length_scale = 1
 
     pillar_k = ia.compute_pillar_stiffnes(pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location)
-    pillar_F_abs, pillar_F_row, pillar_F_col = ia.pillar_force_all_steps(pillar_modulus, pillar_width, pillar_thickness, 
-                           pillar_length, force_location, pillar_mean_abs_disp,pillar_mean_disp_row, pillar_mean_disp_col, 
-                           length_scale)
+    pillar_F_abs, pillar_F_row, pillar_F_col = ia.pillar_force_all_steps(pillar_mean_abs_disp,pillar_mean_disp_row, pillar_mean_disp_col, pillar_stiffnes, 
+                                                                         pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale)
     assert len(pillar_F_abs) == num_frames
     assert np.allclose(pillar_F_abs/pillar_k, pillar_mean_abs_disp, atol=0.01)
     assert len(pillar_F_row) == num_frames
@@ -1568,7 +1568,43 @@ def test_pillar_force_all_steps():
     assert np.allclose(pillar_F_col/pillar_k, pillar_mean_disp_col, atol=0.01)
 
 
-def test_save_pillar_tracking():
+def test_pillar_force_all_steps_given_K():
+    pillar_stiffnes = 0.42
+    pillar_modulus = 1.61
+    pillar_width = 163
+    pillar_thickness = 33.2    
+    pillar_length = 199
+    force_location = 163
+    num_frames = 100
+    pillar_mean_abs_disp = np.sqrt(2)*np.ones(num_frames)
+    pillar_mean_disp_row = np.ones(num_frames)
+    pillar_mean_disp_col = np.ones(num_frames)
+    length_scale = 1
+
+    pillar_F_abs, pillar_F_row, pillar_F_col = ia.pillar_force_all_steps(pillar_mean_abs_disp,pillar_mean_disp_row, pillar_mean_disp_col, pillar_stiffnes, 
+                                                                        pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale)
+    pillar_k = ia.compute_pillar_stiffnes(pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location)
+    assert len(pillar_F_abs) == num_frames
+    assert np.allclose(pillar_F_abs/pillar_stiffnes, pillar_mean_abs_disp, atol=0.01)
+    assert len(pillar_F_row) == num_frames
+    assert np.allclose(pillar_F_row/pillar_stiffnes, pillar_mean_disp_row, atol=0.01)
+    assert len(pillar_F_col) == num_frames
+    assert np.allclose(pillar_F_col/pillar_stiffnes, pillar_mean_disp_col, atol=0.01)
+    assert pillar_stiffnes != pillar_k
+
+
+def test_save_pillar_position():
+    folder_path = example_path("real_example_pillar_short")
+    tracker_row_all = np.zeros((10, 100))
+    tracker_col_all = np.zeros((10, 100))
+    info = [[0, 10, 30], [1, 30, 35], [2, 35, 85]]
+    info = np.asarray(info)
+    saved_paths = ia.save_pillar_position(folder_path=folder_path, tracker_row_all=tracker_row_all, tracker_col_all = tracker_col_all, info = info, split_track = False, fname = None)
+    for pa in saved_paths:
+        assert pa.is_file()
+    assert len(saved_paths) == 3
+
+def test_save_pillar_position_split():
     folder_path = example_path("real_example_pillar_short")
     tracker_row_all = np.zeros((10, 100))
     tracker_col_all = np.zeros((10, 100))
@@ -1577,25 +1613,11 @@ def test_save_pillar_tracking():
     pillar_force_col = np.ones(100)
     info = [[0, 10, 30], [1, 30, 35], [2, 35, 85]]
     info = np.asarray(info)
-    saved_paths = ia.save_pillar_tracking(folder_path=folder_path, tracker_row_all=tracker_row_all, tracker_col_all = tracker_col_all, pillar_force_abs = pillar_force_abs, pillar_force_row = pillar_force_row, pillar_force_col = pillar_force_col, info = info, fname=None)
+    saved_paths = ia.save_pillar_position(folder_path=folder_path, tracker_row_all=tracker_row_all, tracker_col_all = tracker_col_all, info = info, split_track = True, fname = None)
     for pa in saved_paths:
         assert pa.is_file()
     assert len(saved_paths) == 6
 
-
-def test_save_one_pillar_tracking():
-    folder_path = example_path("real_example_one_pillar_short")
-    tracker_row_all = np.zeros((10, 100))
-    tracker_col_all = np.zeros((10, 100))
-    pillar_force_abs = np.sqrt(2)*np.ones(100)
-    pillar_force_row = np.ones(100)
-    pillar_force_col = np.ones(100)
-    info = [[0, 10, 30], [1, 30, 35], [2, 35, 85]]
-    info = np.asarray(info)
-    saved_paths = ia.save_pillar_tracking(folder_path=folder_path, tracker_row_all=tracker_row_all, tracker_col_all = tracker_col_all, pillar_force_abs = pillar_force_abs, pillar_force_row = pillar_force_row, pillar_force_col = pillar_force_col, info = info, fname=None)
-    for pa in saved_paths:
-        assert pa.is_file()
-    assert len(saved_paths) == 6
 
 
 def test_save_pillar_tracking_fname():
