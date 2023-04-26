@@ -517,7 +517,7 @@ def test_visualize_sub_domain_strain():
         assert tpl.is_file()
 
     folder_path = example_path("real_example_short_rotated")
-    png_path_list_Ecc, png_path_list_Ecr, png_path_list_Err, gif_path_Ecc, gif_path_Ecr, gif_path_Err, loc_legend_path, timeseries_path_list_Ecc, timeseries_path_list_Ecr, timeseries_path_list_Err = sa.visualize_sub_domain_strain(folder_path, is_rotated = False)
+    png_path_list_Ecc, png_path_list_Ecr, png_path_list_Err, gif_path_Ecc, gif_path_Ecr, gif_path_Err, loc_legend_path, timeseries_path_list_Ecc, timeseries_path_list_Ecr, timeseries_path_list_Err = sa.visualize_sub_domain_strain(folder_path)
     for sap in png_path_list_Ecc:
         assert sap.is_file()
     assert gif_path_Ecc.is_file()
