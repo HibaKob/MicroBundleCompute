@@ -368,23 +368,20 @@ def test_run_sub_domain_strain_analysis():
     saved_paths = sa.run_sub_domain_strain_analysis(input_path)
     for sap in saved_paths:
         assert sap.is_file()
-
-        
-
-def test_run_sub_domain_strain_analysis_non_square():
-    input_path = example_path("real_non_square_example_short_rotated")
-    fps = 1
-    length_scale = 1
+    
+    input_path = example_path("real_example_short_rotated")
     _ = ia.run_tracking(input_path, fps, length_scale)
     saved_paths = sa.run_sub_domain_strain_analysis(input_path)
     for sap in saved_paths:
         assert sap.is_file()
 
+    input_path = example_path("real_non_square_example_short_rotated")
+    _ = ia.run_tracking(input_path, fps, length_scale)
+    saved_paths = sa.run_sub_domain_strain_analysis(input_path)
+    for sap in saved_paths:
+        assert sap.is_file()
 
-def test_run_sub_domain_strain_analysis_small_angle():
     input_path = example_path("real_example_short_small_angle_rotated")
-    fps = 1
-    length_scale = 1
     _ = ia.run_tracking(input_path, fps, length_scale)
     saved_paths = sa.run_sub_domain_strain_analysis(input_path)
     for sap in saved_paths:
