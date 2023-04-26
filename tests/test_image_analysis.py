@@ -1686,18 +1686,19 @@ def test_run_one_pillar_tracking_split():
 
 def test_load_pillar_tracking_results():
     folder_path = example_path("real_example_pillar_short")
+    pillar_stiffnes = None
     pillar_modulus = 1.61
     pillar_width = 163
     pillar_thickness = 33.2    
     pillar_length = 199
     force_location = 163
     length_scale = 1
-    _ = ia.run_pillar_tracking(folder_path, pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale)
-    _, _, _, _, _ = ia.load_pillar_tracking_results(folder_path=folder_path)
+    _, _ = ia.run_pillar_tracking(folder_path, pillar_stiffnes, pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale, split_track = False)
+    _, _, _, _, _ = ia.load_pillar_tracking_results(folder_path=folder_path, split_track = False)
     
     folder_path = example_path("real_example_one_pillar_short")
-    _ = ia.run_pillar_tracking(folder_path, pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale)
-    _, _, _, _, _ = ia.load_pillar_tracking_results(folder_path=folder_path)
+    _, _ = ia.run_pillar_tracking(folder_path, pillar_stiffnes, pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale, split_track = True)
+    _, _, _, _, _ = ia.load_pillar_tracking_results(folder_path=folder_path, split_track = True)
 
     folder_path = example_path("io_testing_examples")
     folder_path_0 = folder_path.joinpath("fake_example_0").resolve()
@@ -1710,48 +1711,22 @@ def test_load_pillar_tracking_results():
     assert error.typename == "FileNotFoundError"
 
 
-# def test_load_one_pillar_tracking_results():
-#     folder_path = example_path("real_example_one_pillar_short")
-#     pillar_modulus = 1.61
-#     pillar_width = 163
-#     pillar_thickness = 33.2    
-#     pillar_length = 199
-#     force_location = 163
-#     length_scale = 1
-#     _ = ia.run_pillar_tracking(folder_path, pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale)
-#     _, _, _, _, _ = ia.load_pillar_tracking_results(folder_path=folder_path)
-#     folder_path = example_path("io_testing_examples")
-#     folder_path_0 = folder_path.joinpath("fake_example_0").resolve()
-#     with pytest.raises(FileNotFoundError) as error:
-#         ia.load_tracking_results(folder_path=folder_path_0)
-#     assert error.typename == "FileNotFoundError"
-#     folder_path_1 = folder_path.joinpath("fake_example_1").resolve()
-#     with pytest.raises(FileNotFoundError) as error:
-#         ia.load_tracking_results(folder_path=folder_path_1, is_rotated=True)
-#     assert error.typename == "FileNotFoundError"
-
-
 def test_visualize_pillar_tracking():
     folder_path = example_path("real_example_pillar_short")
+    pillar_stiffnes = None
     pillar_modulus = 1.61
     pillar_width = 163
     pillar_thickness = 33.2    
     pillar_length = 199
     force_location = 163
     length_scale = 1
-    _ = ia.run_pillar_tracking(folder_path, pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale)
-    saved_path = ia.visualize_pillar_tracking(folder_path)
+    _, _ = ia.run_pillar_tracking(folder_path, pillar_stiffnes, pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale, split_track = False)
+    saved_path = ia.visualize_pillar_tracking(folder_path, split_track = False)
     assert saved_path.is_file
-
-
-def test_visualize_one_pillar_tracking():
+    
     folder_path = example_path("real_example_one_pillar_short")
-    pillar_modulus = 1.61
-    pillar_width = 163
-    pillar_thickness = 33.2    
-    pillar_length = 199
-    force_location = 163
-    length_scale = 1
-    _ = ia.run_pillar_tracking(folder_path, pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale)
-    saved_path = ia.visualize_pillar_tracking(folder_path)
+    _, _ = ia.run_pillar_tracking(folder_path, pillar_stiffnes, pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale, split_track = True)
+    saved_path = ia.visualize_pillar_tracking(folder_path, split_track = True)
     assert saved_path.is_file
+
+    
