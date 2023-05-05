@@ -53,7 +53,7 @@ if track_mode == "pillar":
     force_location = 163 # Provide this value in micrometer (um)
     
     ''' Set to `True` to eliminate drift if observed in pillar results'''
-    split = True
+    split = False
     # run pillar tracking
     ia.run_pillar_tracking(input_folder, pillar_stiffnes, pdms_E, pillar_width, pillar_thickness, pillar_length, force_location, ls, split)
     ia.visualize_pillar_tracking(input_folder, split)
@@ -65,7 +65,7 @@ elif track_mode == "tissue":
     fname = "tissue_mask"
     frame_num = 0
     method = "minimum"
-    ctm.run_create_tissue_mask(input_folder, seg_fcn_num, fname, frame_num, method)
+    # ctm.run_create_tissue_mask(input_folder, seg_fcn_num, fname, frame_num, method)
     
     # run the tracking
     ia.run_tracking(input_folder,fps,ls)

@@ -39,7 +39,7 @@ The roadmap for this collaborative endeavor is as follows:
 
 `Preliminary Dataset + Software` $\mapsto$ `Published Software Package` $\mapsto$ `Published Validation Examples and Tutorial` $\mapsto$ `Larger Dataset + Software Testing and Validation` $\mapsto$ `Automated Analysis of High-Throughput Experiments`
 
-At present (**march 2023**), we have validated our software on a preliminary dataset in addition to a synthetically generated dataset (please find more details on the [SyntheticMicroBundle github page](https://github.com/HibaKob/SyntheticMicroBundle) and the [main manuscript](**add link**)). We also include details on validation against manual tracking [here](**add link to SA**). In the next stage, we are particularly interested in expanding our dataset and performing further software validation and testing. 
+At present (**may 2023**), we have validated our software on a preliminary dataset in addition to a synthetically generated dataset (please find more details on the [SyntheticMicroBundle github page](https://github.com/HibaKob/SyntheticMicroBundle) and the [main manuscript](**add link**)). We also include details on validation against manual tracking [here](**add link to SA**). In the next stage, we are particularly interested in expanding our dataset and performing further software validation and testing. 
  Specifically, we aim to `1)` identify scenarios where our approach fails, `2)` create functions to accomodate these cases, and `3)` compare software results to previous manual approaches for extracting quantitative information, especially for pillar tracking. We will continue to update this repository as the project progresses.
 
 ## Installation Instructions <a name="install"></a>
@@ -201,18 +201,23 @@ ia.run_tracking(input_folder,fps,ls)
     
 # run the tracking visualization
 automatic_color_constraint = True # Put False if manual limits are to be specified
-col_min = 0
-col_max = 3
+col_min_abs = 0
+col_max_abs = 3
+col_min_row = -2
+col_max_row = 2
+col_min_col = -2
+col_max_col = 2
 col_map = plt.cm.viridis
-ia.run_visualization(input_folder, automatic_color_constraint, col_min, col_max, col_map)
+
+ia.run_visualization(input_folder, automatic_color_constraint, col_min_abs, col_max_abs, col_min_row, col_max_row, col_min_col, col_max_col, col_map)
 ```
 
-The function ``run_visualization`` is for visualizing the tracking results. The inputs ``col_max``, ``col_min``, and ``col_map`` are the maximum displacement in pixels, the minimum displacement in pixels, and the [matplotlib colormap](https://matplotlib.org/stable/tutorials/colors/colormaps.html) selected for visualization, respectively. If the input ``automatic_color_constraint`` is put as ``True``, the input values for ``col_max`` and ``col_min`` will be overwritten by the values automatically calculated by the code.  
+The function ``run_visualization`` is for visualizing the tracking results. The inputs ``col_min_*``, ``col_max_*``, and ``col_map`` are the minimum absolute/row/column displacement in pixels, the maximum absolute/row/column displacement in pixels, and the [matplotlib colormap](https://matplotlib.org/stable/tutorials/colors/colormaps.html) selected for visualization, respectively. If the input ``automatic_color_constraint`` is put as ``True``, the input values for ``col_max_*`` and ``col_min_*`` will be overwritten by the values automatically calculated by the code.  
 
 <p align = "center">
 <img alt="absolute displacement" src="tutorials/figs/abs_disp.gif" width="60%" />
 
-The entire tracking process is fully automated and requires very little input from the user. However, in some cases, the user might notice that the identified fiducial markers are too condensed or too sparse. This can be enhanced by tuning a single parameter (``minDistance``) in the ``image_analysis.py`` source code file, ``get_tracking_param_dicts`` function for better coverage of the tissue domain. The default value for ``minDistance`` is 4. We recommend either increasing or decreasing its default value by 1 (``minDistance=5`` or ``minDistance=3``). 
+The entire tracking process is fully automated and requires very little input from the user. 
 ##### Post-tracking rotation
 It is possible that the images may not be aligned with the desired global coordinate system, being in the horizontal and vertical directions for this code. After tracking, it is possible to rotate both the images and the tracking results based on a specified center of rotation and desired horizontal axis vector. Note that rotation must be run after tracking. This was an intentional ordering as rotating the images involves interpolation which will potentially lead to loss of information. To automatically rotate based on the mask, run the code with the following inputs:
 
@@ -240,11 +245,15 @@ To visualize the rotated results, run the ``run_rotation_visualization`` functio
 
 ```bash
 automatic_color_constraint = True # Put False if manual limits are to be specified
-col_min = 0
-col_max = 3
+col_min_abs = 0
+col_max_abs = 3
+col_min_row = -2
+col_max_row = 2
+col_min_col = -2
+col_max_col = 2
 col_map = plt.cm.viridis
 
-ia.run_rotation_visualization(input_folder, automatic_color_constraint=automatic_color_constraint, col_min=col_min, col_max=col_max,col_map = col_map)
+ia.run_rotation_visualization(input_folder, automatic_color_constraint, col_min_abs, col_max_abs, col_min_row, col_max_row, col_min_col, col_max_col, col_map)
 ```
 
 Note: We also provide a function ``run_scale_and_center_coordinates()`` to transform the tracking results (rescale and center). If needed, this should be used as a final step.
@@ -261,6 +270,7 @@ col_sample = col_grid.reshape((-1, 1))
 row_col_sample = np.hstack((row_sample, col_sample))
 fname = "interpolated_rotated"
 ia.run_interpolate(input_folder, row_col_sample, fname, is_rotated=True)
+ia.visualize_interpolate(input_folder, automatic_color_constraint, col_min_abs, col_max_abs, col_min_row, col_max_row, col_min_col, col_max_col, col_map, is_rotated=True, interpolation_fname=fname)
 ```
 
 <p align = "center">
@@ -296,7 +306,7 @@ col_map = plt.cm.RdBu
 sa.visualize_sub_domain_strain(input_folder, automatic_color_constraint, col_min, col_max, col_map, is_rotated = True)
 ```
 
-The input ``pillar_clip_fraction`` allows the user to reduce the size of the region for strain computation by clipping from the tissue mask. The inputs ``clip_columns`` and ``clip_rows`` indicate whether the clipping is to take place in the column (horizontal) direction, row (vertical) direction, or both in directions. 
+The input ``pillar_clip_fraction`` allows the user to reduce the size of the region for strain computation by clipping from the tissue mask. The inputs ``clip_columns`` and ``clip_rows`` indicate whether the clipping is to take place in the column (horizontal) direction, row (vertical) direction, or in both directions. 
 
 Alternatively, manual subdomain extents can be specified for subdomain strain computation. Simply set the input ``manual_sub = True`` and provide the corners of a rectangular domain as an input to ``sub_extents = [r0,r1,c0,c1]`` where ``r0,c0`` is the top left corner and ``r1,c1`` is the bottom right corner.
 
@@ -325,19 +335,23 @@ As aforementioned, the user should provide at least one pillar mask in the masks
 ##### Fiducial marker identification, tracking, and visualization
 The function ``run_pillar_tracking`` will automatically read the data specified by the input folder (tiff files and mask file), run tracking, and save the results as text files.
 
-It is essential to provide the ``run_pillar_tracking`` function with five pillar parameters: ``1)`` pillar stiffness (pdms_E) in $MPa$, ``2)`` pillar width in $\mu m$, ``3)`` pillar thickness in $\mu m$, ``4)`` pillar length in $\mu m$, ``5)``force application location in $\mu m$, and one movie parameter ``1)`` the frames per second (fps). We currently output all displacement results in units of pixels and force results in units of $\mu N$. We note that for calculating the pillar forces, we follow the approach detailed in [this paper](https://www.pnas.org/doi/full/10.1073/pnas.0900174106)[1], where the pillar is modeled as a cantilever. We are aware that different setups may have different pillar geometries and we plan to accomodate for this variation in future iterations of the pillar tracking functionality. 
+It is essential to provide the ``run_pillar_tracking`` function with either the value of the pillar stiffness or five pillar parameters: ``1)`` pdms Young's modulus (pdms_E) in $MPa$, ``2)`` pillar width in $\mu m$, ``3)`` pillar thickness in $\mu m$, ``4)`` pillar length in $\mu m$, ``5)``force application location in $\mu m$, and one movie parameter ``1)`` the frames per second (fps). We currently output all displacement results in units of pixels and force results in units of $\mu N$. We note that for calculating the pillar forces, we follow the approach detailed in [this paper](https://www.pnas.org/doi/full/10.1073/pnas.0900174106)[1], where the pillar is modeled as a rectangular cantilever. We are aware that different setups may have different pillar geometries and we plan to accomodate for this variation in future iterations of the pillar tracking functionality. 
  
 ```bash
+'''Pillar stiffness can be directly provided: replace `None` by a value'''
+pillar_stiffnes = None # Provide this value in Newton per meter (N/m) 
 pdms_E = 1.61 # Provide this value in MPa
 pillar_width = 163 # Provide this value in micrometer (um)
 pillar_thickness = 33.2 # Provide this value in micrometer (um)
 pillar_length = 199.3 # Provide this value in micrometer (um)
 force_location = 163 # Provide this value in micrometer (um)
 ls = 1
+''' Set to `True` to eliminate drift if observed in pillar results'''
+split = False
 
 # run pillar tracking
-ia.run_pillar_tracking(input_folder, pdms_E, pillar_width, pillar_thickness, pillar_length, force_location, ls)
-ia.visualize_pillar_tracking(input_folder)
+ia.run_pillar_tracking(input_folder, pillar_stiffnes, pdms_E, pillar_width, pillar_thickness, pillar_length, force_location, ls, split)
+ia.visualize_pillar_tracking(input_folder, split)
 ```
 
 The function ``visualize_pillar_tracking`` is for visualizing the pillar tracking results consisting of timeseries plots of mean absolute pillar displacement and force.
@@ -388,7 +402,7 @@ And it will automatically run the example specified by the ``files/tutorial_exam
 |                |___"*.TIF"
 |        |___ masks
 |                |___"tissue_mask.txt"
-|                |___"tissue_mask.png"      (optional)
+|                |___"tissue_mask.png"        (optional)
 |                |___"pillar_mask_1.txt"      
 |                |___"pillar_mask_1.png"      (optional)
 |                |___"pillar_mask_2.txt"
@@ -451,8 +465,10 @@ And it will automatically run the example specified by the ``files/tutorial_exam
 |                |___"sub_domain_strain_Err.gif"
 |        |___ pillar_results
 |                |___"info.txt"
-|                |___"pillar%i_row.txt"
-|                |___"pillar%i_col.txt"
+|                |___"pillar%i_row.txt"            (if split = False)
+|                |___"pillar%i_col.txt"            (if split = False)
+                 |___"pillar%i_beat%i_row.txt"      (if split = True)
+|                |___"pillar%i_beat%i_col.txt"      (if split = True)
 |                |___"pillar%i_pillar_force_abs.txt"
 |                |___"pillar%i_pillar_force_row.txt"
 |                |___"pillar%i_pillar_force_col.txt"
@@ -500,11 +516,14 @@ The ``"row"`` and ``"col"`` files contain information regarding the row and colu
 * ``beat%i_row.txt`` will contain the image row positions of each marker for the beat specified by ``%i``
 * ``beat%i_col.txt`` will contain the image column positions of each marker for the beat specified by ``%i``
 
-For pillar tracking, we do not perform time segmentation and hence, there will be one row-position file and one col-position file for the entire movie for each tracked pillar.Specifically:
+For pillar tracking, we do not perform time segmentation by default, and hence, there will be one row-position file and one col-position file for the entire movie for each tracked pillar. Specifically:
 * ``pillar%i_row.txt`` will contain the image row positions of each marker for the pillar specified by ``%i``
 * ``pillar%i_col.txt`` will contain the image column positions of each marker for the pillar specified by ``%i``
+However, if the optional time segmentation step is run to remove any drift present in the tracked pillar results, there will be one row-position file and one col-position file for each beat as follows: 
+* ``pillar%i_beat%i_row.txt`` will contain the image row positions of each marker for the pillar specified by ``%i`` and beat ``%i``
+* ``pillar%i_beat%i_col.txt`` will contain the image column positions of each marker for the pillar specified by ``%i``  and beat ``%i``
 
-In these text files, the rows correspond to individual markers, while the columns correspond to the frames. For example, if a file has dimension ``AA x BB``, there will be ``AA`` markers and ``BB`` frames. For tissue tracking, the number of frames will be the number of frames per beat. For pillar tracking, the number of frames will correspond to the total number of frames tracked.
+In these text files, the rows correspond to individual markers, while the columns correspond to the frames. For example, if a file has dimension ``AA x BB``, there will be ``AA`` markers and ``BB`` frames. For tissue tracking and pillar tracking with time segmentation, the number of frames will be the number of frames per beat. For pillar tracking without time segmentation, the number of frames will correspond to the total number of frames tracked.
 
 When ``run_rotation`` function is implemented, the rotated row and column positions of the tracked points are then stored in ``rotated_beat%i_row.txt`` and ``rotated_beat%i_col.txt``. When interpolation is run, the interpolated row and column positions (starting from the sample points in frame 0 of each beat) are stored in ``interpolated_rotated_beat%i_row.txt`` and ``interpolated_rotated_beat%i_col.txt``.
 
@@ -512,7 +531,7 @@ The files ``strain__beat%i_row.txt`` and ``strain__beat%i_col.txt`` contain the 
 
 Similarly, the files ``strain__beat%i_Fcc.txt``, ``strain__beat%i_Fcr.txt``, ``strain__beat%i_Frc.txt``, and ``strain__beat%i_Frr.txt`` will have the corresponding component of the deformation gradient stored for each subdomain per beat. Again, if a file has dimension ``AA x BB``, this corresponds to ``AA`` subdomains and ``BB`` frames per beat. 
 
-Finally, the ``pillar%i_pillar_force_abs.txt``, ``pillar%i_pillar_force_row.txt``, and ``pillar%i_pillar_force_col.txt`` files will store results corresponding to the mean absolute pillar force, mean pillar force in the row direction, and mean pillar force in the column direction respectively for each pillar. The files store timeseries results and have lengths equal to the number of input movie frames.
+Finally, the ``pillar%i_pillar_force_abs.txt``, ``pillar%i_pillar_force_row.txt``, and ``pillar%i_pillar_force_col.txt`` files will store results corresponding to the mean absolute pillar force, mean pillar force in the row direction, and mean pillar force in the column direction respectively for each pillar. The files store timeseries results and have lengths equal to the number of input movie frames when time segmentaion is skipped. Alternatively, if time segmentation is implemented, the timeseries results will have a length equal to the number of frames corresponding to the tracked beats (i.e. excluding the first and last beats). 
 
 ### Understanding the visualization results
 For tissue tracking, the outputs of running the visualization codes will be stored in the ``visualizations`` folder.
@@ -533,7 +552,7 @@ For the strain tracking results, we plot $E_{cc}$, $E_{cr}$, and $E_{rrr}$ for e
 
 In all cases, the output visualizations are stored as ``.png`` and ``.gif`` files, except for plots which are stored as ``.pdf`` files for higher resolution.
 
-For pillar tracking, the outputs of running the visualization codes will be stored in the ``pillar_visualizations`` folder. Three timeseries plots should be contained here: ``pillar_directional_displacement.pdf``, ``pillar_mean_absolute_displacement.pdf``, and ``pillar_force_absolute.pdf`` and correspond to the varition of the pillar mean row and column displacements, pillar mean absolute displacement, and pillar absolute force with respect to frame number. We note here that if 2 pillars are tracked, the results will be visualized on the same plots.
+For pillar tracking, the outputs of running the visualization codes will be stored in the ``pillar_visualizations`` folder. Three timeseries plots should be contained here: ``pillar_directional_displacement.pdf``, ``pillar_mean_absolute_displacement.pdf``, and ``pillar_force_absolute.pdf`` and correspond to the variation of the pillar mean row and column displacements, pillar mean absolute displacement, and pillar absolute force with respect to frame number. We note here that if 2 pillars are tracked, the results will be visualized on the same plots.
 
 <p align = "center">
 <img alt="pillar directional displacement visualization" src="tutorials/figs/Visualizations/pillar_directional_displacement.png" width="100%" />
