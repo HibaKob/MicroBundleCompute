@@ -72,17 +72,21 @@ elif track_mode == "tissue":
     
     # run the tracking visualization
     automatic_color_constraint = True # Put False if manual limits are to be specified
-    col_min = 0
-    col_max = 3
+    col_min_abs = 0
+    col_max_abs = 3
+    col_min_row = -2
+    col_max_row = 2
+    col_min_col = -2
+    col_max_col = 2
     col_map = plt.cm.viridis
-    ia.run_visualization(input_folder, automatic_color_constraint, col_min, col_max, col_map)
+    ia.run_visualization(input_folder, automatic_color_constraint, col_min_abs, col_max_abs, col_min_row, col_max_row, col_min_col, col_max_col, col_map)
     
     # rotate and interpolate tracking results
     # rotate the results
     input_mask = True  # this will use the mask to determine the rotation vector.
     ia.run_rotation(input_folder, input_mask)
     
-    ia.run_rotation_visualization(input_folder, automatic_color_constraint=automatic_color_constraint, col_min=col_min, col_max=col_max, col_map=col_map)
+    ia.run_rotation_visualization(input_folder, automatic_color_constraint, col_min_abs, col_max_abs, col_min_row, col_max_row, col_min_col, col_max_col, col_map)
 
     # interpolate results
     row_vec = np.linspace(215, 305, 12)
@@ -96,7 +100,7 @@ elif track_mode == "tissue":
     ia.run_interpolate(input_folder, row_col_sample, fname, is_rotated=True)
     
     # visualize interpolated tracking results
-    ia.visualize_interpolate(input_folder, automatic_color_constraint=automatic_color_constraint, col_min=col_min, col_max=col_max, col_map=col_map, is_rotated=True, interpolation_fname=fname)
+    ia.visualize_interpolate(input_folder, automatic_color_constraint, col_min_abs, col_max_abs, col_min_row, col_max_row, col_min_col, col_max_col, col_map, is_rotated=True, interpolation_fname=fname)
     
     # run the strain analysis (will automatically rotate based on the mask)
     pillar_clip_fraction = 0.5

@@ -406,8 +406,6 @@ def test_frame_0_valley(timeseries: np.ndarray, info: np.ndarray):
     min_valley_mean_abs_disp = np.min(timeseries[valleys])
     tracked_timeseries = timeseries[valleys[0]:]
     min_nonzero_mean_abs_disp = np.min(tracked_timeseries[tracked_timeseries!=0])
-    print('min_valley_mean_abs_disp',min_valley_mean_abs_disp)
-    print('min_nonzero_mean_abs_disp',min_nonzero_mean_abs_disp)
     valley_error = (min_valley_mean_abs_disp - min_nonzero_mean_abs_disp)/min_nonzero_mean_abs_disp*100
     if valley_error <= 20:
         pass
@@ -1269,8 +1267,12 @@ def visualize_interpolate(
     is_translated: bool = False,
     interpolation_fname: str = "interpolation",
     automatic_color_constraint: bool = True,
-    col_min: Union[int, float] = 0,
-    col_max: Union[int, float] = 10,
+    col_min_abs: Union[int, float] = 0, 
+    col_max_abs: Union[int, float] = 8, 
+    col_min_row: Union[int, float] = -3, 
+    col_max_row: Union[int, float] = 4.5, 
+    col_min_col: Union[int, float] = -3, 
+    col_max_col: Union[int, float] = 4.5,
     col_map: object = plt.cm.viridis
 ) -> List:
     """Given folder path and plotting information. Will run and save visualization."""
@@ -1303,11 +1305,11 @@ def visualize_interpolate(
                 tiff_list = rotate_imgs_all(tiff_list, ang, center_row, center_col) 
     if automatic_color_constraint:
         # find limits of colormap
-        clim_abs_min, clim_abs_max, clim_row_min, clim_row_max, clim_col_min, clim_col_max = compute_min_max_disp(tracker_row_all,tracker_col_all,info)
+        col_min_abs, col_max_abs, col_min_row, col_max_row, col_min_col, col_max_col = compute_min_max_disp(tracker_row_all,tracker_col_all,info)
     # create pngs
-    abs_png_path_list = create_pngs(folder_path, tiff_list, tracker_row_all, tracker_col_all, info, "abs", clim_abs_min, clim_abs_max, col_map, is_rotated=is_rotated, include_interp=True, interp_tracker_row_all=interp_tracker_row_all, interp_tracker_col_all=interp_tracker_col_all, save_eps = False)
-    row_png_path_list = create_pngs(folder_path, tiff_list, tracker_row_all, tracker_col_all, info, "row", clim_row_min, clim_row_max, col_map, is_rotated=is_rotated, include_interp=True, interp_tracker_row_all=interp_tracker_row_all, interp_tracker_col_all=interp_tracker_col_all, save_eps = False)
-    col_png_path_list = create_pngs(folder_path, tiff_list, tracker_row_all, tracker_col_all, info, "col", clim_col_min, clim_col_max, col_map, is_rotated=is_rotated, include_interp=True, interp_tracker_row_all=interp_tracker_row_all, interp_tracker_col_all=interp_tracker_col_all, save_eps = False)
+    abs_png_path_list = create_pngs(folder_path, tiff_list, tracker_row_all, tracker_col_all, info, "abs", col_min_abs, col_max_abs, col_map, is_rotated=is_rotated, include_interp=True, interp_tracker_row_all=interp_tracker_row_all, interp_tracker_col_all=interp_tracker_col_all, save_eps = False)
+    row_png_path_list = create_pngs(folder_path, tiff_list, tracker_row_all, tracker_col_all, info, "row", col_min_row, col_max_row, col_map, is_rotated=is_rotated, include_interp=True, interp_tracker_row_all=interp_tracker_row_all, interp_tracker_col_all=interp_tracker_col_all, save_eps = False)
+    col_png_path_list = create_pngs(folder_path, tiff_list, tracker_row_all, tracker_col_all, info, "col", col_min_col, col_max_col, col_map, is_rotated=is_rotated, include_interp=True, interp_tracker_row_all=interp_tracker_row_all, interp_tracker_col_all=interp_tracker_col_all, save_eps = False)
     # create gif
     abs_gif_path = create_gif(folder_path, abs_png_path_list, "abs", is_rotated=is_rotated, include_interp=True)
     row_gif_path = create_gif(folder_path, row_png_path_list, "row", is_rotated=is_rotated, include_interp=True)
@@ -1518,7 +1520,6 @@ def load_pillar_tracking_results(folder_path: Path, split_track: bool = False, f
         
     if split_track:  
         num_files = len(glob.glob(str(res_folder_path) + "/" + fname + "beat*.txt"))
-        print('files' ,str(res_folder_path) + "/" + fname + "beat*.txt")
         num_beats = int((num_files) / 2)
         pillar_row_all = []
         pillar_col_all = []
