@@ -313,7 +313,7 @@ Alternatively, manual subdomain extents can be specified for subdomain strain co
 For subdomain division, choosing ``tile_style = 1`` will fit the maximum number of tiles with the specified side length ``tile_dim_pix``. For ``tile_style = 2``, the algorithm will use the specified grid size (``num_tile_row``, ``num_tile_col``) and adjust the side length. In other words, ``tile_style = 1`` will fix ``tile_dim_pix`` and adapt ``num_tile_row`` and ``num_tile_col`` accordingly, while ``tile_style = 2`` will retain the input values for ``num_tile_row`` and ``num_tile_col`` and calculate an appropriate ``tile_dim_pix``.
 
 <p align = "center">
-<img alt="sub-domain visualization" src="tutorials/figs/strain_sub_domain_key.png" width="33%" />
+<img alt="sub-domain visualization" src="tutorials/figs/strain_sub_domain_key.png" width="44%" />
 &nbsp
 &nbsp
 <img alt="sub-domain strains" src="tutorials/figs/strain_timeseries_Ecc_beat0.png" width="44%" />
