@@ -21,20 +21,20 @@ We will configure these once we make the repository public:
 * [Acknowledgements](#acknowledge)
 
 ## Project Summary <a name="summary"></a>
-The MicroBundleCompute software is developed as a multi-purpose tool for analyzing heterogeneous cardiac microtissue deformation and strain from brightfield movies of beating microtissue. In this repository, we share the source code, steps to download and install the software, tutorials on how to run the different main and optional functionalities of the software, and details about code validation. **For more information, please refer to the main [manuscript](add link).**
+The MicroBundleCompute software is developed as a multi-purpose tool for analyzing heterogeneous cardiac microbundle deformation and strain from brightfield movies of beating microbundles. In this repository, we share the source code, steps to download and install the software, tutorials on how to run the different main and optional functionalities of the software, and details about code validation. **For more information, please refer to the main [manuscript](add link).**
 
-Briefly, the software requires two main inputs: `1)` a binary mask of the tissue and `2)` consecutive movie frames of the beating microtissue. The mask can be either generated manually or externally, or automatically using one of the software’s built-in functionalities. Tracking points identified as Shi-Tomasi corner points are then computed on the first frame of the movie and tracked across all frames. From this preliminary tracking, we can identify individual beats. This allows us to perform the analysis per beat by tracking the marker points identified at the first frame of each beat across the beat frames. From these tracked points, we are able to compute full-field displacements,
-and subdomain-averaged strains. We also include post-processing functionalities to rotate the images and tracking results as well as interpolate the results at query points. To visualize the results, the software outputs timeseries plots per beat and movies of full-field and subdomain-averaged results. Finally, we validate our software against synthetically generated beating microtissue data with a known ground truth and against basic manual tracking.
+Briefly, the software requires two main inputs: `1)` a binary mask of the cardiac tissue or muscle bundle and `2)` consecutive movie frames of the beating microbundle. The mask can be either generated manually or externally, or automatically using one of the software’s built-in functionalities. Tracking points identified as Shi-Tomasi corner points are then computed on the first frame of the movie and tracked across all frames. From this preliminary tracking, we can identify individual beats. This allows us to perform the analysis per beat by tracking the marker points identified at the first frame of each beat across the beat frames. From these tracked points, we are able to compute full-field displacements,
+and subdomain-averaged strains. We also include post-processing functionalities to rotate the images and tracking results as well as interpolate the results at query points. To visualize the results, the software outputs timeseries plots per beat and movies of full-field and subdomain-averaged results. Finally, we validate our software against synthetically generated beating microbundle data with a known ground truth and against basic manual tracking.
 
 <p align = "center">
 <img alt="code pipeline" src="tutorials/figs/code_pipeline.png" width="95%" />
 
-Additionally, the user can specify to track the pillars or posts to which the microtissue is attached. In this case, a mask for the pillars (posts) should be provided. The outputs for this tracking option are timeseries plots of the pillars' mean absolute displacement and force results. We note that this additional functionality has not been vigorously validated at the moment.
+Additionally, the user can specify to track the pillars or posts to which the microbundle is attached. In this case, a mask for the pillars (posts) should be provided. The outputs for this tracking option are timeseries plots of the pillars' mean absolute displacement and force results. We note that this additional functionality has not been vigorously validated at the moment.
 
 We are also adding new functionalities to the code as well as enhancing the software based on user feedback. Please check our [to-do list]((#todo)).
 
 ## Project Roadmap <a name="roadmap"></a>
-The ultimate goal of this project is to develop and disseminate a comprehensive software for data curation and analysis from lab-grown cardiac microtissue on different experimental constructs. Prior to the initial dissemination of the current version, we have tested our code on approximately 30 examples provided by 3 different labs who implement different techniques. This allowed us to identify challenging examples for the software and improve our approach. We hope to further expand both our testing dataset and list of contributors.
+The ultimate goal of this project is to develop and disseminate a comprehensive software for data curation and analysis from lab-grown cardiac microbundle on different experimental constructs. Prior to the initial dissemination of the current version, we have tested our code on approximately 30 examples provided by 3 different labs who implement different techniques. This allowed us to identify challenging examples for the software and improve our approach. We hope to further expand both our testing dataset and list of contributors.
 The roadmap for this collaborative endeavor is as follows:
 
 `Preliminary Dataset + Software` $\mapsto$ `Published Software Package` $\mapsto$ `Published Validation Examples and Tutorial` $\mapsto$ `Larger Dataset + Software Testing and Validation` $\mapsto$ `Automated Analysis of High-Throughput Experiments`
@@ -192,8 +192,8 @@ from microbundlecompute import image_analysis as ia
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-fps = 1 
-ls = 1
+fps = 30 
+ls = 4
 
 input_folder = Path(folder_path)
  # run the tracking
@@ -287,7 +287,7 @@ from microbundlecompute import strain_analysis as sa
 # run the strain analysis (will automatically rotate based on the mask)
 pillar_clip_fraction = 0.5
 clip_columns = True
-clip_rows = True
+clip_rows = False
 shrink_row = 0.1
 shrink_col = 0.1
 tile_dim_pix = 40
@@ -335,22 +335,29 @@ As aforementioned, the user should provide at least one pillar mask in the masks
 ##### Fiducial marker identification, tracking, and visualization
 The function ``run_pillar_tracking`` will automatically read the data specified by the input folder (tiff files and mask file), run tracking, and save the results as text files.
 
-It is essential to provide the ``run_pillar_tracking`` function with either the value of the pillar stiffness or five pillar parameters: ``1)`` pdms Young's modulus (pdms_E) in $MPa$, ``2)`` pillar width in $\mu m$, ``3)`` pillar thickness in $\mu m$, ``4)`` pillar length in $\mu m$, ``5)``force application location in $\mu m$, and one movie parameter ``1)`` the frames per second (fps). We currently output all displacement results in units of pixels and force results in units of $\mu N$. We note that for calculating the pillar forces, we follow the approach detailed in [this paper](https://www.pnas.org/doi/full/10.1073/pnas.0900174106)[1], where the pillar is modeled as a rectangular cantilever. We are aware that different setups may have different pillar geometries and we plan to accomodate for this variation in future iterations of the pillar tracking functionality. 
+It is essential to provide the ``run_pillar_tracking`` function with either the value of the pillar stiffness or the pillar profile as either ``rectangular`` or ``circular`` and the relevant pillar parameters: ``1)`` pdms Young's modulus (pdms_E) in $MPa$, ``2)`` pillar width in $\mu m$, ``3)`` pillar thickness in $\mu m$, ``4`` pillar diameter in $\mu m$, ``5)`` pillar length in $\mu m$, ``6)``force application location in $\mu m$, and one movie parameter ``1)`` the length scale (ls). We currently output all displacement results in units of pixels and force results in units of $\mu N$. We note that for calculating the pillar forces, we follow the approach detailed in [this paper](https://www.pnas.org/doi/full/10.1073/pnas.0900174106)[1], where the pillar is modeled as a cantilever. We are aware that different setups may have different pillar geometries and we plan to accomodate for this variation in future iterations of the pillar tracking functionality. 
  
 ```bash
 '''Pillar stiffness can be directly provided: replace `None` by a value'''
-pillar_stiffnes = None # Provide this value in Newton per meter (N/m) 
+pillar_stiffnes = 2.677 # Provide this value in microNewton per micrometer (uN/um) 
+pillar_profile = 'circular' # Pillar profile can be either "rectangular" or "circular"
+
+''' Or calculated based on the specified pillar parameters (Change as suitable)'''
 pdms_E = 1.61 # Provide this value in MPa
-pillar_width = 163 # Provide this value in micrometer (um)
-pillar_thickness = 33.2 # Provide this value in micrometer (um)
 pillar_length = 199.3 # Provide this value in micrometer (um)
 force_location = 163 # Provide this value in micrometer (um)
-ls = 1
+# If rectangular: 
+pillar_width = 163 # Provide this value in micrometer (um)
+pillar_thickness = 33.2 # Provide this value in micrometer (um)
+# If circular:
+pillar_diameter = 400 # Provide this value in micrometer (um)
+
+ls = 4
 ''' Set to `True` to eliminate drift if observed in pillar results'''
 split = False
 
 # run pillar tracking
-ia.run_pillar_tracking(input_folder, pillar_stiffnes, pdms_E, pillar_width, pillar_thickness, pillar_length, force_location, ls, split)
+ia.run_pillar_tracking(input_folder, pillar_stiffnes, pillar_profile, pdms_E, pillar_width, pillar_thickness, pillar_diameter, pillar_length, force_location, ls, split)
 ia.visualize_pillar_tracking(input_folder, split)
 ```
 

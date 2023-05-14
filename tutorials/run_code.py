@@ -19,8 +19,8 @@ self_path = self_path_file.resolve().parent
 input_folder = self_path.joinpath(input_folder_str).resolve()
 
 """Movie parameters: frames per second(fps) and length scale (ls) as micrometers/pixel"""
-fps = 1 
-ls = 1
+fps = 30 
+ls = 4
     
 """Movie preprocessing: Optional"""
 """1. apply a kernel filter"""
@@ -43,8 +43,8 @@ track_mode = "tissue" # "pillar" or "tissue"
 
 if track_mode == "pillar":
     '''Pillar stiffness can be directly provided: replace `None` by a value'''
-    pillar_stiffnes = None # Provide this value in microNewton per micrometer (uN/um) 
-    pillar_profile = 'rectangular' # Pillar profile can be either "rectangular" or "circular"
+    pillar_stiffnes = 2.677 # Provide this value in microNewton per micrometer (uN/um) 
+    pillar_profile = 'circular' # Pillar profile can be either "rectangular" or "circular"
     
     ''' Or calculated based on the specified pillar parameters (Change as suitable)'''
     pdms_E = 1.61 # Provide this value in MPa
@@ -60,7 +60,7 @@ if track_mode == "pillar":
     ''' Set to `True` to eliminate drift if observed in pillar results'''
     split = False
     # run pillar tracking
-    ia.run_pillar_tracking(input_folder, pillar_stiffnes, pdms_E, pillar_width, pillar_thickness, pillar_diameter, pillar_length, force_location, ls, split)
+    ia.run_pillar_tracking(input_folder, pillar_stiffnes, pillar_profile, pdms_E, pillar_width, pillar_thickness, pillar_diameter, pillar_length, force_location, ls, split)
     ia.visualize_pillar_tracking(input_folder, split)
 
 elif track_mode == "tissue":
@@ -105,7 +105,7 @@ elif track_mode == "tissue":
     ia.run_interpolate(input_folder, row_col_sample, fname, is_rotated=True)
     
     # visualize interpolated tracking results
-    ia.visualize_interpolate(input_folder, automatic_color_constraint, col_min_abs, col_max_abs, col_min_row, col_max_row, col_min_col, col_max_col, col_map, is_rotated=True, interpolation_fname=fname)
+    ia.visualize_interpolate(input_folder, automatic_color_constraint=automatic_color_constraint, col_min_abs=col_min_abs, col_max_abs=col_max_abs, col_min_row=col_min_row, col_max_row=col_max_row, col_min_col=col_min_col, col_max_col=col_max_col, col_map=col_map, is_rotated=True, interpolation_fname=fname)
     
     # run the strain analysis (will automatically rotate based on the mask)
     pillar_clip_fraction = 0.5
