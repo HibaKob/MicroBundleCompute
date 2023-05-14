@@ -1505,20 +1505,34 @@ def test_visualize_interpolate_rotated_small_angle():
 def test_compute_pillar_secnd_moment():
     pillar_width = 163
     pillar_thickness = 33.2
-    pillar_secnd_moment_area = ia.compute_pillar_secnd_moment(pillar_width, pillar_thickness)
+    pillar_diameter = 40
+    pillar_secnd_moment_area = ia.compute_pillar_secnd_moment_rectangular(pillar_width, pillar_thickness)
     assert np.isclose(pillar_secnd_moment_area, (pillar_width*(pillar_thickness)**3)/12, atol=1)
+    pillar_secnd_moment_area = ia.compute_pillar_secnd_moment_circular(pillar_diameter)
+    assert np.isclose(pillar_secnd_moment_area, (np.pi*(pillar_diameter)**4)/64, atol=1)
 
 
 def test_compute_pillar_stiffnes():
     pillar_modulus = 1.61
     pillar_width = 163
-    pillar_thickness = 33.2    
+    pillar_thickness = 33.2 
+    pillar_diameter = 40   
     pillar_length = 199
     force_location = 163
-    I = ia.compute_pillar_secnd_moment(pillar_width, pillar_thickness)
-    pillar_stiffness_gt = (6*pillar_modulus*I)/((force_location**2)*(3*pillar_length-force_location))
-    pillar_stiffness = ia.compute_pillar_stiffnes(pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location)
-    assert np.isclose(pillar_stiffness, pillar_stiffness_gt, atol=0.01)
+    pillar_profile_rect = 'rectangular'
+    pillar_profile_circ = 'circular'
+    pillar_profile_wrong = 'circ'
+    I_rect = ia.compute_pillar_secnd_moment_rectangular(pillar_width, pillar_thickness)
+    I_circ = ia.compute_pillar_secnd_moment_circular(pillar_diameter)
+    pillar_stiffness_gt_rect = (6*pillar_modulus*I_rect)/((force_location**2)*(3*pillar_length-force_location))
+    pillar_stiffness_gt_circ = (6*pillar_modulus*I_circ)/((force_location**2)*(3*pillar_length-force_location))
+    pillar_stiffness_rect = ia.compute_pillar_stiffnes(pillar_profile_rect, pillar_modulus, pillar_width, pillar_thickness, pillar_diameter, pillar_length, force_location)
+    pillar_stiffness_circ = ia.compute_pillar_stiffnes(pillar_profile_circ, pillar_modulus, pillar_width, pillar_thickness, pillar_diameter, pillar_length, force_location)
+    pillar_stiffness_wrong = ia.compute_pillar_stiffnes(pillar_profile_wrong, pillar_modulus, pillar_width, pillar_thickness, pillar_diameter, pillar_length, force_location)
+    assert np.isclose(pillar_stiffness_rect, pillar_stiffness_gt_rect, atol=0.01)
+    assert np.isclose(pillar_stiffness_circ, pillar_stiffness_gt_circ, atol=0.01)
+    assert np.isclose(pillar_stiffness_wrong, 0, atol=0.01)
+     
 
 
 def test_compute_pillar_force():
@@ -1546,9 +1560,11 @@ def test_compute_pillar_position_timeseries():
 
 def test_pillar_force_all_steps():
     pillar_stiffnes = None
+    pillar_profile = 'rectangular'
     pillar_modulus = 1.61
     pillar_width = 163
-    pillar_thickness = 33.2    
+    pillar_thickness = 33.2   
+    pillar_diameter = 40  
     pillar_length = 199
     force_location = 163
     num_frames = 100
@@ -1557,9 +1573,9 @@ def test_pillar_force_all_steps():
     pillar_mean_disp_col = np.ones(num_frames)
     length_scale = 1
 
-    pillar_k = ia.compute_pillar_stiffnes(pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location)
-    pillar_F_abs, pillar_F_row, pillar_F_col = ia.pillar_force_all_steps(pillar_mean_abs_disp,pillar_mean_disp_row, pillar_mean_disp_col, pillar_stiffnes, 
-                                                                         pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale)
+    pillar_k = ia.compute_pillar_stiffnes(pillar_profile, pillar_modulus, pillar_width, pillar_thickness, pillar_diameter, pillar_length, force_location)
+    pillar_F_abs, pillar_F_row, pillar_F_col = ia.pillar_force_all_steps(pillar_mean_abs_disp,pillar_mean_disp_row, pillar_mean_disp_col, pillar_stiffnes, pillar_profile, 
+                                                                         pillar_modulus, pillar_width, pillar_thickness, pillar_diameter, pillar_length, force_location, length_scale)
     assert len(pillar_F_abs) == num_frames
     assert np.allclose(pillar_F_abs/pillar_k, pillar_mean_abs_disp, atol=0.01)
     assert len(pillar_F_row) == num_frames
@@ -1570,9 +1586,11 @@ def test_pillar_force_all_steps():
 
 def test_pillar_force_all_steps_given_K():
     pillar_stiffnes = 0.42
+    pillar_profile = 'rectangular'
     pillar_modulus = 1.61
     pillar_width = 163
-    pillar_thickness = 33.2    
+    pillar_thickness = 33.2 
+    pillar_diameter = 40    
     pillar_length = 199
     force_location = 163
     num_frames = 100
@@ -1581,9 +1599,9 @@ def test_pillar_force_all_steps_given_K():
     pillar_mean_disp_col = np.ones(num_frames)
     length_scale = 1
 
-    pillar_F_abs, pillar_F_row, pillar_F_col = ia.pillar_force_all_steps(pillar_mean_abs_disp,pillar_mean_disp_row, pillar_mean_disp_col, pillar_stiffnes, 
-                                                                        pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale)
-    pillar_k = ia.compute_pillar_stiffnes(pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location)
+    pillar_F_abs, pillar_F_row, pillar_F_col = ia.pillar_force_all_steps(pillar_mean_abs_disp,pillar_mean_disp_row, pillar_mean_disp_col, pillar_stiffnes, pillar_profile, 
+                                                                         pillar_modulus, pillar_width, pillar_thickness, pillar_diameter, pillar_length, force_location, length_scale)
+    pillar_k = ia.compute_pillar_stiffnes(pillar_profile, pillar_modulus, pillar_width, pillar_thickness, pillar_diameter, pillar_length, force_location)
     assert len(pillar_F_abs) == num_frames
     assert np.allclose(pillar_F_abs/pillar_stiffnes, pillar_mean_abs_disp, atol=0.01)
     assert len(pillar_F_row) == num_frames
@@ -1654,14 +1672,16 @@ def test_save_pillar_force_fname():
 def test_run_pillar_tracking():
     folder_path = example_path("real_example_pillar_short")
     pillar_stiffnes = None
+    pillar_profile = 'rectangular'
     pillar_modulus = 1.61
     pillar_width = 163
-    pillar_thickness = 33.2    
+    pillar_thickness = 33.2 
+    pillar_diameter = 40    
     pillar_length = 199
     force_location = 163
     length_scale = 1
     split_track = False
-    saved_paths_pos, saved_paths_force = ia.run_pillar_tracking(folder_path, pillar_stiffnes, pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale, split_track)
+    saved_paths_pos, saved_paths_force = ia.run_pillar_tracking(folder_path, pillar_stiffnes, pillar_profile, pillar_modulus, pillar_width, pillar_thickness, pillar_diameter, pillar_length, force_location, length_scale, split_track)
     for pa_p in saved_paths_pos:
         assert pa_p.is_file()
     for pa_f in saved_paths_force:
@@ -1669,15 +1689,17 @@ def test_run_pillar_tracking():
 
 
 def test_run_one_pillar_tracking_split():
-    folder_path = example_path("real_example_one_pillar_short")
+    folder_path = example_path("real_example_pillar_short")
     pillar_stiffnes = None
+    pillar_profile = 'rectangular'
     pillar_modulus = 1.61
     pillar_width = 163
-    pillar_thickness = 33.2    
+    pillar_thickness = 33.2 
+    pillar_diameter = 40    
     pillar_length = 199
     force_location = 163
     length_scale = 1
-    saved_paths_pos, saved_paths_force = ia.run_pillar_tracking(folder_path, pillar_stiffnes, pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale, split_track = True)
+    saved_paths_pos, saved_paths_force = ia.run_pillar_tracking(folder_path, pillar_stiffnes, pillar_profile, pillar_modulus, pillar_width, pillar_thickness, pillar_diameter, pillar_length, force_location, length_scale, split_track = True)
     for pa_p in saved_paths_pos:
         assert pa_p.is_file()
     for pa_f in saved_paths_force:
@@ -1687,17 +1709,19 @@ def test_run_one_pillar_tracking_split():
 def test_load_pillar_tracking_results():
     folder_path = example_path("real_example_pillar_short")
     pillar_stiffnes = None
+    pillar_profile = 'rectangular'
     pillar_modulus = 1.61
     pillar_width = 163
-    pillar_thickness = 33.2    
+    pillar_thickness = 33.2 
+    pillar_diameter = 40    
     pillar_length = 199
     force_location = 163
     length_scale = 1
-    _, _ = ia.run_pillar_tracking(folder_path, pillar_stiffnes, pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale, split_track = False)
+    _, _ = ia.run_pillar_tracking(folder_path, pillar_stiffnes, pillar_profile, pillar_modulus, pillar_width, pillar_thickness, pillar_diameter, pillar_length, force_location, length_scale, split_track = False)
     _, _, _, _, _ = ia.load_pillar_tracking_results(folder_path=folder_path, split_track = False)
     
     folder_path = example_path("real_example_one_pillar_short")
-    _, _ = ia.run_pillar_tracking(folder_path, pillar_stiffnes, pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale, split_track = True)
+    _, _ = ia.run_pillar_tracking(folder_path, pillar_stiffnes, pillar_profile, pillar_modulus, pillar_width, pillar_thickness, pillar_diameter, pillar_length, force_location, length_scale, split_track = True)
     _, _, _, _, _ = ia.load_pillar_tracking_results(folder_path=folder_path, split_track = True)
 
     folder_path = example_path("io_testing_examples")
@@ -1714,18 +1738,20 @@ def test_load_pillar_tracking_results():
 def test_visualize_pillar_tracking():
     folder_path = example_path("real_example_pillar_short")
     pillar_stiffnes = None
+    pillar_profile = 'rectangular'
     pillar_modulus = 1.61
     pillar_width = 163
-    pillar_thickness = 33.2    
+    pillar_thickness = 33.2 
+    pillar_diameter = 40    
     pillar_length = 199
     force_location = 163
     length_scale = 1
-    _, _ = ia.run_pillar_tracking(folder_path, pillar_stiffnes, pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale, split_track = False)
+    _, _ = ia.run_pillar_tracking(folder_path, pillar_stiffnes, pillar_profile, pillar_modulus, pillar_width, pillar_thickness, pillar_diameter, pillar_length, force_location, length_scale, split_track = False)
     saved_path = ia.visualize_pillar_tracking(folder_path, split_track = False)
     assert saved_path.is_file
     
     folder_path = example_path("real_example_one_pillar_short")
-    _, _ = ia.run_pillar_tracking(folder_path, pillar_stiffnes, pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location, length_scale, split_track = True)
+    _, _ = ia.run_pillar_tracking(folder_path, pillar_stiffnes, pillar_profile, pillar_modulus, pillar_width, pillar_thickness, pillar_diameter, pillar_length, force_location, length_scale, split_track = True)
     saved_path = ia.visualize_pillar_tracking(folder_path, split_track = True)
     assert saved_path.is_file
 

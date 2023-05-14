@@ -1318,19 +1318,30 @@ def visualize_interpolate(
 
 
 #================================================ Pillar Tracking ================================================#
-def compute_pillar_secnd_moment(pillar_width: float, pillar_thickness: float)-> float: 
+def compute_pillar_secnd_moment_rectangular(pillar_width: float, pillar_thickness: float)-> float: 
     """Given pillar width and thickness in micrometers (um).
     Will compute the pillar (taken as a rectangular beam) second moment of area in (um)^4."""
     secnd_moment_area = (pillar_width*pillar_thickness**3)/12
     return secnd_moment_area
-    
 
-def compute_pillar_stiffnes(pillar_modulus: float, pillar_width: float, 
-                            pillar_thickness: float, pillar_length: float, 
+def compute_pillar_secnd_moment_circular(pillar_diameter: float)-> float: 
+    """Given pillar width and thickness in micrometers (um).
+    Will compute the pillar (taken as a circular beam) second moment of area in (um)^4."""
+    secnd_moment_area = (np.pi*pillar_diameter**4)/64
+    return secnd_moment_area
+
+def compute_pillar_stiffnes(pillar_profile: str, pillar_modulus: float, pillar_width: float, 
+                            pillar_thickness: float, pillar_diameter: float, pillar_length: float, 
                             force_location: float) -> float:
     """Given pillar material Elastic modulus (in MPa), width, thickness, length and force application location 
-    in micrometers (um). Will compute the pillar (taken as a rectangular beam) stiffness in (uN/um)."""
-    I = compute_pillar_secnd_moment(pillar_width, pillar_thickness)
+    in micrometers (um). Will compute the pillar stiffness in (uN/um)."""
+    if pillar_profile == 'rectangular':
+        I = compute_pillar_secnd_moment_rectangular(pillar_width, pillar_thickness)
+    elif pillar_profile == 'circular':
+        I = compute_pillar_secnd_moment_circular(pillar_diameter)
+    else:
+        print("Pillar_profile should be either 'rectangular' or 'circular'")
+        I = 0
     pillar_stiffness = (6*pillar_modulus*I)/((force_location**2)*(3*pillar_length-force_location))
     return pillar_stiffness
 
@@ -1359,9 +1370,10 @@ def compute_pillar_position_timeseries(tracker_0: np.ndarray, tracker_1: np.ndar
 
 
 def pillar_force_all_steps(pillar_mean_abs_disp: np.ndarray, pillar_mean_disp_row: np.ndarray, 
-                           pillar_mean_disp_col: np.ndarray, pillar_stiffnes: float = None, 
+                           pillar_mean_disp_col: np.ndarray, pillar_stiffnes: float = None, pillar_profile: str = 'rectangular',
                            pillar_modulus: float = 1.61, pillar_width: float = 163, pillar_thickness: float = 33.2, 
-                           pillar_length: float = 199.3, force_location: float = 163,length_scale: float = 1) -> List:
+                           pillar_diameter: float = 400, pillar_length: float = 199.3, force_location: float = 163,
+                           length_scale: float = 1) -> List:
     """Given pillar material Elastic modulus (in MPa), width, thickness, length, force application location 
     in micrometers (um), pillar tracking results in pixels, and a length scale conversion from pixels to 
     micrometers (um). Will compute pillar force in microNewtons (uN) for all steps."""
@@ -1369,7 +1381,7 @@ def pillar_force_all_steps(pillar_mean_abs_disp: np.ndarray, pillar_mean_disp_ro
     if pillar_stiffnes is not None:
         pillar_k = pillar_stiffnes
     else:
-        pillar_k = compute_pillar_stiffnes(pillar_modulus, pillar_width, pillar_thickness, pillar_length, force_location)
+        pillar_k = compute_pillar_stiffnes(pillar_profile, pillar_modulus, pillar_width, pillar_thickness, pillar_diameter, pillar_length, force_location)
 
     pillar_F_row = compute_pillar_force(pillar_k,pillar_mean_disp_row,length_scale)
     pillar_F_col = compute_pillar_force(pillar_k,pillar_mean_disp_col,length_scale)
@@ -1453,9 +1465,10 @@ def save_pillar_force(*, folder_path: Path, pillar_force_abs: np.ndarray, pillar
     return saved_paths
 
 
-def run_pillar_tracking(folder_path: Path, pillar_stiffnes: float = None, pillar_modulus: float = 1.61, 
-                        pillar_width: float = 163, pillar_thickness: float = 33.2, pillar_length: float = 199.3, 
-                        force_location: float = 163, length_scale: float = 1, split_track: bool = False) -> List:
+def run_pillar_tracking(folder_path: Path, pillar_stiffnes: float = None, pillar_profile: str = 'rectangular', 
+                        pillar_modulus: float = 1.61, pillar_width: float = 163, pillar_thickness: float = 33.2, 
+                        pillar_diameter: float = 400, pillar_length: float = 199.3, force_location: float = 163, 
+                        length_scale: float = 1, split_track: bool = False) -> List:
     """Given a folder path, pillar material Elastic modulus (in MPa), width, thickness, length, force application 
     location in micrometers (um), and a length scale conversion from pixels to micrometers (um).Will perform tracking, 
     compute pillar force in microNewtons (uN) and save results as text files."""
@@ -1503,7 +1516,7 @@ def run_pillar_tracking(folder_path: Path, pillar_stiffnes: float = None, pillar
             # save pillar tracking results
             saved_paths_pos = save_pillar_position(folder_path=folder_path, tracker_col_all=tracker_0, tracker_row_all=tracker_1, info=info, split_track = False, fname='pillar%i_'%(ml+1))
         # compute pillar force 
-        pillar_force_all, pillar_row_force_all, pillar_col_force_all = pillar_force_all_steps(mean_abs_disp, mean_disp_all_0, mean_disp_all_1, pillar_stiffnes = pillar_stiffnes, pillar_modulus = pillar_modulus, pillar_width = pillar_width, pillar_thickness = pillar_thickness, pillar_length = pillar_length, force_location = force_location, length_scale = length_scale)
+        pillar_force_all, pillar_row_force_all, pillar_col_force_all = pillar_force_all_steps(mean_abs_disp, mean_disp_all_0, mean_disp_all_1, pillar_stiffnes = pillar_stiffnes, pillar_profile = pillar_profile, pillar_modulus = pillar_modulus, pillar_width = pillar_width, pillar_thickness = pillar_thickness, pillar_diameter = pillar_diameter, pillar_length = pillar_length, force_location = force_location, length_scale = length_scale)
         # save pillar force results
         saved_paths_force = save_pillar_force(folder_path=folder_path, pillar_force_abs=pillar_force_all, pillar_force_row=pillar_row_force_all, pillar_force_col=pillar_col_force_all, fname='pillar%i_'%(ml+1))
     return saved_paths_pos, saved_paths_force
