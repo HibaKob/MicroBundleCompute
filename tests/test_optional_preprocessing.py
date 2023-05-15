@@ -41,9 +41,11 @@ def glob_movie(example_name):
 def test_rename_folder():
     folder_path = example_path("io_testing_examples")
     new_folder_name = "test_create_folder_%i" % (np.random.random() * 1000000)
+    new_folder_path = folder_path.joinpath(new_folder_name).resolve()
     folder_name = "old_name"
     _ = ia.create_folder(folder_path,folder_name)
-    new_folder_name = "new_name"
+    if os.path.exists(new_folder_path):
+        shutil.rmtree(new_folder_path)
     new_folder_path = op.rename_folder(folder_path, folder_name, new_folder_name)
     assert new_folder_path.is_dir
 
