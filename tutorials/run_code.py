@@ -12,8 +12,6 @@ parser.add_argument("input_folder", help="the user input folder location")
 args = parser.parse_args()
 input_folder_str = args.input_folder
 
-# input_folder_str = "files/example_data"
-
 self_path_file = Path(__file__)
 self_path = self_path_file.resolve().parent
 input_folder = self_path.joinpath(input_folder_str).resolve()
