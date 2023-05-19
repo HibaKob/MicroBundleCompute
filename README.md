@@ -52,7 +52,7 @@ The best way to do this is to create a GitHub account and ``clone`` the reposito
 
 Alternatively, you can run the following command in a ``Terminal`` session:
 ```bash
-git https://github.com/HibaKob/MicroBundleCompute.git
+git clone https://github.com/HibaKob/MicroBundleCompute.git
 ```
 Following this step, ``MicroBundleCompute`` folder will be downloaded in your ``Terminal`` directory. 
 
