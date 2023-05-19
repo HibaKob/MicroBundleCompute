@@ -52,7 +52,7 @@ The best way to do this is to create a GitHub account and ``clone`` the reposito
 
 Alternatively, you can run the following command in a ``Terminal`` session:
 ```bash
-git clone https://github.com/elejeune11/MicroBundleCompute.git
+git https://github.com/HibaKob/MicroBundleCompute.git
 ```
 Following this step, ``MicroBundleCompute`` folder will be downloaded in your ``Terminal`` directory. 
 
@@ -552,7 +552,7 @@ For the displacement tracking results, we plot absolute displacement of the iden
 <img alt="column tracking visualization" src="tutorials/figs/Visualizations/column_disp.gif" width="100%" />
 </p>
 
-For the strain tracking results, we plot $E_{cc}$, $E_{cr}$, and $E_{rrr}$ for each subdomain. Specifically, we visualize these strains organized in space in ``sub_domain_strain_E**.gif`` and ``%04d_strain.png``, and organized in time (i.e. as a timeseries vs. frame number) in ``strain_timeseries_E**_beat%i.pdf``. The legend in the timeseries plots corresponds to the subdomain labels in ``strain_sub_domain_key.pdf``.
+For the strain tracking results, we plot $E_{cc}$, $E_{cr}$, and $E_{rr}$ for each subdomain. Specifically, we visualize these strains organized in space in ``sub_domain_strain_E**.gif`` and ``%04d_strain.png``, and organized in time (i.e. as a timeseries vs. frame number) in ``strain_timeseries_E**_beat%i.pdf``. The legend in the timeseries plots corresponds to the subdomain labels in ``strain_sub_domain_key.pdf``.
 
 <p align = "center">
 <img alt="strain visualization" src="tutorials/figs/Visualizations/sub_domain_strain_Err.gif" width="100%" />
