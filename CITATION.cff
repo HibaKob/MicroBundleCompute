@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+title: MicroBundleCompute
+message: >-
+  If you use this software, please cite it using the metadata from this file.
+type: software
+authors:
+  - given-names: Hiba
+    family-names: Kobeissi
+    email: hibakob@bu.edu
+    affiliation: Boston University
+    orcid: 'https://orcid.org/0000-0002-8404-1429'
+  - given-names: Emma
+    family-names: Lejeune
+    email: elejeune@bu.edu
+    affiliation: Boston University
+    orcid: 'https://orcid.org/0000-0001-8099-3468'
+repository-code: 'https://github.com/HibaKob/MicroBundleCompute.git'
+abstract: >-
+  The MicroBundleCompute software is developed as a multi-purpose tool for analyzing heterogeneous cardiac microbundle deformation and strain from brightfield movies of beating microbundles. In this repository, we share the source code, steps to download and install the software, tutorials on how to run the different main and optional functionalities of the software, and details about code validation. 
+license: MIT
+date-released: '2023-05-12'
