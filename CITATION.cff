@@ -14,7 +14,7 @@ authors:
     email: elejeune@bu.edu
     affiliation: Boston University
     orcid: 'https://orcid.org/0000-0001-8099-3468'
-repository-code: 'https://github.com/HibaKob/MicroBundleCompute.git'
+repository-code: 'https://github.com/HibaKob/MicroBundleCompute'
 abstract: >-
   The MicroBundleCompute software is developed as a multi-purpose tool for analyzing heterogeneous cardiac microbundle deformation and strain from brightfield movies of beating microbundles. In this repository, we share the source code, steps to download and install the software, tutorials on how to run the different main and optional functionalities of the software, and details about code validation. 
 license: MIT
