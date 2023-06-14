@@ -310,8 +310,7 @@ def compute_abs_position_timeseries(tracker_0: np.ndarray, tracker_1: np.ndarray
 
 
 def get_time_segment_param_dicts() -> dict:
-    """Will return dictionaries specifying the parameters for timeseries segmentation.
-    In future, these may vary based on version and/or be computed automatically (e.g., look at spectral info)."""
+    """Will return dictionaries specifying the parameters for timeseries segmentation."""
     time_seg_params = dict(peakDist=20, prom = 0.1)
     return time_seg_params
 
