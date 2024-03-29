@@ -23,7 +23,7 @@ codecov_token: 62ae94e3-b311-42ed-a9ef-0a280f77bd7c
 * [Acknowledgements](#acknowledge)
 
 ## Project Summary <a name="summary"></a>
-The MicroBundleCompute software is developed as a multi-purpose tool for analyzing heterogeneous cardiac microbundle deformation and strain from brightfield movies of beating microbundles. In this repository, we share the source code, steps to download and install the software, tutorials on how to run the different main and optional functionalities of the software, and details about code validation. **For more information, please refer to the main [manuscript](add link).**
+The MicroBundleCompute software is developed as a multi-purpose tool for analyzing heterogeneous cardiac microbundle deformation and strain from brightfield movies of beating microbundles. In this repository, we share the source code, steps to download and install the software, tutorials on how to run the different main and optional functionalities of the software, and details about code validation. **For more information, please refer to the main [manuscript](https://doi.org/10.1371/journal.pone.0298863).**
 
 Briefly, the software requires two main inputs: `1)` a binary mask of the cardiac tissue or muscle bundle and `2)` consecutive movie frames of the beating microbundle. The mask can be either generated manually or externally, or automatically using one of the software’s built-in functionalities. Tracking points identified as Shi-Tomasi corner points are then computed on the first frame of the movie and tracked across all frames. From this preliminary tracking, we can identify individual beats. This allows us to perform the analysis per beat by tracking the marker points identified at the first frame of each beat across the beat frames. From these tracked points, we are able to compute full-field displacements,
 and subdomain-averaged strains. We also include post-processing functionalities to rotate the images and tracking results as well as interpolate the results at query points. To visualize the results, the software outputs timeseries plots per beat and movies of full-field and subdomain-averaged results. Finally, we validate our software against synthetically generated beating microbundle data with a known ground truth and against basic manual tracking.
@@ -41,8 +41,8 @@ The roadmap for this collaborative endeavor is as follows:
 
 `Preliminary Dataset + Software` $\mapsto$ `Published Software Package` $\mapsto$ `Published Validation Examples and Tutorial` $\mapsto$ `Larger Dataset + Software Testing and Validation` $\mapsto$ `Automated Analysis of High-Throughput Experiments`
 
-At present (**may 2023**), we have validated our software on a preliminary dataset in addition to a synthetically generated dataset (please find more details on the [SyntheticMicroBundle github page](https://github.com/HibaKob/SyntheticMicroBundle) and the [main manuscript](**add link**)). We also include details on validation against manual tracking [here](**add link to SA**). In the next stage, we are particularly interested in expanding our dataset and performing further software validation and testing. 
- Specifically, we aim to `1)` identify scenarios where our approach fails, `2)` create functions to accomodate these cases, and `3)` compare software results to previous manual approaches for extracting quantitative information, especially for pillar tracking. We will continue to update this repository as the project progresses.
+At present (**may 2023**), we have validated our software on a preliminary dataset in addition to a synthetically generated dataset (please find more details on the [SyntheticMicroBundle github page](https://github.com/HibaKob/SyntheticMicroBundle) and the [main manuscript](https://doi.org/10.1371/journal.pone.0298863)). We also include details on validation against manual tracking [here](https://doi.org/10.1371/journal.pone.0298863.s001). In the next stage, we are particularly interested in expanding our dataset and performing further software validation and testing. 
+Specifically, we aim to `1)` identify scenarios where our approach fails, `2)` create functions to accomodate these cases, and `3)` compare software results to previous manual approaches for extracting quantitative information, especially for pillar tracking. We will continue to update this repository as the project progresses.
 
 ## Installation Instructions <a name="install"></a>
 
@@ -568,7 +568,7 @@ For pillar tracking, the outputs of running the visualization codes will be stor
 </p>
 
 ## Validation <a name="validation"></a>
-As mentioned above, we have validated the tissue tracking mode of our code against [synthetic data](https://github.com/HibaKob/SyntheticMicroBundle) and manual tracking. We include here one set of results corresponding to each validation approach. More information can be found in the [main paper](add link) and the [supplementary document](add link).
+As mentioned above, we have validated the tissue tracking mode of our code against [synthetic data](https://github.com/HibaKob/SyntheticMicroBundle) and manual tracking. We include here one set of results corresponding to each validation approach. More information can be found in the [main paper](https://doi.org/10.1371/journal.pone.0298863) and the [supplementary document](https://doi.org/10.1371/journal.pone.0298863.s001).
 
 ### Against synthetic data
 <p align = "center">
@@ -603,6 +603,7 @@ Related repositories include:
 * https://github.com/elejeune11/Das-manuscript-2022
 * https://github.com/HibaKob/SyntheticMicroBundle (synthetic dataset)
 * https://github.com/elejeune11/MicroBundleCompute-Lite (deprecated version of the code)
+* https://github.com/HibaKob/MicroBundlePillarTrack (pillar tracking software)
 
 ## Contact Information <a name="contact"></a>
 For additional information, please contact Emma Lejeune ``elejeune@bu.edu`` or Hiba Kobeissi ``hibakob@bu.edu``.
